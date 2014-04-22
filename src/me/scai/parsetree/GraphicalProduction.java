@@ -137,8 +137,6 @@ class PositionRelation extends GeometricRelation {
 	@Override
 	public float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel) 
 		throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		
 		if ( tiTested.length != 1 )
 			throw new IllegalArgumentException("tiTested does not have length 1");
 		
@@ -148,34 +146,75 @@ class PositionRelation extends GeometricRelation {
 		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
 		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);		
 		
-		float szTested, szInRel, szMean, edgeDiff;
+		float [] oldStayBnds = new float[2];
+		float [] newStayBnds = new float[2];
+		float [] lesserMoveBnds = new float[2];
+		float [] greaterMoveBnds = new float[2];
 		if ( positionType == PositionType.PositionEast || 
 			 positionType == PositionType.PositionWest ) {
-			/* sz is height */
-			szTested = bndsTested[3] - bndsTested[1];
-			szInRel = bndsInRel[3] - bndsTested[1];
+			/* Staying bounds are top and bottom */
+			oldStayBnds[0] = bndsTested[1];
+			oldStayBnds[1] = bndsTested[3];
 			
-			if ( alignType == AlignType.AlignBottom ) 
-				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
-			else
-				edgeDiff = Math.abs(bndsTested[1] - bndsInRel[1]);
+			newStayBnds[0] = bndsInRel[1];
+			newStayBnds[1] = bndsInRel[3];
+			
+			if ( positionType == PositionType.PositionEast ) { 
+				/* InRel is on the smaller side */
+				lesserMoveBnds[0] = bndsInRel[0];
+				lesserMoveBnds[1] = bndsInRel[2];
+			
+				greaterMoveBnds[0] = bndsTested[0];
+				greaterMoveBnds[1] = bndsTested[2];
+			}		
+			else {
+				/* Tested is on the smaller side */
+				lesserMoveBnds[0] = bndsTested[0];
+				lesserMoveBnds[1] = bndsTested[2];
+			
+				greaterMoveBnds[0] = bndsInRel[0];
+				greaterMoveBnds[1] = bndsInRel[2];
+			}
+			
 		}
 		else if ( positionType == PositionType.PositionSouth || 
 				  positionType == PositionType.PositionNorth ) {	/* sz is width */
-			szTested = bndsTested[2] - bndsTested[0];
-			szInRel = bndsInRel[2] - bndsTested[0];
+			/* Staying bounds are left and right */
+			oldStayBnds[0] = bndsTested[0];
+			oldStayBnds[1] = bndsTested[2];
 			
-			if ( alignType == AlignType.AlignRight ) 
-				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]);
-			else
-				edgeDiff = Math.abs(bndsTested[0] - bndsInRel[0]);
+			newStayBnds[0] = bndsInRel[0];
+			newStayBnds[1] = bndsInRel[2];
+			
+			if ( positionType == PositionType.PositionNorth ) { 
+				/* InRel is on the smaller side */
+				lesserMoveBnds[0] = bndsInRel[1];
+				lesserMoveBnds[1] = bndsInRel[3];
+			
+				greaterMoveBnds[0] = bndsTested[1];
+				greaterMoveBnds[1] = bndsTested[3];
+			}		
+			else {
+				/* Tested is on the smaller side */
+				lesserMoveBnds[0] = bndsTested[1];
+				lesserMoveBnds[1] = bndsTested[3];
+			
+				greaterMoveBnds[0] = bndsInRel[1];
+				greaterMoveBnds[1] = bndsInRel[3];
+			}
 		}
 		
-		szMean = (szTested + szInRel) * 0.5f;
+		float stayScore = GeometryHelper.pctOverlap(oldStayBnds, newStayBnds);
+		if ( stayScore > 0.5f )
+			stayScore = 1.0f;
 		
-		float v = 1 - edgeDiff / szMean;
-		if ( v < 0f ) 
-			v = 0f;
+		float moveScore = GeometryHelper.pctMove(lesserMoveBnds, greaterMoveBnds);
+		
+		float v = stayScore * moveScore;
+		if ( v < 0.0f ) 
+			v = 0.0f;
+		else if ( v > 1.0f )
+			v = 1.0f;
 		
 		return v;
 	}
