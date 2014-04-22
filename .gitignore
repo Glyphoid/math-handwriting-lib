@@ -24,4 +24,9 @@ proguard/
 *.iws
 .idea/
 
+.classpath
+.project
+.settings/
+
+
 
