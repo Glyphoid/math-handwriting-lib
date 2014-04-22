@@ -28,6 +28,11 @@ public abstract class CAbstractWrittenTokenSet {
 		return (nt == 0);
 	}
 	
+	/* Add a new token */
+	public void addOneToken() {
+		nt++;
+	}
+	
 	/* Set char set: the set of possible token names.
 	 * For example, these can be used in conjunction with recogPs. */
 	public void setTokenNames(String [] t_tokenNames) {
@@ -65,7 +70,12 @@ public abstract class CAbstractWrittenTokenSet {
 		}
 	}	
 	
+	public void deleteOneToken() {
+		nt--;
+	}
+	
 	/* *** Abstract methods *** */	
 	protected abstract void calcBounds();
 	public abstract String getStringBrief();
+	
 }

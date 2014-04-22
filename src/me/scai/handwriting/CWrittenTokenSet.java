@@ -26,7 +26,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 			max_y = bounds[3];
 		
 		tokens.add(wt);
-		nt++;
+		addOneToken();
 	}
 	
 	/* Add a token: with recognition results */
@@ -44,6 +44,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	}
 	
 	/* (Re-)calculate the bounds */
+	@Override
 	protected void calcBounds() {
 		min_x = min_y = Float.MAX_VALUE;
 		max_x = max_y = Float.MAX_VALUE;
@@ -62,7 +63,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		}
 	}
 	
-	/* Clear a token */
+	/* Delete a token */
 	public void deleteToken(int i) {
 		if ( i < 0 ) {
 			System.err.println("Deletion index is negative");
@@ -80,7 +81,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		
 		calcBounds();
 		
-		nt--;
+		deleteOneToken();
 	}
 	
 	/* Clear all tokens */
@@ -95,7 +96,8 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		nt = 0;
 	}
 	
-	/* Get descriptive string: brief format, without the detailed stroke data */	 
+	/* Get descriptive string: brief format, without the detailed stroke data */
+	@Override
 	public String getStringBrief() {
 		/* Check if tokeNames has been configured */
 		if ( tokenNames == null )
@@ -106,7 +108,6 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 			throw new IllegalStateException("Difference in sizes of tokens and recognition results");
 		
 		String str = "";
-		int nTokens = tokens.size();
 		
 		/* Write token names */
 		str += "Token set: [";
@@ -119,7 +120,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		str += "\n";
 		
 		/* Write tokens */
-		for (int k = 0; k < nTokens; ++k) {
+		for (int k = 0; k < nt; ++k) {
 			/* Bound */
 			str += "bounds = [";			
 			float [] bnds = tokens.get(k).getBounds();
