@@ -1,0 +1,7 @@
+DIGIT					0 1 2 3 4 5 6 7 8 9
+POINT				.
+PLUS_OP			+
+MINUS_OP			-
+MULT_OP			*
+HORIZ_DIV_OP	-
+OBLIQUE_DIV_OP	/
