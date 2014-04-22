@@ -56,10 +56,6 @@ public class TokenRecogEngine implements Serializable {
 	protected int trainingProgPercent = 0;
 	
 	/* Methods */
-//	public TokenRecogEngine() {
-//		
-//	}
-	
 	public int getTrainMaxIter() {
 		return trainMaxIter;
 	}

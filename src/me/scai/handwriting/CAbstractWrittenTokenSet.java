@@ -74,8 +74,10 @@ public abstract class CAbstractWrittenTokenSet {
 		nt--;
 	}
 	
-	/* *** Abstract methods *** */	
+	/* *** Abstract methods *** */
 	protected abstract void calcBounds();
+	
+	public abstract float [] getTokenBounds(int i);
 	public abstract String getStringBrief();
 	
 }

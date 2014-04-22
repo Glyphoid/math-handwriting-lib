@@ -237,5 +237,10 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		
 		System.out.println("Done reading wts file: " + wtsFileName);
 	}
+
+	@Override
+	public float[] getTokenBounds(int i) {
+		return tokenBounds.get(i);
+	}
 	
 }

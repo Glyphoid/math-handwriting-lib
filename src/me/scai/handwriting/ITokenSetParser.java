@@ -1,5 +1,7 @@
 package me.scai.handwriting;
 
+import me.scai.parsetree.Node;
+
 public interface ITokenSetParser {
-	void parse(CAbstractWrittenTokenSet tokenSet);
+	Node parse(CAbstractWrittenTokenSet tokenSet); /* Return reference to root node */
 }

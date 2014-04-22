@@ -147,6 +147,11 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		
 		return str;
 	}
+
+	@Override
+	public float [] getTokenBounds(int i) {
+		return tokens.get(i).getBounds();
+	}
 	
 	
 	

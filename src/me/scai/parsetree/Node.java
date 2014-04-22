@@ -48,4 +48,13 @@ public class Node {
 		ch = t_ch;		
 	}
 	
+	/* Property getters */
+	public boolean isTerminal() {
+		return isTerminal;
+	}
+	
+	public int numChildren() {
+		return nc;
+	}
+	
 }
