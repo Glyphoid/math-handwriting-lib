@@ -71,7 +71,7 @@ class AlignRelation extends GeometricRelation {
 			throw new IllegalArgumentException("tiTested does not have length 1");
 		
 		if ( tiInRel.length != 1 )
-			throw new IllegalArgumentException("tiTested does not have length 1");
+			throw new IllegalArgumentException("tiInRel does not have length 1");
 		
 		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
 		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);		
@@ -141,7 +141,7 @@ class PositionRelation extends GeometricRelation {
 			throw new IllegalArgumentException("tiTested does not have length 1");
 		
 		if ( tiInRel.length != 1 )
-			throw new IllegalArgumentException("tiTested does not have length 1");
+			throw new IllegalArgumentException("tiInRel does not have length 1");
 		
 		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
 		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);		
@@ -221,6 +221,133 @@ class PositionRelation extends GeometricRelation {
 	
 }
 
+/* HeightRelation */
+class HeightRelation extends GeometricRelation {
+	public enum HeightRelationType {
+		HeightRelationLess,
+		HeightRelationEqual,
+		HeightRelationGreater,
+	}
+	
+	/* Member variables */
+	HeightRelationType heightRelationType;
+	
+	/* Constructor */
+	public HeightRelation(HeightRelationType hrt, int t_idxTested, int t_idxInRel) {
+		heightRelationType = hrt;
+		
+		idxTested = new int[1];
+		idxTested[0] = t_idxTested;
+		
+		idxInRel = new int[1];
+		idxInRel[0] = t_idxInRel;
+	}
+
+	
+	@Override
+	public float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel) {
+		if ( tiTested.length != 1 )
+			throw new IllegalArgumentException("tiTested does not have length 1");
+		
+		if ( tiInRel.length != 1 )
+			throw new IllegalArgumentException("tiInRel does not have length 1");
+		
+		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
+		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);
+		
+		float hTested = bndsTested[3] - bndsTested[1];
+		float hInRel = bndsInRel[3] - bndsInRel[1];
+		float hMean = (hTested + hInRel) * 0.5f;
+		
+		float v;
+		if ( heightRelationType == HeightRelationType.HeightRelationEqual ) {
+			v = 1.0f - Math.abs(hTested - hInRel) / hMean;
+			if ( v > 0.75f ) /* Slack */
+				v = 1.0f;
+		}
+		else if ( heightRelationType == HeightRelationType.HeightRelationGreater  ) {
+			v = (hTested - hInRel) / hInRel;
+			if ( v > 0.5f )
+				v = 1.0f;
+		}
+		else /* heightRelationType == HeightRelationType.HeightRelationLess */ {
+			v = (hInRel - hTested) / hInRel;
+			if ( v > 0.5f )
+				v = 1.0f;
+		}
+		
+		if ( v > 1.0f )
+			v = 1.0f;
+		else if ( v < 0.0f )
+			v = 0.0f;
+		
+		return v;
+	}
+}
+
+/* WidthRelation */
+class WidthRelation extends GeometricRelation {
+	public enum WidthRelationType {
+		WidthRelationLess,
+		WidthRelationEqual,
+		WidthRelationGreater,
+	}
+	
+	/* Member variables */
+	WidthRelationType widthRelationType;
+	
+	/* Constructor */
+	public WidthRelation(WidthRelationType hrt, int t_idxTested, int t_idxInRel) {
+		widthRelationType = hrt;
+		
+		idxTested = new int[1];
+		idxTested[0] = t_idxTested;
+		
+		idxInRel = new int[1];
+		idxInRel[0] = t_idxInRel;
+	}
+
+	
+	@Override
+	public float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel) {
+		if ( tiTested.length != 1 )
+			throw new IllegalArgumentException("tiTested does not have length 1");
+		
+		if ( tiInRel.length != 1 )
+			throw new IllegalArgumentException("tiInRel does not have length 1");
+		
+		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
+		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);
+		
+		float wTested = bndsTested[3] - bndsTested[1];
+		float wInRel = bndsInRel[3] - bndsInRel[1];
+		float wMean = (wTested + wInRel) * 0.5f;
+		
+		float v;
+		if ( widthRelationType == WidthRelationType.WidthRelationEqual ) {
+			v = 1.0f - Math.abs(wTested - wInRel) / wMean;
+			if ( v > 0.75f ) /* Slack */
+				v = 1.0f;
+		}
+		else if ( widthRelationType == WidthRelationType.WidthRelationGreater  ) {
+			v = (wTested - wInRel) / wInRel;
+			if ( v > 0.5f )
+				v = 1.0f;
+		}
+		else /* widthRelationType == WidthRelationType.WidthRelationLess */ {
+			v = (wInRel - wTested) / wInRel;
+			if ( v > 0.5f )
+				v = 1.0f;
+		}
+		
+		if ( v > 1.0f )
+			v = 1.0f;
+		else if ( v < 0.0f )
+			v = 0.0f;
+		
+		return v;
+	}
+}
 
 /* GraphicalProduction: Key class in the parser infrastructure.
  *     This specify the rules by which multiple 
@@ -230,6 +357,7 @@ class PositionRelation extends GeometricRelation {
 public class GraphicalProduction {
 	String lhs; 	/* Left-hand side, i.e., name of the production, e.g., DIGIT_STRING */
 	
+	int level;		/* Level: 0 is the lowest: numbers */
 	int nhrs; 	   	/* Number of right-hand side tokens, e.g., 2 */
 	String [] rhs; 	
 	/* Right-hand side items: can be a list of terminal (T) and non-terminal (NT) items.
@@ -238,13 +366,7 @@ public class GraphicalProduction {
 	boolean [] bt; 	/* Boolean flags for terminals (T), e.g., {true, false} */
 	
 	int headNode;	/* Index to the "head node" */
-
 	
-	public enum HeightRelationType {
-		HeightRelationLess,
-		HeightRelationEqual,
-		HeightRelationGreater,
-	}
 	
 	public enum WidthRelationType {
 		WidthRelationLess,
@@ -252,3 +374,4 @@ public class GraphicalProduction {
 		WidthRelationGreater,		
 	}
 }
+
