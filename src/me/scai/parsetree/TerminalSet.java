@@ -6,7 +6,8 @@ import java.util.HashMap;
 
 public class TerminalSet {
 	/* Constants */
-	private final static String commentString = "#";
+	public final static String commentString = "#";
+	public final static String epsString = "EPS";
 	
 	/* Members */
 	HashMap<String, String []> type2TokenMap = new HashMap<String, String []>();
@@ -57,6 +58,25 @@ public class TerminalSet {
 			for (int j = 1; j < t_tokens.length; ++j)
 				token2TypeMap.put(t_tokens[j], t_type);
 		}
+	}
+	
+	/* Get the type of a token */
+	public String getTypeOfToken(String token) {
+		return token2TypeMap.get(token);
+		
+	}
+	
+	/* Test if a type is a terminal type */
+	public boolean isTypeTerminal(String type) {
+		if ( type == epsString )
+			return true; /* EPS is a terminal. */
+		else
+			return type2TokenMap.keySet().contains(type);
+	}
+	
+	/* Test if a token belongs to a terminal type */
+	public boolean isTokenTerminal(String token) {
+		 return token2TypeMap.keySet().contains(token);
 	}
 	
 	/* Factory method */

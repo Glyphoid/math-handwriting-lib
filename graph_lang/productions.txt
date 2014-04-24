@@ -9,7 +9,7 @@ DIGIT_STRING : {AlignBottom(0), PositionEast(0), HeightRelationEqual(0)}
 ---
 DIGIT_STRING
 DIGIT
-EPS		# EPS is the empty set (stands for epsilon)
+EPS		# EPS is the empty set (stands for epsilon). Does not require geometric relations.
 
 ---
 DECIMAL_NUMER	

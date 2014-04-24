@@ -32,7 +32,7 @@ public class GraphicalProductionSet {
 	}
 	
 	/* Read productions from production list */
-	public void readProductionsFromFile(String prodListFileName) 
+	public void readProductionsFromFile(String prodListFileName, TerminalSet termSet)
 		throws FileNotFoundException, IOException {
 		String [] lines;
 		try {
@@ -52,18 +52,21 @@ public class GraphicalProductionSet {
 			idxLine++;
 			
 			ArrayList<String> pLines = new ArrayList<String>();
-			while ( lines[idxLine].length() != 0 ) {
+			while ( idxLine < lines.length && 
+					lines[idxLine].length() != 0 ) {
 				pLines.add(lines[idxLine]);
 				idxLine++;
 			}
 			
-			/* Construct a new production from the list of strings */
-			/* TODO */
+			/* Construct a new production from the list of strings */			
 			try {
-				prods.add(GraphicalProduction.genFromStrings(pLines));
+				if ( pLines.get(0).startsWith(separatorString) )
+					pLines.remove(0);
+				
+				prods.add(GraphicalProduction.genFromStrings(pLines, termSet));
 			}
 			catch ( Exception e ) {
-				
+				System.err.println(e.getMessage());
 			}
 		}
 		
@@ -72,12 +75,22 @@ public class GraphicalProductionSet {
 	/* Test main */
 	public static void main(String [] args) {
 		final String prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
+		final String termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
+		
+		TerminalSet termSet = null;
+		try {
+			termSet = TerminalSet.createFromFile(termSetFN);
+		}
+		catch ( Exception e ) {
+			System.err.println(e);
+		}
 		
 		GraphicalProductionSet gps = new GraphicalProductionSet();
 		try {
-			gps.readProductionsFromFile(prodSetFN);
+			gps.readProductionsFromFile(prodSetFN, termSet);
 		}
 		catch ( Exception e ) {
+			System.err.println(e);
 		}
 	}
 }

@@ -48,7 +48,7 @@ abstract class GeometricRelation {
 				throw new IllegalArgumentException("Wrong bracket order in string defining geometric relation");
 			
 			str = str.substring(0, str.length() - 1);	/* Strip the right bracket */
-			items = str.split("(");
+			items = str.split("\\(");
 		}
 		else {
 			items = new String[2];
@@ -80,7 +80,7 @@ class AlignRelation extends GeometricRelation {
 	AlignType alignType;
 	
 	/* Constructor */
-	public AlignRelation() {}
+	private AlignRelation() {}
 	
 	public AlignRelation(AlignType at, int t_idxTested, int t_idxInRel) {
 		alignType = at;
@@ -182,7 +182,7 @@ class PositionRelation extends GeometricRelation {
 	}
 	
 	/* Member variables */
-	public PositionRelation() {}
+	private PositionRelation() {}
 	
 	PositionType positionType;
 	
@@ -324,7 +324,7 @@ class HeightRelation extends GeometricRelation {
 	}
 	
 	/* Member variables */
-	public HeightRelation() {}
+	private HeightRelation() {}
 	
 	HeightRelationType heightRelationType;
 	
@@ -423,7 +423,7 @@ class WidthRelation extends GeometricRelation {
 	WidthRelationType widthRelationType;
 	
 	/* Constructor */
-	public WidthRelation() {}
+	private WidthRelation() {}
 	
 	public WidthRelation(WidthRelationType hrt, int t_idxTested, int t_idxInRel) {
 		widthRelationType = hrt;
@@ -538,15 +538,17 @@ public class GraphicalProduction {
 	/* Constructors */
 	public GraphicalProduction(String t_lhs, 
 			                   String [] t_rhs, 
-			                   boolean [] t_bt) {
+			                   boolean [] t_bt, 
+			                   GeometricRelation [][] t_geomRels) {
 		lhs = t_lhs;
 		rhs = t_rhs;
 		bt = t_bt;
+		geomRels = t_geomRels;
 		
 		nhrs = t_rhs.length;
 	}
 	
-	public static GraphicalProduction genFromStrings(ArrayList<String> strs) 
+	public static GraphicalProduction genFromStrings(ArrayList<String> strs, TerminalSet termSet)
 		throws Exception {
 		String t_lhs = strs.get(0);
 		
@@ -566,7 +568,13 @@ public class GraphicalProduction {
 			}
 			else {
 				if ( line.contains(tokenRelSeparator) ) {
+					t_rhs[k] = line.split(tokenRelSeparator)[0].trim();
+					
 					String relString = line.split(tokenRelSeparator)[1].trim();
+					if ( !relString.startsWith("{") || !relString.endsWith("}") )
+						throw new Exception("Syntax error in input productions file"); 
+					relString = relString.substring(1, relString.length() - 1);
+					
 					String [] relItems = relString.split(relSeparator);
 					
 					t_geomRels[k] = new GeometricRelation[relItems.length];
@@ -577,21 +585,27 @@ public class GraphicalProduction {
 						else if ( relStr.startsWith("Position") )
 							t_geomRels[k][j] = PositionRelation.createFromString(relStr, k);
 						else if ( relStr.startsWith("Height") )
-							t_geomRels[k][j] = PositionRelation.createFromString(relStr, k);
+							t_geomRels[k][j] = HeightRelation.createFromString(relStr, k);
 						else if ( relStr.startsWith("Width") )
 							t_geomRels[k][j] = WidthRelation.createFromString(relStr, k);
 						else 
 							throw new Exception("Unrecognized geometric relation string: " + relStr); 
 					}
 				}
+				else {
+					if ( line.trim().equals(TerminalSet.epsString) )
+						t_rhs[k] = TerminalSet.epsString;
+					else
+						throw new Exception("Encountered a non-head node with no geometric relations specified");
+				}
 			}
 			
-			/* TODO t_bt[k] = terminalList.isTerminal(t_rhs[k]) */
+			t_bt[k] = termSet.isTypeTerminal(t_rhs[k]);
 			
 			
 		}
 		
-		return null; /* TODO */
+		return new GraphicalProduction(t_lhs, t_rhs, t_bt, t_geomRels);
 	}
 	
 	/* Error classes */

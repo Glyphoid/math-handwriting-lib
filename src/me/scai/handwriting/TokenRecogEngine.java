@@ -222,7 +222,6 @@ public class TokenRecogEngine implements Serializable {
 	public int getTrainingProgPercent() {
 		return trainingProgPercent;
 	}
-
 	
 	public void trainConsoleLim(final MLTrain train,
 									   final BasicNetwork network, final MLDataSet trainingSet,
