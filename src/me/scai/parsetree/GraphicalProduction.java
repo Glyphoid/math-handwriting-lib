@@ -1,5 +1,7 @@
 package me.scai.parsetree;
 
+import java.util.ArrayList;
+
 import me.scai.handwriting.CWrittenTokenSet;
 
 abstract class GeometricRelation {
@@ -31,11 +33,37 @@ abstract class GeometricRelation {
 		return idxInRel.length;
 	}
 	
+	protected String [] splitInputString(String str) {
+		String [] items;
+		if ( (str.contains("(") && !str.contains(")")) ||
+		     (str.contains("(") && !str.contains(")")) )
+			throw new IllegalArgumentException("Unbalanced bracket order in string defining geometric relation");
+				
+		
+		if ( str.contains("(") && str.contains(")") ) {
+			int idxLB = str.indexOf("(");
+			int idxRB = str.indexOf(")");
+			
+			if ( idxLB > idxRB )
+				throw new IllegalArgumentException("Wrong bracket order in string defining geometric relation");
+			
+			str = str.substring(0, str.length() - 1);	/* Strip the right bracket */
+			items = str.split("(");
+		}
+		else {
+			items = new String[2];
+			items[0] = str;
+		}
+		
+		return items;
+	}
+	
 	/* eval: Test if the geometric relation is true */
 	/*     Output is a float number between 0 and 1 */
 	/*     0: 100% not true; 1: 100% true */
 	/*	   "ti" stands for token index */
 	public abstract float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel);
+	public abstract void parseString(String str, int t_idxTested);
 }
 
 
@@ -52,6 +80,8 @@ class AlignRelation extends GeometricRelation {
 	AlignType alignType;
 	
 	/* Constructor */
+	public AlignRelation() {}
+	
 	public AlignRelation(AlignType at, int t_idxTested, int t_idxInRel) {
 		alignType = at;
 		
@@ -106,6 +136,37 @@ class AlignRelation extends GeometricRelation {
 		
 		return v;
 	}
+
+	@Override
+	public void parseString(String str, int t_idxTested) {
+		String [] items = splitInputString(str);
+		
+		if ( items[0].equals("AlignBottom") )
+			alignType = AlignType.AlignBottom;
+		else if ( items[0].equals("AlignTop") )
+			alignType = AlignType.AlignTop;
+		else if ( items[0].equals("AlignLeft") )
+			alignType = AlignType.AlignLeft;
+		else
+			alignType = AlignType.AlignRight;
+		
+		idxTested = new int[1];
+		idxTested[0] = t_idxTested;
+		
+		if  ( items[1] != null ) {
+			idxInRel = new int[1];
+			idxInRel[0] = Integer.parseInt(items[1]);
+		}	
+		
+	}
+	
+	/* Factory method */
+	public static AlignRelation createFromString(String str, int t_idxTested) {
+		AlignRelation r = new AlignRelation();
+		
+		r.parseString(str, t_idxTested);
+		return r;
+	}
 	
 }
 
@@ -121,6 +182,8 @@ class PositionRelation extends GeometricRelation {
 	}
 	
 	/* Member variables */
+	public PositionRelation() {}
+	
 	PositionType positionType;
 	
 	/* Constructor */
@@ -219,6 +282,37 @@ class PositionRelation extends GeometricRelation {
 		return v;
 	}
 	
+	@Override
+	public void parseString(String str, int t_idxTested) {
+		String [] items = splitInputString(str);
+		
+		if ( items[0].equals("PositionWest") )
+			positionType = PositionType.PositionWest;
+		else if ( items[0].equals("PositionEast") )
+			positionType = PositionType.PositionEast;
+		else if ( items[0].equals("PositionSouth") )
+			positionType = PositionType.PositionSouth;
+		else
+			positionType = PositionType.PositionNorth;
+		
+		idxTested = new int[1];
+		idxTested[0] = t_idxTested;
+		
+		if  ( items[1] != null ) {
+			idxInRel = new int[1];
+			idxInRel[0] = Integer.parseInt(items[1]);
+		}	
+		
+	}
+	
+	/* Factory method */
+	public static PositionRelation createFromString(String str, int t_idxTested) {
+		PositionRelation r = new PositionRelation();
+		
+		r.parseString(str, t_idxTested);
+		return r;
+	}
+	
 }
 
 /* HeightRelation */
@@ -230,6 +324,8 @@ class HeightRelation extends GeometricRelation {
 	}
 	
 	/* Member variables */
+	public HeightRelation() {}
+	
 	HeightRelationType heightRelationType;
 	
 	/* Constructor */
@@ -283,6 +379,36 @@ class HeightRelation extends GeometricRelation {
 		
 		return v;
 	}
+	
+	@Override
+	public void parseString(String str, int t_idxTested) {
+		String [] items = splitInputString(str);
+		
+		if ( items[0].equals("HeightRelationLess") )
+			heightRelationType = HeightRelationType.HeightRelationLess;
+		else if ( items[0].equals("HeightRelationEqual") )
+			heightRelationType = HeightRelationType.HeightRelationEqual;
+		else
+			heightRelationType = HeightRelationType.HeightRelationGreater;
+		
+		idxTested = new int[1];
+		idxTested[0] = t_idxTested;
+		
+		if  ( items[1] != null ) {
+			idxInRel = new int[1];
+			idxInRel[0] = Integer.parseInt(items[1]);
+		}	
+		
+	}
+	
+	/* Factory method */
+	public static HeightRelation createFromString(String str, int t_idxTested) {
+		HeightRelation r = new HeightRelation();
+		
+		r.parseString(str, t_idxTested);
+		return r;
+	}
+	
 }
 
 /* WidthRelation */
@@ -293,10 +419,12 @@ class WidthRelation extends GeometricRelation {
 		WidthRelationGreater,
 	}
 	
-	/* Member variables */
+	/* Member variables */		
 	WidthRelationType widthRelationType;
 	
 	/* Constructor */
+	public WidthRelation() {}
+	
 	public WidthRelation(WidthRelationType hrt, int t_idxTested, int t_idxInRel) {
 		widthRelationType = hrt;
 		
@@ -347,6 +475,35 @@ class WidthRelation extends GeometricRelation {
 		
 		return v;
 	}
+	
+	@Override
+	public void parseString(String str, int t_idxTested) {
+		String [] items = splitInputString(str);
+		
+		if ( items[0].equals("WidthRelationLess") )
+			widthRelationType = WidthRelationType.WidthRelationLess;
+		else if ( items[0].equals("WidthRelationEqual") )
+			widthRelationType = WidthRelationType.WidthRelationEqual;
+		else
+			widthRelationType = WidthRelationType.WidthRelationGreater;
+		
+		idxTested = new int[1];
+		idxTested[0] = t_idxTested;
+		
+		if  ( items[1] != null ) {
+			idxInRel = new int[1];
+			idxInRel[0] = Integer.parseInt(items[1]);
+		}	
+		
+	}
+	
+	/* Factory method */
+	public static WidthRelation createFromString(String str, int t_idxTested) {
+		WidthRelation r = new WidthRelation();
+		
+		r.parseString(str, t_idxTested);
+		return r;
+	}
 }
 
 /* GraphicalProduction: Key class in the parser infrastructure.
@@ -355,23 +512,93 @@ class WidthRelation extends GeometricRelation {
  * collection. 
  */
 public class GraphicalProduction {
+	private final static String tokenRelSeparator = ":";
+	private final static String relSeparator = ",";
+	
 	String lhs; 	/* Left-hand side, i.e., name of the production, e.g., DIGIT_STRING */
 	
-	int level;		/* Level: 0 is the lowest: numbers */
-	int nhrs; 	   	/* Number of right-hand side tokens, e.g., 2 */
+	//int level;		/* Level: 0 is the lowest: numbers */
+	private int nhrs; 	   	/* Number of right-hand side tokens, e.g., 2 */
 	String [] rhs; 	
 	/* Right-hand side items: can be a list of terminal (T) and non-terminal (NT) items.
 	 * E.g., {DIGIT, DIGIT_STRING} */
 	
 	boolean [] bt; 	/* Boolean flags for terminals (T), e.g., {true, false} */
 	
-	int headNode;	/* Index to the "head node" */
+	GeometricRelation [][] geomRels;
 	
+	//int headNode;	/* Index to the "head node" */
+	/* Leaving this out for now, since the first rhs will always be the 
+	 * head node, at least in simple productions.
+	 */
 	
-	public enum WidthRelationType {
-		WidthRelationLess,
-		WidthRelationEqual,
-		WidthRelationGreater,		
+//	private TerminalSet terminalSet = null; /* TODO */
+
+	/* Methods */
+	/* Constructors */
+	public GraphicalProduction(String t_lhs, 
+			                   String [] t_rhs, 
+			                   boolean [] t_bt) {
+		lhs = t_lhs;
+		rhs = t_rhs;
+		bt = t_bt;
+		
+		nhrs = t_rhs.length;
 	}
+	
+	public static GraphicalProduction genFromStrings(ArrayList<String> strs) 
+		throws Exception {
+		String t_lhs = strs.get(0);
+		
+		int t_nrhs = strs.size() - 1;
+		String [] t_rhs = new String[t_nrhs];
+		boolean [] t_bt = new boolean[t_nrhs];
+		GeometricRelation [][] t_geomRels = new GeometricRelation[t_nrhs][];
+		
+		for (int k = 0; k < t_nrhs; ++k) {
+			String line = strs.get(k + 1);
+			
+			if ( k == 0 ) {
+				/* This is the head node, no geometrical relation is expected */				
+				if ( line.contains(tokenRelSeparator) ) 
+					throw new Exception("Head node unexpectedly contains geometric relation(s)");
+				t_rhs[k] = line.trim();				
+			}
+			else {
+				if ( line.contains(tokenRelSeparator) ) {
+					String relString = line.split(tokenRelSeparator)[1].trim();
+					String [] relItems = relString.split(relSeparator);
+					
+					t_geomRels[k] = new GeometricRelation[relItems.length];
+					for (int j = 0; j < relItems.length; ++j) {
+						String relStr = relItems[j].trim();
+						if ( relStr.startsWith("Align") )
+							t_geomRels[k][j] = AlignRelation.createFromString(relStr, k);
+						else if ( relStr.startsWith("Position") )
+							t_geomRels[k][j] = PositionRelation.createFromString(relStr, k);
+						else if ( relStr.startsWith("Height") )
+							t_geomRels[k][j] = PositionRelation.createFromString(relStr, k);
+						else if ( relStr.startsWith("Width") )
+							t_geomRels[k][j] = WidthRelation.createFromString(relStr, k);
+						else 
+							throw new Exception("Unrecognized geometric relation string: " + relStr); 
+					}
+				}
+			}
+			
+			/* TODO t_bt[k] = terminalList.isTerminal(t_rhs[k]) */
+			
+			
+		}
+		
+		return null; /* TODO */
+	}
+	
+	/* Error classes */
+//	class GeometricRelationCreationException extends Exception {
+//		public GeometricRelationCreationException() {}
+//		
+//		public GeometricRelationCreationException(String s) { super(s); }
+//	};
 }
 

@@ -7,6 +7,11 @@ DIGIT_STRING : {AlignBottom(0), PositionEast(0), HeightRelationEqual(0)}
 # The number in the brackets are the index to the parameter
 
 ---
+DIGIT_STRING
+DIGIT
+EPS		# EPS is the empty set (stands for epsilon)
+
+---
 DECIMAL_NUMER	
 POINT
 DIGIT_STRING : {AlignBottom(0), PositionWest(0), HeightRelationGreater(0)} # Left digit string
