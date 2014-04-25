@@ -13,6 +13,9 @@ import java.io.InputStreamReader;
 public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	public ArrayList<float []> tokenBounds = new ArrayList<float []>();
 	
+	/* Default constructor */
+	public CWrittenTokenSetNoStroke() {}
+	
 	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP) {
 		/* Input sanity checks */
 		if ( bounds.length != 4 ) {
@@ -39,9 +42,9 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	}
 	
 	@Override
-	protected void calcBounds() {
+	public void calcBounds() {
 		min_x = min_y = Float.MAX_VALUE;
-		max_x = max_y = Float.MAX_VALUE;
+		max_x = max_y = Float.MIN_VALUE;
 		
 		for (int i = 0; i < tokenBounds.size(); ++i) {
 			float [] bounds = tokenBounds.get(i);
@@ -217,6 +220,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		finally {
 			in.close();
 		}
+		
+		calcBounds();
 	}
 	
 	/* Testing routine */

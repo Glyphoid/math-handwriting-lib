@@ -10,10 +10,10 @@ public abstract class CAbstractWrittenTokenSet {
 	protected String [] tokenNames = null;
 	
 	/* Geometric bounds of the token set */
-	protected float min_x = Float.MAX_VALUE;
-	protected float min_y = Float.MAX_VALUE;
-	protected float max_x = Float.MIN_VALUE;
-	protected float max_y = Float.MIN_VALUE;
+	protected float min_x = Float.POSITIVE_INFINITY;
+	protected float min_y = Float.POSITIVE_INFINITY;
+	protected float max_x = Float.NEGATIVE_INFINITY;
+	protected float max_y = Float.NEGATIVE_INFINITY;
 	
 	public ArrayList<String> recogWinners = new ArrayList<String>();
 	public ArrayList<double []> recogPs = new ArrayList<double []>();
@@ -37,6 +37,15 @@ public abstract class CAbstractWrittenTokenSet {
 	 * For example, these can be used in conjunction with recogPs. */
 	public void setTokenNames(String [] t_tokenNames) {
 		tokenNames = t_tokenNames;
+	}
+	
+	public String [] getTokenNames() {
+		return tokenNames;
+	}
+	
+	public String getTokenName(int i) {
+		/* TODO: bound check */
+		return tokenNames[i]; 
 	}
 	
 	/* Write data to .wts file */
@@ -72,6 +81,17 @@ public abstract class CAbstractWrittenTokenSet {
 	
 	public void deleteOneToken() {
 		nt--;
+	}
+	
+	public float [] getSetBounds() {
+		float [] bnds = new float[4];
+		
+		bnds[0] = min_x;
+		bnds[1] = min_y;
+		bnds[2] = max_x;
+		bnds[3] = max_y;
+		
+		return bnds;
 	}
 	
 	/* *** Abstract methods *** */

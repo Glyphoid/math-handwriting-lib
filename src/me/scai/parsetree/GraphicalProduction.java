@@ -2,7 +2,9 @@ package me.scai.parsetree;
 
 import java.util.ArrayList;
 
+import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSet;
+import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 abstract class GeometricRelation {
 	protected int [] idxTested;      /* Indices to the tested tokens */ 
@@ -62,8 +64,9 @@ abstract class GeometricRelation {
 	/*     Output is a float number between 0 and 1 */
 	/*     0: 100% not true; 1: 100% true */
 	/*	   "ti" stands for token index */
-	public abstract float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel);
+	public abstract float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel); /* To remove? */
 	public abstract void parseString(String str, int t_idxTested);
+	public abstract float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel);
 }
 
 
@@ -106,6 +109,43 @@ class AlignRelation extends GeometricRelation {
 		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
 		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);		
 		
+		float szTested, szInRel, szMean, edgeDiff;
+		if ( alignType == AlignType.AlignBottom || 
+			 alignType == AlignType.AlignTop ) {
+			/* sz is height */
+			szTested = bndsTested[3] - bndsTested[1];
+			szInRel = bndsInRel[3] - bndsTested[1];
+			
+			if ( alignType == AlignType.AlignBottom ) 
+				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
+			else
+				edgeDiff = Math.abs(bndsTested[1] - bndsInRel[1]);
+		}
+		else {	/* sz is width */
+			szTested = bndsTested[2] - bndsTested[0];
+			szInRel = bndsInRel[2] - bndsTested[0];
+			
+			if ( alignType == AlignType.AlignRight ) 
+				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]);
+			else
+				edgeDiff = Math.abs(bndsTested[0] - bndsInRel[0]);
+		}
+		
+		szMean = (szTested + szInRel) * 0.5f;
+		
+		float v = 1 - edgeDiff / szMean;
+		if ( v < 0f ) 
+			v = 0f;
+		
+		return v;
+	}
+	
+	@Override
+	public float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel) {
+		float [] bndsTested = wtsTested.getSetBounds();
+		if ( bndsInRel.length != 4 )
+			throw new IllegalArgumentException("tiTested does not have length 1");
+	
 		float szTested, szInRel, szMean, edgeDiff;
 		if ( alignType == AlignType.AlignBottom || 
 			 alignType == AlignType.AlignTop ) {
@@ -283,6 +323,85 @@ class PositionRelation extends GeometricRelation {
 	}
 	
 	@Override
+	public float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel) {
+		float [] bndsTested = wtsTested.getSetBounds();
+		if ( bndsInRel.length != 4 )
+			throw new IllegalArgumentException("tiTested does not have length 1");
+		
+		float [] oldStayBnds = new float[2];
+		float [] newStayBnds = new float[2];
+		float [] lesserMoveBnds = new float[2];
+		float [] greaterMoveBnds = new float[2];
+		if ( positionType == PositionType.PositionEast || 
+			 positionType == PositionType.PositionWest ) {
+			/* Staying bounds are top and bottom */
+			oldStayBnds[0] = bndsTested[1];
+			oldStayBnds[1] = bndsTested[3];
+			
+			newStayBnds[0] = bndsInRel[1];
+			newStayBnds[1] = bndsInRel[3];
+			
+			if ( positionType == PositionType.PositionEast ) { 
+				/* InRel is on the smaller side */
+				lesserMoveBnds[0] = bndsInRel[0];
+				lesserMoveBnds[1] = bndsInRel[2];
+			
+				greaterMoveBnds[0] = bndsTested[0];
+				greaterMoveBnds[1] = bndsTested[2];
+			}		
+			else {
+				/* Tested is on the smaller side */
+				lesserMoveBnds[0] = bndsTested[0];
+				lesserMoveBnds[1] = bndsTested[2];
+			
+				greaterMoveBnds[0] = bndsInRel[0];
+				greaterMoveBnds[1] = bndsInRel[2];
+			}
+			
+		}
+		else if ( positionType == PositionType.PositionSouth || 
+				  positionType == PositionType.PositionNorth ) {	/* sz is width */
+			/* Staying bounds are left and right */
+			oldStayBnds[0] = bndsTested[0];
+			oldStayBnds[1] = bndsTested[2];
+			
+			newStayBnds[0] = bndsInRel[0];
+			newStayBnds[1] = bndsInRel[2];
+			
+			if ( positionType == PositionType.PositionNorth ) { 
+				/* InRel is on the smaller side */
+				lesserMoveBnds[0] = bndsInRel[1];
+				lesserMoveBnds[1] = bndsInRel[3];
+			
+				greaterMoveBnds[0] = bndsTested[1];
+				greaterMoveBnds[1] = bndsTested[3];
+			}		
+			else {
+				/* Tested is on the smaller side */
+				lesserMoveBnds[0] = bndsTested[1];
+				lesserMoveBnds[1] = bndsTested[3];
+			
+				greaterMoveBnds[0] = bndsInRel[1];
+				greaterMoveBnds[1] = bndsInRel[3];
+			}
+		}
+		
+		float stayScore = GeometryHelper.pctOverlap(oldStayBnds, newStayBnds);
+		if ( stayScore > 0.5f )
+			stayScore = 1.0f;
+		
+		float moveScore = GeometryHelper.pctMove(lesserMoveBnds, greaterMoveBnds);
+		
+		float v = stayScore * moveScore;
+		if ( v < 0.0f ) 
+			v = 0.0f;
+		else if ( v > 1.0f )
+			v = 1.0f;
+		
+		return v;
+	}
+	
+	@Override
 	public void parseString(String str, int t_idxTested) {
 		String [] items = splitInputString(str);
 		
@@ -350,6 +469,41 @@ class HeightRelation extends GeometricRelation {
 		
 		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
 		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);
+		
+		float hTested = bndsTested[3] - bndsTested[1];
+		float hInRel = bndsInRel[3] - bndsInRel[1];
+		float hMean = (hTested + hInRel) * 0.5f;
+		
+		float v;
+		if ( heightRelationType == HeightRelationType.HeightRelationEqual ) {
+			v = 1.0f - Math.abs(hTested - hInRel) / hMean;
+			if ( v > 0.75f ) /* Slack */
+				v = 1.0f;
+		}
+		else if ( heightRelationType == HeightRelationType.HeightRelationGreater  ) {
+			v = (hTested - hInRel) / hInRel;
+			if ( v > 0.5f )
+				v = 1.0f;
+		}
+		else /* heightRelationType == HeightRelationType.HeightRelationLess */ {
+			v = (hInRel - hTested) / hInRel;
+			if ( v > 0.5f )
+				v = 1.0f;
+		}
+		
+		if ( v > 1.0f )
+			v = 1.0f;
+		else if ( v < 0.0f )
+			v = 0.0f;
+		
+		return v;
+	}
+	
+	@Override
+	public float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel) {
+		float [] bndsTested = wtsTested.getSetBounds();
+		if ( bndsInRel.length != 4 )
+			throw new IllegalArgumentException("tiTested does not have length 1");
 		
 		float hTested = bndsTested[3] - bndsTested[1];
 		float hInRel = bndsInRel[3] - bndsInRel[1];
@@ -477,6 +631,41 @@ class WidthRelation extends GeometricRelation {
 	}
 	
 	@Override
+	public float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel) {
+		float [] bndsTested = wtsTested.getSetBounds();
+		if ( bndsInRel.length != 4 )
+			throw new IllegalArgumentException("tiTested does not have length 1");
+
+		float wTested = bndsTested[3] - bndsTested[1];
+		float wInRel = bndsInRel[3] - bndsInRel[1];
+		float wMean = (wTested + wInRel) * 0.5f;
+		
+		float v;
+		if ( widthRelationType == WidthRelationType.WidthRelationEqual ) {
+			v = 1.0f - Math.abs(wTested - wInRel) / wMean;
+			if ( v > 0.75f ) /* Slack */
+				v = 1.0f;
+		}
+		else if ( widthRelationType == WidthRelationType.WidthRelationGreater  ) {
+			v = (wTested - wInRel) / wInRel;
+			if ( v > 0.5f )
+				v = 1.0f;
+		}
+		else /* widthRelationType == WidthRelationType.WidthRelationLess */ {
+			v = (wInRel - wTested) / wInRel;
+			if ( v > 0.5f )
+				v = 1.0f;
+		}
+		
+		if ( v > 1.0f )
+			v = 1.0f;
+		else if ( v < 0.0f )
+			v = 0.0f;
+		
+		return v;
+	}
+	
+	@Override
 	public void parseString(String str, int t_idxTested) {
 		String [] items = splitInputString(str);
 		
@@ -514,6 +703,7 @@ class WidthRelation extends GeometricRelation {
 public class GraphicalProduction {
 	private final static String tokenRelSeparator = ":";
 	private final static String relSeparator = ",";
+	private final static String sumStringArrow = "-->";
 	
 	String lhs; 	/* Left-hand side, i.e., name of the production, e.g., DIGIT_STRING */
 	
@@ -524,6 +714,11 @@ public class GraphicalProduction {
 	 * E.g., {DIGIT, DIGIT_STRING} */
 	
 	boolean [] bt; 	/* Boolean flags for terminals (T), e.g., {true, false} */
+	
+	String sumString; 
+	/* Production summary string that does not contain geometric information, e.g.,
+	 * "DIGIT_STRING --> DIGIT DIGIT_STRING" 
+	 */
 	
 	GeometricRelation [][] geomRels;
 	
@@ -546,7 +741,141 @@ public class GraphicalProduction {
 		geomRels = t_geomRels;
 		
 		nhrs = t_rhs.length;
+		
+		getSumString();
 	}
+	
+	private void getSumString() {
+		sumString = lhs + " " + sumStringArrow + " ";
+		for (int i = 0; i < rhs.length; ++i) {
+			sumString += rhs[i];
+			if ( i < rhs.length - 1 )
+				sumString += " ";
+		}
+	}
+	
+	/* Attempt to parseothe input token set with this production, 
+	 * given that the j-th token is used as the head.
+	 * 
+	 * Return: Node: node with the production, geometric, and other 
+	 *               information. 
+	 *               
+	 * Side effect input:
+	 *         remaainingSets: token sets after the head node is 
+	 *         parsed out. null if parsing is unsuccessful. 
+	 */
+	public Node attempt(CAbstractWrittenTokenSet tokenSet, 
+			            int iHead,
+			            ArrayList<CAbstractWrittenTokenSet> remainingSets) {
+		/* TODO: make less ad hoc */
+		final float verifyThresh = 0.75f;
+		
+		int nnht = tokenSet.nTokens() - 1; /* Number of non-head tokens */
+		int nrn = nhrs - 1; /* Number of remaining nodes to match */
+		
+		/* TODO: check that remainingSets is empty */
+		if ( remainingSets.size() != 0 ) {
+			System.err.println("WARNING: remainingSets input to attempt() is not empty");
+			remainingSets.clear();
+		}
+		
+		if ( nnht == 0 && nrn == 1 && rhs[rhs.length - 1].equals(TerminalSet.epsString) ) {
+			/* Empty set matches EPS */
+			/* Add a terminal, empty-set (EPS) node */
+			Node n = new Node(sumString);
+//			n.addChild(new Node(TerminalSet.epsString, TerminalSet.epsString));
+			
+			return n;
+		}
+						
+		if ( nrn > nnht ) {
+			return null;
+		}
+
+		/* Get all possible partitions: in "labels" */
+		/* TODO: Put in subfunction */
+		int size = nnht;
+
+//		nrn = 3;  // DEBUG
+//		size = 3; // DEBUG
+		
+	    int numRows = (int) Math.pow(nrn, size);
+	    int [][] labels = new int[numRows][size];
+	    
+	    for (int i = 0; i < numRows; ++i) {
+	    	int n = i;
+	    	
+	    	for (int j = 0; j < size; ++j) {
+	    		int denom = (int) Math.pow(nrn, size - j - 1);
+	    		labels[i][j] = n / denom;
+	    		n -= (int) denom * labels[i][j];
+	    	}
+	    }
+
+	    /* Get index to all non-head token */
+	    ArrayList<Integer> inht = new ArrayList<Integer>();
+	    for (int i = 0; i < tokenSet.nTokens(); ++i)
+	    	if ( i != iHead )
+	    		inht.add(i);
+	    
+	    /* Construct the remaining sets and evaluate their geometric relations */
+	    boolean bFound = false;
+	    CWrittenTokenSetNoStroke [] rems = null;
+	    for (int i = 0; i < labels.length; ++i) {
+	    	rems = new CWrittenTokenSetNoStroke[nrn];
+	    	
+	    	for (int j = 0; j < nrn; ++j)
+	    		 /* TODO: Type safety check */
+	    		rems[j] = new CWrittenTokenSetNoStroke();
+    		
+    		for (int k = 0; k < labels[i].length; ++k) {
+    			int inode = labels[i][k];
+    			int irt = inht.get(k);
+    			
+    			rems[inode].setTokenNames(tokenSet.getTokenNames());
+    			rems[inode].addToken(tokenSet.getTokenBounds(irt), 
+    					             tokenSet.recogWinners.get(irt), 
+    					             tokenSet.recogPs.get(irt));
+    		}
+    		
+    		for (int j = 0; j < nrn; ++j)
+	    		rems[j].calcBounds();
+    		
+    		/* Verify geometric relations */
+    		boolean bAllGeomRelVerified = true;
+	    	for (int j = 0; j < nrn; ++j) {
+	    		/* Assume: there is only one head 
+	    		 * TODO: Make more general */
+	    		
+	    		boolean bVerified = true;
+	    		for (int k = 0; k < geomRels[j + 1].length; ++k) {
+	    			float v = geomRels[j + 1][k].verify(rems[j], tokenSet.getTokenBounds(iHead));
+	    			bVerified = (v > verifyThresh); 
+	    		
+	    			if ( !bVerified ) {
+	    				bAllGeomRelVerified = false;
+	    				break;
+	    			}
+	    		}
+	    	}
+	    	
+	    	if ( bAllGeomRelVerified ) {
+	    		bFound = true;
+	    		break;
+	    	}
+	    }
+		
+	    if ( bFound ) {
+	    	for (int i = 0; i < rems.length; ++i)
+	    		remainingSets.add(rems[i]);
+	    	
+	    	return new Node(sumString);	/* Child nodes will be added later */
+	    }
+	    else {	    
+	    	return null;
+	    }
+	}
+	
 	
 	public static GraphicalProduction genFromStrings(ArrayList<String> strs, TerminalSet termSet)
 		throws Exception {
@@ -607,6 +936,33 @@ public class GraphicalProduction {
 		
 		return new GraphicalProduction(t_lhs, t_rhs, t_bt, t_geomRels);
 	}
+	
+	public int getNumNonHeadTokens() {
+		return nhrs - 1;
+	}
+	
+	/* Evaluate whether a token set meets the requirement of this production, 
+	 * i.e., has the head node available. 
+	 * Return value: boolean: will contain all indices (within the token set)
+	 * of all tokens that can potentially be the head
+	 *  */
+	public int [] evalWrittenTokenSet(CAbstractWrittenTokenSet wts, 
+			                          TerminalSet termSet) {
+		ArrayList<Integer> possibleHeadIdx = new ArrayList<Integer>();
+		String headNodeType = rhs[0];
+		for (int i = 0; i < wts.nTokens(); ++i) {
+			if ( termSet.getTypeOfToken(wts.recogWinners.get(i)).equals(headNodeType) ) {
+				possibleHeadIdx.add(i);
+			}
+		}
+		
+		int [] idx = new int[possibleHeadIdx.size()];
+		for (int i = 0; i < possibleHeadIdx.size(); ++i)
+			idx[i] = possibleHeadIdx.get(i);
+		
+		return idx;
+	}
+	
 	
 	/* Error classes */
 //	class GeometricRelationCreationException extends Exception {
