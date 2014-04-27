@@ -6,7 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSet;
@@ -15,9 +20,17 @@ public class GraphicalProductionSet {
 	private static final String commentString = "#";
 	private static final String separatorString = "---";
 	
-	protected ArrayList<GraphicalProduction> prods 
+	protected ArrayList<GraphicalProduction> prods
 		= new ArrayList<GraphicalProduction>(); /* List of productions */
 	
+	protected ArrayList<String []> terminalTypes = new ArrayList<String []>();
+	/* The array of possible terminal type for each production. 
+	 * Calculated by the private method: calcTermTypes() */
+	
+	private HashMap<String, ArrayList<String> > ntTerminalTypes = new HashMap<String, ArrayList<String> >();			
+	/* Used during calcTermTypes(int i) */
+	
+	/* Methods */
 	/* Constructor */
 	/* Default constructors: no argument --> empty production list */
 	public GraphicalProductionSet() {
@@ -91,10 +104,48 @@ public class GraphicalProductionSet {
 		ArrayList<Integer> idxValidProdsList = new ArrayList<Integer>(); 
 		for (int i = 0; i < prods.size(); ++i) {
 			int [] t_iph = prods.get(i).evalWrittenTokenSet(tokenSet, termSet);
-			if ( t_iph.length > 0 ) {
-				idxValidProdsList.add(i);
-				idxPossibleHead.add(t_iph);
+			if ( t_iph.length == 0 )
+				continue;
+			
+//			boolean [] t_bExclude = new boolean[t_iph.length]; 
+			/* Flags for exclusion due to extra terminal nodes */			
+			
+			String [] possibleTermTypes = terminalTypes.get(i);
+			List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
+			boolean bExclude = false;
+			for (int k = 0; k < tokenSet.nTokens(); ++k) {
+				String tokenType = termSet.getTypeOfToken(tokenSet.recogWinners.get(k));
+				if ( !possibleTermTypesList.contains(tokenType) ) {
+					bExclude = true;
+					break;
+				}
 			}
+			
+			if ( bExclude )
+				continue;
+			
+//			for (int j = 0; j < t_iph.length; ++j) {
+//				String [] possibleTermTypes = terminalTypes.get(t_iph[j]);
+//				List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
+//				for (int k = 0; k < tokenSet.nTokens(); ++k) {
+//					String tokenType = termSet.getTypeOfToken(tokenSet.recogWinners.get(k));
+//					if ( !possibleTermTypesList.contains(tokenType) ) {
+//						t_bExclude[j] = true;
+//						break;
+//					}
+//				}
+//			}
+			
+//			ArrayList<Integer> t_iph_clean_list = new ArrayList<Integer>();
+//			for (int j = 0; j < t_iph.length; ++j) 
+//				if ( !t_bExclude[j] )
+//					t_iph_clean_list.add(t_iph[j]);
+//			int [] t_iph_clean = new int[t_iph_clean_list.size()];
+//			for (int j = 0; j < t_iph_clean_list.size(); ++j)
+//				t_iph_clean[j] = t_iph_clean_list.get(j); 
+
+			idxValidProdsList.add(i);
+			idxPossibleHead.add(t_iph);
 		}
 		
 		int [] idxValidProds = new int[idxValidProdsList.size()];
@@ -103,7 +154,6 @@ public class GraphicalProductionSet {
 		}
 		
 		return idxValidProds;
-			
 	}
 	
 	/* Get the count of non-head tokens in production #i */
@@ -128,9 +178,10 @@ public class GraphicalProductionSet {
 	 */
 	public Node attempt(int i, 
 						CAbstractWrittenTokenSet tokenSet, 
-						int j,
-						ArrayList<CAbstractWrittenTokenSet> remainingSets) {
-		Node n = prods.get(i).attempt(tokenSet, j, remainingSets);
+						int idxHead,
+						ArrayList<CAbstractWrittenTokenSet> remainingSets, 
+						float [] maxGeomScore) {
+		Node n = prods.get(i).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
 		
 		/* Create head child node */
 		if ( n != null && 
@@ -139,7 +190,7 @@ public class GraphicalProductionSet {
 			 * tokens that make up of the head child for further 
 			 * parsing.
 			 */
-			Node hc = new Node(prods.get(i).rhs[0], tokenSet.recogWinners.get(j));
+			Node hc = new Node(prods.get(i).rhs[0], tokenSet.recogWinners.get(idxHead));
 			n.addChild(hc);
 			
 			if ( prods.get(i).rhs.length == 2 && 
@@ -167,6 +218,8 @@ public class GraphicalProductionSet {
 			throw ioe;
 		}
 		
+		gpSet.calcTermTypes(termSet);
+		
 		return gpSet;
 	}
 	
@@ -191,6 +244,83 @@ public class GraphicalProductionSet {
 			System.err.println(e);
 		}
 	}
+	
+	/* Get the lists of all possible heads that corresponds to all
+	 * productions.
+	 */
+	
+	private void calcTermTypes(TerminalSet termSet) {
+		terminalTypes.clear();
+		ntTerminalTypes.clear();		
+		
+		for (int i = 0; i < prods.size(); ++i)
+			terminalTypes.add(calcTermTypes(i, termSet, null));
+	}
 
+	/* Get the list of all possible heads contained within a valid 
+	 * token, for the i-th production in the production list.
+	 * This function is called by calcTermTypes().
+	 * 
+	 * Input ip: index to the production within the set.
+	 * 
+	 * Algorithm: recursively goes down the production hierarchy, 
+	 * until a production that contains only terminals (including 
+	 * EPS) is met. 
+	 */
+	private String [] calcTermTypes(int ip, 
+			                        TerminalSet termSet, 
+			                        boolean [] visited) {		
+		if ( visited == null )
+			 visited = new boolean[prods.size()];
+//		for (int i = 0; i < prods.size(); ++i)
+//			bVisited.add(false);
+		
+		if ( ip < 0 || ip >= prods.size() )
+			throw new IllegalArgumentException("Invalid input production index");
+		
+		if ( visited.length != prods.size() )
+			throw new IllegalArgumentException("Invalid input boolean array (visited)");
+		
+		visited[ip] = true; /* To prevent infinite loops */
+		GraphicalProduction gp = prods.get(ip);
+		
+		ArrayList<String> termTypesList = new ArrayList<String>();
+		
+		for (int i = 0; i < gp.rhs.length; ++i) {
+			if ( termSet.isTypeTerminal(gp.rhs[i]) ) {
+				if ( !gp.rhs[i].equals(TerminalSet.epsString) )
+					termTypesList.add(gp.rhs[i]);
+			}
+			else {
+//				if ( ntTerminalTypes.keySet().contains(gp.rhs[i]) ) {
+//					/* Re-use previous results */					
+//					ArrayList<String> childTermTypes = ntTerminalTypes.get(gp.rhs[i]);
+//					for (int j = 0; j < childTermTypes.size(); ++j)
+//						termTypesList.add(childTermTypes.get(j));
+//				}
+//				else {
+					for (int j = 0; j < visited.length; ++j) {						
+						if ( gp.rhs[i].equals(prods.get(j).lhs) && !visited[j] ) {
+							String [] childTermTypes = calcTermTypes(j, termSet, visited);
+							
+							for (int k = 0; k < childTermTypes.length; ++k) {
+								termTypesList.add(childTermTypes[k]);
+								
+								
+//								ntTerminalTypes.get(gp.rhs[i]).add(childTermTypes[k]);
+							}
+						}
+//					}
+				}
+				 
+			}
+		}
+		
+		Set<String> uniqueTermTypes = new HashSet<String>(termTypesList);
+		String [] termTypes = new String[uniqueTermTypes.size()];
+		uniqueTermTypes.toArray(termTypes);
+		return termTypes;
+	}
+	
 	
 }

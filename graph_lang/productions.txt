@@ -3,7 +3,7 @@ DIGIT_STRING		# LHS
 # The first after LHS is always the head
 DIGIT 
 # The second and following ones are the non-heads
-DIGIT_STRING : {AlignBottom(0), PositionEast(0), HeightRelationEqual(0)}
+DIGIT_STRING : {AlignMiddle(0), PositionEast(0), HeightRelationEqual(0)}
 # The number in the brackets are the index to the parameter
 
 ---
@@ -12,7 +12,24 @@ DIGIT
 EPS		# EPS is the empty set (stands for epsilon). Does not require geometric relations.
 
 ---
-DECIMAL_NUMER	
+DECIMAL_NUMBER
 POINT
-DIGIT_STRING : {AlignBottom(0), PositionWest(0), HeightRelationGreater(0)} # Left digit string
-DIGIT_STRING : {AlignBottom(0), PositionEast(0), HeightRelationGreater(0), HeightRelationEqual(1)} # Right digit string
+DIGIT_STRING : {AlignBottom(0), PositionGenWest(0), HeightRelationGreater(0)} # Left digit string
+DIGIT_STRING : {AlignBottom(0), PositionGenEast(0), HeightRelationGreater(0), HeightRelationEqual(1)} # Right digit string
+
+--- 
+DECIMAL_NUMBER		# Negative sign
+MINUS_OP
+DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)}
+
+---
+FRACTION
+MINUS_OP
+DECIMAL_NUMBER : {AlignCenter(0), PositionSouth(0)} # Denominator. TODO: Change to more general number types
+DECIMAL_NUMBER : {AlignCenter(0), PositionNorth(0)} # Numerator
+
+---
+SUBTRACTION
+MINUS_OP
+DECIMAL_NUMBER : {AlignMiddle(0), PositionWest(0)} # 1st number. TODO: Change to terms (i.e., results of multiplication / division).
+DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)} # 2nd number

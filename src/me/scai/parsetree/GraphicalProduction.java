@@ -75,8 +75,10 @@ class AlignRelation extends GeometricRelation {
 	public enum AlignType {
 		AlignBottom, 
 		AlignTop, 
+		AlignMiddle,  /* Middle of the vertical dimension */
 		AlignLeft,
 		AlignRight,
+		AlignCenter   /* Center of the left-right dimension */
 	};
 	
 	/* Member variables */
@@ -148,15 +150,19 @@ class AlignRelation extends GeometricRelation {
 	
 		float szTested, szInRel, szMean, edgeDiff;
 		if ( alignType == AlignType.AlignBottom || 
-			 alignType == AlignType.AlignTop ) {
+			 alignType == AlignType.AlignTop ||
+			 alignType == AlignType.AlignMiddle ) {
 			/* sz is height */
 			szTested = bndsTested[3] - bndsTested[1];
 			szInRel = bndsInRel[3] - bndsTested[1];
 			
 			if ( alignType == AlignType.AlignBottom ) 
 				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
-			else
+			else if ( alignType == AlignType.AlignTop )
 				edgeDiff = Math.abs(bndsTested[1] - bndsInRel[1]);
+			else
+				edgeDiff = Math.abs((bndsTested[1] + bndsTested[3]) * 0.5f - 
+						            (bndsInRel[1] + bndsInRel[3]) * 0.5f);
 		}
 		else {	/* sz is width */
 			szTested = bndsTested[2] - bndsTested[0];
@@ -164,8 +170,11 @@ class AlignRelation extends GeometricRelation {
 			
 			if ( alignType == AlignType.AlignRight ) 
 				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]);
-			else
+			else if ( alignType == AlignType.AlignRight )
 				edgeDiff = Math.abs(bndsTested[0] - bndsInRel[0]);
+			else
+				edgeDiff = Math.abs((bndsTested[0] + bndsTested[2]) * 0.5f - 
+			                        (bndsInRel[0] + bndsInRel[2]) * 0.5f);
 		}
 		
 		szMean = (szTested + szInRel) * 0.5f;
@@ -185,10 +194,14 @@ class AlignRelation extends GeometricRelation {
 			alignType = AlignType.AlignBottom;
 		else if ( items[0].equals("AlignTop") )
 			alignType = AlignType.AlignTop;
+		else if ( items[0].equals("AlignMiddle") )
+			alignType = AlignType.AlignMiddle;
 		else if ( items[0].equals("AlignLeft") )
 			alignType = AlignType.AlignLeft;
-		else
+		else if ( items[0].equals("AlignRight") )
 			alignType = AlignType.AlignRight;
+		else
+			alignType = AlignType.AlignCenter;
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;
@@ -214,12 +227,22 @@ class AlignRelation extends GeometricRelation {
 class PositionRelation extends GeometricRelation {
 	public enum PositionType {
 		PositionWest,
+		PositionGenWest,
 		PositionEast,
+		PositionGenEast,
 		PositionSouth,
+		PositionGenSouth, 
 		PositionNorth,
+		PositionGenNorth
 		//PositionNorthwest, // TODO 
 		//PositionSoutheast, // TODO
 	}
+	/* Difference between PositionA and PositionGenA:
+	 * For PositionA, the tested token must be to the due canonical direction 
+	 * of the in-relation token. In addition, the tested token and the in-relation
+	 * token must be sufficiently overlapping in the orthogonal direction. 
+	 * PositionGenA does not have the second requirement. 
+	 */
 	
 	/* Member variables */
 	private PositionRelation() {}
@@ -254,7 +277,9 @@ class PositionRelation extends GeometricRelation {
 		float [] lesserMoveBnds = new float[2];
 		float [] greaterMoveBnds = new float[2];
 		if ( positionType == PositionType.PositionEast || 
-			 positionType == PositionType.PositionWest ) {
+			 positionType == PositionType.PositionWest ||
+			 positionType == PositionType.PositionGenEast ||
+			 positionType == PositionType.PositionGenWest ) {
 			/* Staying bounds are top and bottom */
 			oldStayBnds[0] = bndsTested[1];
 			oldStayBnds[1] = bndsTested[3];
@@ -262,14 +287,15 @@ class PositionRelation extends GeometricRelation {
 			newStayBnds[0] = bndsInRel[1];
 			newStayBnds[1] = bndsInRel[3];
 			
-			if ( positionType == PositionType.PositionEast ) { 
+			if ( positionType == PositionType.PositionEast || 
+				 positionType == PositionType.PositionGenEast ) { 
 				/* InRel is on the smaller side */
 				lesserMoveBnds[0] = bndsInRel[0];
 				lesserMoveBnds[1] = bndsInRel[2];
 			
 				greaterMoveBnds[0] = bndsTested[0];
 				greaterMoveBnds[1] = bndsTested[2];
-			}		
+			}
 			else {
 				/* Tested is on the smaller side */
 				lesserMoveBnds[0] = bndsTested[0];
@@ -281,7 +307,9 @@ class PositionRelation extends GeometricRelation {
 			
 		}
 		else if ( positionType == PositionType.PositionSouth || 
-				  positionType == PositionType.PositionNorth ) {	/* sz is width */
+				  positionType == PositionType.PositionNorth || 
+				  positionType == PositionType.PositionGenSouth || 
+				  positionType == PositionType.PositionGenNorth) {	/* sz is width */
 			/* Staying bounds are left and right */
 			oldStayBnds[0] = bndsTested[0];
 			oldStayBnds[1] = bndsTested[2];
@@ -289,7 +317,8 @@ class PositionRelation extends GeometricRelation {
 			newStayBnds[0] = bndsInRel[0];
 			newStayBnds[1] = bndsInRel[2];
 			
-			if ( positionType == PositionType.PositionNorth ) { 
+			if ( positionType == PositionType.PositionNorth ||
+				 positionType == PositionType.PositionGenNorth) { 
 				/* InRel is on the smaller side */
 				lesserMoveBnds[0] = bndsInRel[1];
 				lesserMoveBnds[1] = bndsInRel[3];
@@ -307,9 +336,18 @@ class PositionRelation extends GeometricRelation {
 			}
 		}
 		
-		float stayScore = GeometryHelper.pctOverlap(oldStayBnds, newStayBnds);
-		if ( stayScore > 0.5f )
+		float stayScore;
+		if ( positionType == PositionType.PositionGenEast || 
+			 positionType == PositionType.PositionGenWest ||
+			 positionType == PositionType.PositionGenNorth ||
+		     positionType == PositionType.PositionGenSouth ) {
 			stayScore = 1.0f;
+		}
+		else {
+			stayScore = GeometryHelper.pctOverlap(oldStayBnds, newStayBnds);
+			if ( stayScore > 0.5f )
+				stayScore = 1.0f;
+		}
 		
 		float moveScore = GeometryHelper.pctMove(lesserMoveBnds, greaterMoveBnds);
 		
@@ -333,7 +371,9 @@ class PositionRelation extends GeometricRelation {
 		float [] lesserMoveBnds = new float[2];
 		float [] greaterMoveBnds = new float[2];
 		if ( positionType == PositionType.PositionEast || 
-			 positionType == PositionType.PositionWest ) {
+			 positionType == PositionType.PositionWest ||
+			 positionType == PositionType.PositionGenEast ||
+			 positionType == PositionType.PositionGenWest ) {
 			/* Staying bounds are top and bottom */
 			oldStayBnds[0] = bndsTested[1];
 			oldStayBnds[1] = bndsTested[3];
@@ -341,14 +381,15 @@ class PositionRelation extends GeometricRelation {
 			newStayBnds[0] = bndsInRel[1];
 			newStayBnds[1] = bndsInRel[3];
 			
-			if ( positionType == PositionType.PositionEast ) { 
+			if ( positionType == PositionType.PositionEast || 
+				 positionType == PositionType.PositionGenEast ) { 
 				/* InRel is on the smaller side */
 				lesserMoveBnds[0] = bndsInRel[0];
 				lesserMoveBnds[1] = bndsInRel[2];
 			
 				greaterMoveBnds[0] = bndsTested[0];
 				greaterMoveBnds[1] = bndsTested[2];
-			}		
+			}
 			else {
 				/* Tested is on the smaller side */
 				lesserMoveBnds[0] = bndsTested[0];
@@ -360,7 +401,9 @@ class PositionRelation extends GeometricRelation {
 			
 		}
 		else if ( positionType == PositionType.PositionSouth || 
-				  positionType == PositionType.PositionNorth ) {	/* sz is width */
+				  positionType == PositionType.PositionNorth || 
+				  positionType == PositionType.PositionGenSouth || 
+				  positionType == PositionType.PositionGenNorth) {	/* sz is width */
 			/* Staying bounds are left and right */
 			oldStayBnds[0] = bndsTested[0];
 			oldStayBnds[1] = bndsTested[2];
@@ -368,7 +411,8 @@ class PositionRelation extends GeometricRelation {
 			newStayBnds[0] = bndsInRel[0];
 			newStayBnds[1] = bndsInRel[2];
 			
-			if ( positionType == PositionType.PositionNorth ) { 
+			if ( positionType == PositionType.PositionNorth ||
+				 positionType == PositionType.PositionGenNorth) { 
 				/* InRel is on the smaller side */
 				lesserMoveBnds[0] = bndsInRel[1];
 				lesserMoveBnds[1] = bndsInRel[3];
@@ -386,9 +430,18 @@ class PositionRelation extends GeometricRelation {
 			}
 		}
 		
-		float stayScore = GeometryHelper.pctOverlap(oldStayBnds, newStayBnds);
-		if ( stayScore > 0.5f )
+		float stayScore;
+		if ( positionType == PositionType.PositionGenEast || 
+			 positionType == PositionType.PositionGenWest ||
+			 positionType == PositionType.PositionGenNorth ||
+		     positionType == PositionType.PositionGenSouth ) {
 			stayScore = 1.0f;
+		}
+		else {
+			stayScore = GeometryHelper.pctOverlap(oldStayBnds, newStayBnds);
+			if ( stayScore > 0.5f )
+				stayScore = 1.0f;
+		}
 		
 		float moveScore = GeometryHelper.pctMove(lesserMoveBnds, greaterMoveBnds);
 		
@@ -411,8 +464,17 @@ class PositionRelation extends GeometricRelation {
 			positionType = PositionType.PositionEast;
 		else if ( items[0].equals("PositionSouth") )
 			positionType = PositionType.PositionSouth;
-		else
+		else if ( items[0].equals("PositionNorth") )
 			positionType = PositionType.PositionNorth;
+		else if ( items[0].equals("PositionGenWest") )
+			positionType = PositionType.PositionGenWest;
+		else if ( items[0].equals("PositionGenEast") )
+			positionType = PositionType.PositionGenEast;
+		else if ( items[0].equals("PositionGenSouth") )
+			positionType = PositionType.PositionGenSouth;
+		else
+			positionType = PositionType.PositionGenNorth;
+		
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;
@@ -766,9 +828,10 @@ public class GraphicalProduction {
 	 */
 	public Node attempt(CAbstractWrittenTokenSet tokenSet, 
 			            int iHead,
-			            ArrayList<CAbstractWrittenTokenSet> remainingSets) {
+			            ArrayList<CAbstractWrittenTokenSet> remainingSets, 
+			            float [] maxGeomScore) {
 		/* TODO: make less ad hoc */
-		final float verifyThresh = 0.75f;
+		final float verifyThresh = 0.50f;
 		
 		int nnht = tokenSet.nTokens() - 1; /* Number of non-head tokens */
 		int nrn = nhrs - 1; /* Number of remaining nodes to match */
@@ -779,38 +842,46 @@ public class GraphicalProduction {
 			remainingSets.clear();
 		}
 		
-		if ( nnht == 0 && nrn == 1 && rhs[rhs.length - 1].equals(TerminalSet.epsString) ) {
+		if ( nrn == 1 && rhs[rhs.length - 1].equals(TerminalSet.epsString) ) {
 			/* Empty set matches EPS */
-			/* Add a terminal, empty-set (EPS) node */
-			Node n = new Node(sumString);
-//			n.addChild(new Node(TerminalSet.epsString, TerminalSet.epsString));
 			
+			Node n = new Node(sumString);
+			if ( nnht == 0 ) {
+				/* Add a terminal, empty-set (EPS) node */				
+				maxGeomScore[0] = 1.0f;
+				//n.addChild(new Node(TerminalSet.epsString, TerminalSet.epsString));
+			}
+			else {
+				/* The only non-head node is an EPS, but there is still some token(s) left */				
+				maxGeomScore[0] = 0.0f;
+			}
+				
 			return n;
 		}
 						
 		if ( nrn > nnht ) {
-			return null;
+			maxGeomScore[0] = 0.0f;
+			return new Node(sumString);
 		}
 
 		/* Get all possible partitions: in "labels" */
 		/* TODO: Put in subfunction */
-		int size = nnht;
-
-//		nrn = 3;  // DEBUG
-//		size = 3; // DEBUG
-		
-	    int numRows = (int) Math.pow(nrn, size);
-	    int [][] labels = new int[numRows][size];
-	    
-	    for (int i = 0; i < numRows; ++i) {
-	    	int n = i;
-	    	
-	    	for (int j = 0; j < size; ++j) {
-	    		int denom = (int) Math.pow(nrn, size - j - 1);
-	    		labels[i][j] = n / denom;
-	    		n -= (int) denom * labels[i][j];
-	    	}
-	    }
+		int [][] labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
+//		int size = nnht;
+//		
+//	    int numRows = (int) Math.pow(nrn, size);
+//	    int [][] labels = new int[numRows][size];
+//	    
+//	    for (int i = 0; i < numRows; ++i) {
+//	    	int n = i;
+//	    	
+//	    	for (int j = 0; j < size; ++j) {
+//	    		int denom = (int) Math.pow(nrn, size - j - 1);
+//	    		labels[i][j] = n / denom;
+//	    		n -= (int) denom * labels[i][j];
+//	    	}
+//	    }
+	    /* ~TODO: Put in subfunction */
 
 	    /* Get index to all non-head token */
 	    ArrayList<Integer> inht = new ArrayList<Integer>();
@@ -820,60 +891,102 @@ public class GraphicalProduction {
 	    
 	    /* Construct the remaining sets and evaluate their geometric relations */
 	    boolean bFound = false;
-	    CWrittenTokenSetNoStroke [] rems = null;
+	    CWrittenTokenSetNoStroke [][] a_rems = new CWrittenTokenSetNoStroke[labels.length][];
+//	    CWrittenTokenSetNoStroke [] rems = null;
+	    float [] geomScores = new float[labels.length];
 	    for (int i = 0; i < labels.length; ++i) {
-	    	rems = new CWrittenTokenSetNoStroke[nrn];
+	    	a_rems[i] = new CWrittenTokenSetNoStroke[nrn];
+	    	boolean [] remsFilled = new boolean[nrn];
 	    	
 	    	for (int j = 0; j < nrn; ++j)
 	    		 /* TODO: Type safety check */
-	    		rems[j] = new CWrittenTokenSetNoStroke();
+	    		a_rems[i][j] = new CWrittenTokenSetNoStroke();
     		
     		for (int k = 0; k < labels[i].length; ++k) {
     			int inode = labels[i][k];
     			int irt = inht.get(k);
     			
-    			rems[inode].setTokenNames(tokenSet.getTokenNames());
-    			rems[inode].addToken(tokenSet.getTokenBounds(irt), 
+    			a_rems[i][inode].setTokenNames(tokenSet.getTokenNames());
+    			a_rems[i][inode].addToken(tokenSet.getTokenBounds(irt), 
     					             tokenSet.recogWinners.get(irt), 
     					             tokenSet.recogPs.get(irt));
+    			remsFilled[inode] = true;
     		}
     		
+    		/* If there is any unfilled remaining token set, skip */
+    		boolean bAllFilled = true;
+    		for (int j = 0; j < nrn; j++) {
+    			if ( !remsFilled[j] ) {
+    				bAllFilled = false;
+    				break;
+    			}
+    		}
+    		
+    		if ( !bAllFilled )
+    			continue;
+    		
     		for (int j = 0; j < nrn; ++j)
-	    		rems[j].calcBounds();
+    			a_rems[i][j].calcBounds();
     		
     		/* Verify geometric relations */
     		boolean bAllGeomRelVerified = true;
+    		float [] t_geomScores = new float[nrn];
 	    	for (int j = 0; j < nrn; ++j) {
 	    		/* Assume: there is only one head 
 	    		 * TODO: Make more general */
 	    		
 	    		boolean bVerified = true;
-	    		for (int k = 0; k < geomRels[j + 1].length; ++k) {
-	    			float v = geomRels[j + 1][k].verify(rems[j], tokenSet.getTokenBounds(iHead));
-	    			bVerified = (v > verifyThresh); 
-	    		
-	    			if ( !bVerified ) {
-	    				bAllGeomRelVerified = false;
-	    				break;
-	    			}
+	    		if ( geomRels[j + 1] == null ) {
+	    			t_geomScores[j] = 1.0f;
+	    			continue;
 	    		}
+	    		
+	    		float [] t_t_geomScores = new float[geomRels[j + 1].length];
+	    		for (int k = 0; k < geomRels[j + 1].length; ++k) {
+	    			int idxInRel = geomRels[j + 1][k].idxInRel[0];
+	    			float [] bndsInRel;
+	    			if ( idxInRel == 0 ) {
+	    				bndsInRel = tokenSet.getTokenBounds(iHead);
+	    			}
+	    			else {
+	    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
+	    			}
+	    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);	    			
+	    			t_t_geomScores[k] = v;
+	    			
+//	    			bVerified = (v > verifyThresh);
+//	    			if ( !bVerified ) {
+//	    				bAllGeomRelVerified = false;
+//	    				break;
+//	    			}
+	    		}
+	    		
+	    		t_geomScores[j] = MathHelper.mean(t_t_geomScores);
 	    	}
 	    	
-	    	if ( bAllGeomRelVerified ) {
-	    		bFound = true;
-	    		break;
-	    	}
+	    	geomScores[i] = MathHelper.mean(t_geomScores);	    		    	
+//	    	if ( bAllGeomRelVerified ) {
+//	    		bFound = true;
+//	    		break;
+//	    	}
 	    }
+	    
+	    /* Find the partition that leads to the maximum geometrical score */
+	    int idxMax = MathHelper.indexMax(geomScores);
+	    maxGeomScore[0] = geomScores[idxMax];
+	    for (int i = 0; i < a_rems[idxMax].length; ++i)
+	    	remainingSets.add(a_rems[idxMax][i]);
+	    return new Node(sumString);
 		
-	    if ( bFound ) {
-	    	for (int i = 0; i < rems.length; ++i)
-	    		remainingSets.add(rems[i]);
-	    	
-	    	return new Node(sumString);	/* Child nodes will be added later */
-	    }
-	    else {	    
-	    	return null;
-	    }
+//	    if ( bFound ) {
+//	    	for (int i = 0; i < rems.length; ++i)
+//	    		remainingSets.add(rems[i]);
+//	    	
+//	    	return new Node(sumString);	/* Child nodes will be added later */
+//	    }
+//	    else {	    
+//	    	return null;
+//	    }
 	}
 	
 	
@@ -943,15 +1056,23 @@ public class GraphicalProduction {
 	
 	/* Evaluate whether a token set meets the requirement of this production, 
 	 * i.e., has the head node available. 
+	 * NOTE: this method does _not_ exclude productions that have extra head nodes.
+	 * E.g., for production "DIGIT_STRING --> DIGIT DIGIT_STRING", the only 
+	 * type of head node involved is DIGIT. So if a token set includes another
+	 * type of head node, e.g., POINT ("."), it is invalid for this production
+	 * but will still be included in the output. 
+	 * 
 	 * Return value: boolean: will contain all indices (within the token set)
-	 * of all tokens that can potentially be the head
+	 * of all tokens that can potentially be the head.
 	 *  */
 	public int [] evalWrittenTokenSet(CAbstractWrittenTokenSet wts, 
 			                          TerminalSet termSet) {
 		ArrayList<Integer> possibleHeadIdx = new ArrayList<Integer>();
 		String headNodeType = rhs[0];
 		for (int i = 0; i < wts.nTokens(); ++i) {
-			if ( termSet.getTypeOfToken(wts.recogWinners.get(i)).equals(headNodeType) ) {
+			String tTokenName = wts.recogWinners.get(i);
+			String tTokenType = termSet.getTypeOfToken(tTokenName);
+			if ( tTokenType.equals(headNodeType) ) {
 				possibleHeadIdx.add(i);
 			}
 		}
@@ -962,6 +1083,8 @@ public class GraphicalProduction {
 		
 		return idx;
 	}
+	
+	
 	
 	
 	/* Error classes */

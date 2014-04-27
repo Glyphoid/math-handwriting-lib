@@ -3,5 +3,4 @@ POINT				.
 PLUS_OP			+
 MINUS_OP			-
 MULT_OP			*
-HORIZ_DIV_OP	-
 OBLIQUE_DIV_OP	/

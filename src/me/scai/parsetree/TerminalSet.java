@@ -11,7 +11,7 @@ public class TerminalSet {
 	
 	/* Members */
 	HashMap<String, String []> type2TokenMap = new HashMap<String, String []>();
-	HashMap<String, String>	token2TypeMap = new HashMap<String, String>(); 
+	HashMap<String, String>	token2TypeMap = new HashMap<String, String>();
 	
 	/* Constructor */
 	/* Default constructor */
@@ -55,7 +55,7 @@ public class TerminalSet {
 			type2TokenMap.put(t_type, t_tokens);
 			
 			/* Add to token-to-type map */
-			for (int j = 1; j < t_tokens.length; ++j)
+			for (int j = 0; j < t_tokens.length; ++j)
 				token2TypeMap.put(t_tokens[j], t_type);
 		}
 	}
