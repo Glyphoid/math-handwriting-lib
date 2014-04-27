@@ -166,9 +166,9 @@ class AlignRelation extends GeometricRelation {
 		}
 		else {	/* sz is width */
 			szTested = bndsTested[2] - bndsTested[0];
-			szInRel = bndsInRel[2] - bndsTested[0];
+			szInRel = bndsInRel[2] - bndsInRel[0];
 			
-			if ( alignType == AlignType.AlignRight ) 
+			if ( alignType == AlignType.AlignLeft )
 				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]);
 			else if ( alignType == AlignType.AlignRight )
 				edgeDiff = Math.abs(bndsTested[0] - bndsInRel[0]);

@@ -65,8 +65,8 @@ public class TokenSetParser implements ITokenSetParser {
 				ArrayList<CAbstractWrittenTokenSet> remainingSets = new ArrayList<CAbstractWrittenTokenSet>();
 				
 				// DEBUG
-				if ( i == 2 && idxHead == 1 )
-					i = 2;
+				if ( i == 1 && idxHead == 0 )
+					i = i + 0;
 				
 				float [] maxGeomScore = new float[1];
 				Node n = gpSet.attempt(idxValidProds[i], tokenSet, idxHead, remainingSets, maxGeomScore);
@@ -119,19 +119,19 @@ public class TokenSetParser implements ITokenSetParser {
 		/* TS_48: 8.3 */ 	/* TS_49: 4.0 */ 		/* TS_50: 0.01 */
 		/* TS_67: 2 */		/* TS_68: 0 */			/* TS_69: 1.20 */
 		/* TS_70: 0.02 */	/* TS_72: -1 */			/* TS_73: -1.2 */
-		/* TS_74: -0.11 */	/* TS_75: -12 TODO */		/* TS_76: -13.9 */
+		/* TS_74: -0.11 */	/* TS_75: -12 */		/* TS_76: -13.9 */
 		
 		/* TS_3: 34- (Grammatical error) TODO */
 		/* TS_7: 345 (Geometric error: height difference too big) */
 		/* TS_8: 69 (Geometric error: height difference too big) */
 		/* TS_9: .28 (Geometric error: vertical alignment) */
 		/* TS_5: 23 (Geometric error) */
-		int [] tokenSetNums = {76};
+		int [] tokenSetNums = {75};
 		
 		final String tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
 		final String tokenSetSuffix = ".wts";
 		final String prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
-		final String termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";			
+		final String termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
 		
 		/* Create written token set */
 		CWrittenTokenSetNoStroke wts = new CWrittenTokenSetNoStroke();
