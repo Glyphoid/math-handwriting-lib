@@ -5,12 +5,13 @@ public class Node {
 	private float x_min = 0.0f, y_min = 0.0f, x_max = 0.0f, y_max = 0.0f; /* Location information */
 	
 	boolean isTerminal = true;
-	String prodSumString = null;	/* Production summary string. See GraphicalProduction.sumString */
-	String termName = null; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
+	public String prodSumString = null;	/* Production summary string. See GraphicalProduction.sumString */
+	public String termName = null; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
+	String [] rhsTypes = null;		/* Child types: applies only to non-terminal nodes */
 	int nc = 0; 					/* Number of children */
 	
 	Node p = null;					/* Parent */
-	Node [] ch = null;				/* Children */
+	public Node [] ch = null;				/* Children */
 	
 	/* Constructors */
 	/* Default constructor: terminal node */
@@ -41,9 +42,10 @@ public class Node {
 	}
 	
 	/* Non-Terminal (NT) node with production summary string specified */
-	public Node(String t_prodSumString) {
+	public Node(String t_prodSumString, String [] t_rhsTypes) {
 		isTerminal = false;
 		prodSumString = t_prodSumString;
+		rhsTypes = t_rhsTypes;
 		p = null;
 		nc = 0;
 		ch = null;		
@@ -95,5 +97,13 @@ public class Node {
 		nc++;
 	}
 
+	public void setRHSTypes(String [] t_rhsTypes) {
+		rhsTypes = t_rhsTypes;
+	}
+	
+	public String [] getRHSTypes() {
+		return rhsTypes;
+	}
+	
 	
 }

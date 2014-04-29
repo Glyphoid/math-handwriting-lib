@@ -98,6 +98,7 @@ public abstract class CAbstractWrittenTokenSet {
 	protected abstract void calcBounds();
 	
 	public abstract float [] getTokenBounds(int i);
+	public abstract float [] getTokenBounds(int [] is);
 	public abstract String getStringBrief();
 	
 }

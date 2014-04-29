@@ -94,8 +94,9 @@ public class GraphicalProductionSet {
 	 *             idxPossibleHead: has the same length as the return value.
 	 *             Contain indices to the possible heads. */
 	public int [] getIdxValidProds(CAbstractWrittenTokenSet tokenSet, 
-			                       TerminalSet termSet, 
-			                       ArrayList<int []> idxPossibleHead) {
+			                       TerminalSet termSet, 	
+			                       String lhs,
+			                       ArrayList<int [][]> idxPossibleHead) {
 		if ( idxPossibleHead.size() != 0 ) {
 			System.err.println("WARNING: Input ArrayList of int [], idxPossibleHead, is not empty.");
 			idxPossibleHead.clear();
@@ -103,16 +104,16 @@ public class GraphicalProductionSet {
 		
 		ArrayList<Integer> idxValidProdsList = new ArrayList<Integer>(); 
 		for (int i = 0; i < prods.size(); ++i) {
-			int [] t_iph = prods.get(i).evalWrittenTokenSet(tokenSet, termSet);
+			int [][] t_iph = prods.get(i).evalWrittenTokenSet(tokenSet, termSet);
 			if ( t_iph.length == 0 )
 				continue;
 			
-//			boolean [] t_bExclude = new boolean[t_iph.length]; 
-			/* Flags for exclusion due to extra terminal nodes */			
+			boolean bExclude = false;
 			
+			/* Flags for exclusion due to extra terminal nodes */			
 			String [] possibleTermTypes = terminalTypes.get(i);
 			List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
-			boolean bExclude = false;
+			
 			for (int k = 0; k < tokenSet.nTokens(); ++k) {
 				String tokenType = termSet.getTypeOfToken(tokenSet.recogWinners.get(k));
 				if ( !possibleTermTypesList.contains(tokenType) ) {
@@ -121,28 +122,13 @@ public class GraphicalProductionSet {
 				}
 			}
 			
+			/* Flags for exclusion due to lhs mismatch */
+			if ( lhs != null )
+				if ( !prods.get(i).lhs.equals(lhs) )
+					bExclude = true;
+
 			if ( bExclude )
 				continue;
-			
-//			for (int j = 0; j < t_iph.length; ++j) {
-//				String [] possibleTermTypes = terminalTypes.get(t_iph[j]);
-//				List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
-//				for (int k = 0; k < tokenSet.nTokens(); ++k) {
-//					String tokenType = termSet.getTypeOfToken(tokenSet.recogWinners.get(k));
-//					if ( !possibleTermTypesList.contains(tokenType) ) {
-//						t_bExclude[j] = true;
-//						break;
-//					}
-//				}
-//			}
-			
-//			ArrayList<Integer> t_iph_clean_list = new ArrayList<Integer>();
-//			for (int j = 0; j < t_iph.length; ++j) 
-//				if ( !t_bExclude[j] )
-//					t_iph_clean_list.add(t_iph[j]);
-//			int [] t_iph_clean = new int[t_iph_clean_list.size()];
-//			for (int j = 0; j < t_iph_clean_list.size(); ++j)
-//				t_iph_clean[j] = t_iph_clean_list.get(j); 
 
 			idxValidProdsList.add(i);
 			idxPossibleHead.add(t_iph);
@@ -178,7 +164,7 @@ public class GraphicalProductionSet {
 	 */
 	public Node attempt(int i, 
 						CAbstractWrittenTokenSet tokenSet, 
-						int idxHead,
+						int [] idxHead,
 						ArrayList<CAbstractWrittenTokenSet> remainingSets, 
 						float [] maxGeomScore) {
 		Node n = prods.get(i).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
@@ -189,8 +175,9 @@ public class GraphicalProductionSet {
 			/* TODO: hc should contain information about the 
 			 * tokens that make up of the head child for further 
 			 * parsing.
+			 * hc also needs to be expanded if it is an NT. 
 			 */
-			Node hc = new Node(prods.get(i).rhs[0], tokenSet.recogWinners.get(idxHead));
+			Node hc = new Node(prods.get(i).rhs[0], prods.get(i).rhs[0]);
 			n.addChild(hc);
 			
 			if ( prods.get(i).rhs.length == 2 && 
@@ -320,6 +307,10 @@ public class GraphicalProductionSet {
 		String [] termTypes = new String[uniqueTermTypes.size()];
 		uniqueTermTypes.toArray(termTypes);
 		return termTypes;
+	}
+	
+	public String [] getRHS(int i) {
+		return prods.get(i).rhs;
 	}
 	
 	

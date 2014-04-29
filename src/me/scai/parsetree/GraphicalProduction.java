@@ -1,6 +1,8 @@
 package me.scai.parsetree;
 
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSet;
@@ -816,7 +818,7 @@ public class GraphicalProduction {
 		}
 	}
 	
-	/* Attempt to parseothe input token set with this production, 
+	/* Attempt to parse the input token set with this production, 
 	 * given that the j-th token is used as the head.
 	 * 
 	 * Return: Node: node with the production, geometric, and other 
@@ -827,13 +829,11 @@ public class GraphicalProduction {
 	 *         parsed out. null if parsing is unsuccessful. 
 	 */
 	public Node attempt(CAbstractWrittenTokenSet tokenSet, 
-			            int iHead,
+			            int [] iHead,
 			            ArrayList<CAbstractWrittenTokenSet> remainingSets, 
-			            float [] maxGeomScore) {
-		/* TODO: make less ad hoc */
-		final float verifyThresh = 0.50f;
-		
-		int nnht = tokenSet.nTokens() - 1; /* Number of non-head tokens */
+			            float [] maxGeomScore) {		
+//		final float verifyThresh = 0.50f; /* TODO: make less ad hoc */
+		int nnht = tokenSet.nTokens() - iHead.length; /* Number of non-head tokens */
 		int nrn = nhrs - 1; /* Number of remaining nodes to match */
 		
 		/* TODO: check that remainingSets is empty */
@@ -845,55 +845,48 @@ public class GraphicalProduction {
 		if ( nrn == 1 && rhs[rhs.length - 1].equals(TerminalSet.epsString) ) {
 			/* Empty set matches EPS */
 			
-			Node n = new Node(sumString);
-			if ( nnht == 0 ) {
-				/* Add a terminal, empty-set (EPS) node */				
+			Node n = new Node(sumString, rhs);
+			
+			
+			if ( nnht == 0 )
+				/* Add a terminal, empty-set (EPS) node */
 				maxGeomScore[0] = 1.0f;
-				//n.addChild(new Node(TerminalSet.epsString, TerminalSet.epsString));
-			}
-			else {
+			else
 				/* The only non-head node is an EPS, but there is still some token(s) left */				
 				maxGeomScore[0] = 0.0f;
-			}
 				
 			return n;
 		}
 						
 		if ( nrn > nnht ) {
 			maxGeomScore[0] = 0.0f;
-			return new Node(sumString);
+			Node n = new Node(sumString, rhs);		
+			return n;
 		}
 
 		/* Get all possible partitions: in "labels" */
-		/* TODO: Put in subfunction */
 		int [][] labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
-//		int size = nnht;
-//		
-//	    int numRows = (int) Math.pow(nrn, size);
-//	    int [][] labels = new int[numRows][size];
-//	    
-//	    for (int i = 0; i < numRows; ++i) {
-//	    	int n = i;
-//	    	
-//	    	for (int j = 0; j < size; ++j) {
-//	    		int denom = (int) Math.pow(nrn, size - j - 1);
-//	    		labels[i][j] = n / denom;
-//	    		n -= (int) denom * labels[i][j];
-//	    	}
-//	    }
-	    /* ~TODO: Put in subfunction */
 
 	    /* Get index to all non-head token */
 	    ArrayList<Integer> inht = new ArrayList<Integer>();
-	    for (int i = 0; i < tokenSet.nTokens(); ++i)
-	    	if ( i != iHead )
+	    
+	    for (int i = 0; i < tokenSet.nTokens(); ++i) {
+	    	boolean bContains = false;
+	    	for (int j = 0; j < iHead.length; ++j) {
+	    		if ( iHead[j] == i ) {
+	    			bContains = true;
+	    			break;
+	    		}
+	    	}
+	    	if ( !bContains )
 	    		inht.add(i);
+	    }
 	    
 	    /* Construct the remaining sets and evaluate their geometric relations */
 	    boolean bFound = false;
 	    CWrittenTokenSetNoStroke [][] a_rems = new CWrittenTokenSetNoStroke[labels.length][];
-//	    CWrittenTokenSetNoStroke [] rems = null;
 	    float [] geomScores = new float[labels.length];
+	    
 	    for (int i = 0; i < labels.length; ++i) {
 	    	a_rems[i] = new CWrittenTokenSetNoStroke[nrn];
 	    	boolean [] remsFilled = new boolean[nrn];
@@ -908,8 +901,8 @@ public class GraphicalProduction {
     			
     			a_rems[i][inode].setTokenNames(tokenSet.getTokenNames());
     			a_rems[i][inode].addToken(tokenSet.getTokenBounds(irt), 
-    					             tokenSet.recogWinners.get(irt), 
-    					             tokenSet.recogPs.get(irt));
+    					                  tokenSet.recogWinners.get(irt), 
+    					                  tokenSet.recogPs.get(irt));
     			remsFilled[inode] = true;
     		}
     		
@@ -929,64 +922,51 @@ public class GraphicalProduction {
     			a_rems[i][j].calcBounds();
     		
     		/* Verify geometric relations */
-    		boolean bAllGeomRelVerified = true;
-    		float [] t_geomScores = new float[nrn];
-	    	for (int j = 0; j < nrn; ++j) {
-	    		/* Assume: there is only one head 
-	    		 * TODO: Make more general */
-	    		
-	    		boolean bVerified = true;
-	    		if ( geomRels[j + 1] == null ) {
-	    			t_geomScores[j] = 1.0f;
-	    			continue;
-	    		}
-	    		
-	    		float [] t_t_geomScores = new float[geomRels[j + 1].length];
-	    		for (int k = 0; k < geomRels[j + 1].length; ++k) {
-	    			int idxInRel = geomRels[j + 1][k].idxInRel[0];
-	    			float [] bndsInRel;
-	    			if ( idxInRel == 0 ) {
-	    				bndsInRel = tokenSet.getTokenBounds(iHead);
-	    			}
-	    			else {
-	    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
-	    			}
-	    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);	    			
-	    			t_t_geomScores[k] = v;
-	    			
-//	    			bVerified = (v > verifyThresh);
-//	    			if ( !bVerified ) {
-//	    				bAllGeomRelVerified = false;
-//	    				break;
-//	    			}
-	    		}
-	    		
-	    		t_geomScores[j] = MathHelper.mean(t_t_geomScores);
-	    	}
-	    	
-	    	geomScores[i] = MathHelper.mean(t_geomScores);	    		    	
-//	    	if ( bAllGeomRelVerified ) {
-//	    		bFound = true;
-//	    		break;
-//	    	}
+//    		boolean bAllGeomRelVerified = true;
+    		if ( nrn > 0 ) {    		
+	    		float [] t_geomScores = new float[nrn];
+		    	for (int j = 0; j < nrn; ++j) {
+		    		/* Assume: there is only one head 
+		    		 * TODO: Make more general */
+		    		
+		    		boolean bVerified = true;
+		    		if ( geomRels[j + 1] == null ) {
+		    			t_geomScores[j] = 1.0f;
+		    			continue;
+		    		}
+		    		
+		    		float [] t_t_geomScores = new float[geomRels[j + 1].length];
+		    		for (int k = 0; k < geomRels[j + 1].length; ++k) {
+		    			int idxInRel = geomRels[j + 1][k].idxInRel[0];
+		    			float [] bndsInRel;
+		    			if ( idxInRel == 0 ) {
+		    				bndsInRel = tokenSet.getTokenBounds(iHead);
+		    			}
+		    			else {
+		    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
+		    			}
+		    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);	    			
+		    			t_t_geomScores[k] = v;
+		    			
+		    		}
+		    		
+		    		t_geomScores[j] = MathHelper.mean(t_t_geomScores);
+		    		
+		    	}
+		    	
+		    	geomScores[i] = MathHelper.mean(t_geomScores);
+    		}
+    		else {
+    			geomScores[i] = 1.0f;
+    		}
 	    }
 	    
-	    /* Find the partition that leads to the maximum geometrical score */
+	    /* Find the partition that leads to the maximum geometric score */
 	    int idxMax = MathHelper.indexMax(geomScores);
 	    maxGeomScore[0] = geomScores[idxMax];
 	    for (int i = 0; i < a_rems[idxMax].length; ++i)
 	    	remainingSets.add(a_rems[idxMax][i]);
-	    return new Node(sumString);
-		
-//	    if ( bFound ) {
-//	    	for (int i = 0; i < rems.length; ++i)
-//	    		remainingSets.add(rems[i]);
-//	    	
-//	    	return new Node(sumString);	/* Child nodes will be added later */
-//	    }
-//	    else {	    
-//	    	return null;
-//	    }
+	    return new Node(sumString, rhs);
 	}
 	
 	
@@ -1065,21 +1045,65 @@ public class GraphicalProduction {
 	 * Return value: boolean: will contain all indices (within the token set)
 	 * of all tokens that can potentially be the head.
 	 *  */
-	public int [] evalWrittenTokenSet(CAbstractWrittenTokenSet wts, 
+	public int [][] evalWrittenTokenSet(CAbstractWrittenTokenSet wts, 
 			                          TerminalSet termSet) {
-		ArrayList<Integer> possibleHeadIdx = new ArrayList<Integer>();
+		/* TODO: Deal with a production in which none of the rhs items are terminal */
+		/* Can use MathHelper.getFullDiscreteSpace() */
+		
+		ArrayList<ArrayList<Integer>> possibleHeadIdx = new ArrayList<ArrayList<Integer>>();
 		String headNodeType = rhs[0];
-		for (int i = 0; i < wts.nTokens(); ++i) {
-			String tTokenName = wts.recogWinners.get(i);
-			String tTokenType = termSet.getTypeOfToken(tTokenName);
-			if ( tTokenType.equals(headNodeType) ) {
-				possibleHeadIdx.add(i);
+		
+		if ( termSet.isTypeTerminal(headNodeType) ) {
+			/* The head node is a terminal (T). So each possible head 
+			 * is just a single token in the token set.
+			 */
+			for (int i = 0; i < wts.nTokens(); ++i) {
+				String tTokenName = wts.recogWinners.get(i);
+				String tTokenType = termSet.getTypeOfToken(tTokenName);
+				if ( tTokenType.equals(headNodeType) ) {
+					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
+					t_possibleHeadIdx.add(i);
+					
+					possibleHeadIdx.add(t_possibleHeadIdx);
+				}
+			}
+			
+			
+		}
+		else {
+			/* The head node is a non-terminal (NT). So in general, each possible head
+			 * is a subset of the tokens in the token set.
+			 */
+			if ( rhs.length == 1 ) {
+				/* There is only one rhs, that is, the NT. */
+				ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
+				for (int i = 0; i < wts.nTokens(); ++i)
+					t_possibleHeadIdx.add(i);
+				
+				possibleHeadIdx.add(t_possibleHeadIdx);
+			}
+			else {
+				/* There are rhs items other than the head NT. */
+				int [][] combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());
+				for (int i = 0; i < combs.length; ++i) {
+					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
+					
+					for (int j = 0; j < combs.length; ++j)
+						if ( combs[i][j] == 1 )
+							t_possibleHeadIdx.add(j);
+					
+					possibleHeadIdx.add(t_possibleHeadIdx);	
+				}
 			}
 		}
 		
-		int [] idx = new int[possibleHeadIdx.size()];
-		for (int i = 0; i < possibleHeadIdx.size(); ++i)
-			idx[i] = possibleHeadIdx.get(i);
+		int [][] idx = new int[possibleHeadIdx.size()][];
+		for (int i = 0; i < possibleHeadIdx.size(); ++i) {
+			idx[i] = new int[possibleHeadIdx.get(i).size()];
+			
+			for (int j = 0; j < possibleHeadIdx.get(i).size(); ++j)
+				idx[i][j] = possibleHeadIdx.get(i).get(j);
+		}
 		
 		return idx;
 	}

@@ -16,6 +16,22 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	/* Default constructor */
 	public CWrittenTokenSetNoStroke() {}
 	
+	/* Constructor: taking a CAbstarctWrittenTokenSet, extract a subset of the
+	 * tokens and used them to form a new CWrittenTokenSetNoStroke. 
+	 * Information about strokes is discarded in this construction process.
+	 */
+	public CWrittenTokenSetNoStroke(CAbstractWrittenTokenSet owts, int [] indices) {
+		setTokenNames(owts.tokenNames);
+		
+		for ( int i = 0; i < indices.length; ++i ) {
+			float [] t_bnds = owts.getTokenBounds(indices[i]);
+			addToken(t_bnds, owts.recogWinners.get(indices[i]), owts.recogPs.get(indices[i]));
+		}
+		
+		calcBounds();
+	}
+	
+	
 	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP) {
 		/* Input sanity checks */
 		if ( bounds.length != 4 ) {
@@ -246,6 +262,28 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	@Override
 	public float[] getTokenBounds(int i) {
 		return tokenBounds.get(i);
+	}
+	
+	@Override 
+	public float[] getTokenBounds(int [] is) {
+		float [] bnds = new float[4]; /* min_x, min_y, max_x, max_y */
+		bnds[0] = bnds[1] = Float.POSITIVE_INFINITY;
+		bnds[2] = bnds[3] = Float.NEGATIVE_INFINITY;
+		
+		for (int i = 0; i < is.length; ++i) {
+			float [] t_bnds = getTokenBounds(is[i]);
+			
+			if ( t_bnds[0] < bnds[0] )
+				bnds[0] = t_bnds[0];
+			if ( t_bnds[1] < bnds[1] )
+				bnds[1] = t_bnds[1];
+			if ( t_bnds[2] > bnds[2] )
+				bnds[2] = t_bnds[2];
+			if ( t_bnds[3] > bnds[3] )
+				bnds[3] = t_bnds[3];
+		}
+		
+		return bnds;
 	}
 	
 }

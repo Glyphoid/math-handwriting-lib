@@ -153,6 +153,27 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		return tokens.get(i).getBounds();
 	}
 	
+	@Override 
+	public float[] getTokenBounds(int [] is) {
+		float [] bnds = new float[4]; /* min_x, min_y, max_x, max_y */
+		bnds[0] = bnds[1] = Float.POSITIVE_INFINITY;
+		bnds[2] = bnds[3] = Float.NEGATIVE_INFINITY;
+		
+		for (int i = 0; i < is.length; ++i) {
+			float [] t_bnds = getTokenBounds(is[i]);
+			
+			if ( t_bnds[0] < bnds[0] )
+				bnds[0] = t_bnds[0];
+			if ( t_bnds[1] < bnds[1] )
+				bnds[1] = t_bnds[1];
+			if ( t_bnds[2] < bnds[2] )
+				bnds[2] = t_bnds[2];
+			if ( t_bnds[3] < bnds[3] )
+				bnds[3] = t_bnds[3];
+		}
+		
+		return bnds;
+	}
 	
 	
 }

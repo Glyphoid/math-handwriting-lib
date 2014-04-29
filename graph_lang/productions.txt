@@ -17,6 +17,10 @@ POINT
 DIGIT_STRING : {AlignBottom(0), PositionGenWest(0), HeightRelationGreater(0)} # Left digit string
 DIGIT_STRING : {AlignBottom(0), PositionGenEast(0), HeightRelationGreater(0), HeightRelationEqual(1)} # Right digit string
 
+---
+DECIMAL_NUMBER
+DIGIT_STRING		# Degenerative case, NT head.
+
 --- 
 DECIMAL_NUMBER		# Negative sign
 MINUS_OP

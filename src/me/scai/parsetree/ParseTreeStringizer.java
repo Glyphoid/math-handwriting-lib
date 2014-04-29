@@ -4,7 +4,7 @@ public class ParseTreeStringizer {
 	/* Input: n: root of the parse tree */
 	/* Currently based on recursion. */
 	public static String stringize(Node n) {
-		String s = null;
+		String s = null;		
 		
 		switch ( n.prodSumString ) {
 			case "DIGIT_STRING --> DIGIT DIGIT_STRING":
@@ -24,6 +24,9 @@ public class ParseTreeStringizer {
 				break;
 			case "SUBTRACTION --> MINUS_OP DECIMAL_NUMBER DECIMAL_NUMBER":
 				s = "(" + stringize(n.ch[1]) + " - " + stringize(n.ch[2]) + ")"; /* Order??? */
+				break;
+			case "DECIMAL_NUMBER --> DIGIT_STRING":
+				s = stringize(n.ch[0]);
 				break;
 			default:
 				System.err.println("stringize(): unrecognized production summary string: " + n.prodSumString);
