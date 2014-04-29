@@ -105,5 +105,20 @@ public class Node {
 		return rhsTypes;
 	}
 	
+	@Override
+	public String toString() {
+		String s = "Node (";
+		if ( prodSumString != null )
+			s += prodSumString;
+		s += ")";
+		
+		if ( isTerminal )
+			s += "(T: " + termName + ")";
+		else
+			s += "(NT)";		
+		
+		return s;
+	}
+	
 	
 }

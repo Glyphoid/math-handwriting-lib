@@ -769,11 +769,14 @@ public class GraphicalProduction {
 	private final static String relSeparator = ",";
 	private final static String sumStringArrow = "-->";
 	
+	public final static float flagNTNeedsParsing = 111f;
+	
 	String lhs; 	/* Left-hand side, i.e., name of the production, e.g., DIGIT_STRING */
 	
 	//int level;		/* Level: 0 is the lowest: numbers */
-	private int nhrs; 	   	/* Number of right-hand side tokens, e.g., 2 */
-	String [] rhs; 	
+	private int nrhs; 	   	/* Number of right-hand side tokens, e.g., 2 */
+	String [] rhs;
+	boolean [] rhsIsTerminal;
 	/* Right-hand side items: can be a list of terminal (T) and non-terminal (NT) items.
 	 * E.g., {DIGIT, DIGIT_STRING} */
 	
@@ -798,13 +801,25 @@ public class GraphicalProduction {
 	public GraphicalProduction(String t_lhs, 
 			                   String [] t_rhs, 
 			                   boolean [] t_bt, 
+			                   TerminalSet termSet, 		/* For determine if the rhs are terminals */
 			                   GeometricRelation [][] t_geomRels) {
 		lhs = t_lhs;
 		rhs = t_rhs;
 		bt = t_bt;
 		geomRels = t_geomRels;
 		
-		nhrs = t_rhs.length;
+		nrhs = t_rhs.length;
+		
+		/* Determine if the rhs items are terminals */
+		if ( rhs != null ) {
+			rhsIsTerminal = new boolean[nrhs];
+			for (int i = 0; i < nrhs; ++i)
+				rhsIsTerminal[i] = termSet.isTypeTerminal(rhs[i]); 
+		}
+		else {
+			System.err.println("WARNING: no rhs");
+		}
+			
 		
 		getSumString();
 	}
@@ -834,7 +849,7 @@ public class GraphicalProduction {
 			            float [] maxGeomScore) {		
 //		final float verifyThresh = 0.50f; /* TODO: make less ad hoc */
 		int nnht = tokenSet.nTokens() - iHead.length; /* Number of non-head tokens */
-		int nrn = nhrs - 1; /* Number of remaining nodes to match */
+		int nrn = nrhs - 1; /* Number of remaining nodes to match */
 		
 		/* TODO: check that remainingSets is empty */
 		if ( remainingSets.size() != 0 ) {
@@ -846,7 +861,6 @@ public class GraphicalProduction {
 			/* Empty set matches EPS */
 			
 			Node n = new Node(sumString, rhs);
-			
 			
 			if ( nnht == 0 )
 				/* Add a terminal, empty-set (EPS) node */
@@ -964,7 +978,13 @@ public class GraphicalProduction {
 		    	geomScores[i] = MathHelper.mean(t_geomScores);
     		}
     		else {
-    			geomScores[i] = 1.0f;
+    			/* This is the case in which the entire token is the head, 
+    			 * and the head is an NT. 
+    			 */
+    			if ( !rhsIsTerminal[0] )
+    				geomScores[i] = flagNTNeedsParsing;	/* 2.0f is a flag that indicates further geometric parsing is necessary */
+    			else
+    				geomScores[i] = 1.0f;
     		}
 	    }
 	    
@@ -1034,88 +1054,22 @@ public class GraphicalProduction {
 			
 		}
 		
-		return new GraphicalProduction(t_lhs, t_rhs, t_bt, t_geomRels);
+		return new GraphicalProduction(t_lhs, t_rhs, t_bt, termSet, t_geomRels);
 	}
 	
 	public int getNumNonHeadTokens() {
-		return nhrs - 1;
-	}
-	
-	/* Evaluate whether a token set meets the requirement of this production, 
-	 * i.e., has the head node available. 
-	 * NOTE: this method does _not_ exclude productions that have extra head nodes.
-	 * E.g., for production "DIGIT_STRING --> DIGIT DIGIT_STRING", the only 
-	 * type of head node involved is DIGIT. So if a token set includes another
-	 * type of head node, e.g., POINT ("."), it is invalid for this production
-	 * but will still be included in the output. 
-	 * 
-	 * Return value: boolean: will contain all indices (within the token set)
-	 * of all tokens that can potentially be the head.
-	 *  */
-	public int [][] evalWrittenTokenSet(CAbstractWrittenTokenSet wts, 
-			                          TerminalSet termSet) {
-		/* TODO: Deal with a production in which none of the rhs items are terminal */
-		/* Can use MathHelper.getFullDiscreteSpace() */
-		
-		ArrayList<ArrayList<Integer>> possibleHeadIdx = new ArrayList<ArrayList<Integer>>();
-		String headNodeType = rhs[0];
-		
-		if ( termSet.isTypeTerminal(headNodeType) ) {
-			/* The head node is a terminal (T). So each possible head 
-			 * is just a single token in the token set.
-			 */
-			for (int i = 0; i < wts.nTokens(); ++i) {
-				String tTokenName = wts.recogWinners.get(i);
-				String tTokenType = termSet.getTypeOfToken(tTokenName);
-				if ( tTokenType.equals(headNodeType) ) {
-					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
-					t_possibleHeadIdx.add(i);
-					
-					possibleHeadIdx.add(t_possibleHeadIdx);
-				}
-			}
-			
-			
-		}
-		else {
-			/* The head node is a non-terminal (NT). So in general, each possible head
-			 * is a subset of the tokens in the token set.
-			 */
-			if ( rhs.length == 1 ) {
-				/* There is only one rhs, that is, the NT. */
-				ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
-				for (int i = 0; i < wts.nTokens(); ++i)
-					t_possibleHeadIdx.add(i);
-				
-				possibleHeadIdx.add(t_possibleHeadIdx);
-			}
-			else {
-				/* There are rhs items other than the head NT. */
-				int [][] combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());
-				for (int i = 0; i < combs.length; ++i) {
-					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
-					
-					for (int j = 0; j < combs.length; ++j)
-						if ( combs[i][j] == 1 )
-							t_possibleHeadIdx.add(j);
-					
-					possibleHeadIdx.add(t_possibleHeadIdx);	
-				}
-			}
-		}
-		
-		int [][] idx = new int[possibleHeadIdx.size()][];
-		for (int i = 0; i < possibleHeadIdx.size(); ++i) {
-			idx[i] = new int[possibleHeadIdx.get(i).size()];
-			
-			for (int j = 0; j < possibleHeadIdx.get(i).size(); ++j)
-				idx[i][j] = possibleHeadIdx.get(i).get(j);
-		}
-		
-		return idx;
+		return nrhs - 1;
 	}
 	
 	
+	
+	@Override
+	public String toString() {
+		String s = "GrraphicalProduction: ";
+		if ( sumString != null )
+			s += sumString;
+		return s;
+	}
 	
 	
 	/* Error classes */

@@ -9,7 +9,7 @@ DIGIT_STRING : {AlignMiddle(0), PositionEast(0), HeightRelationEqual(0)}
 ---
 DIGIT_STRING
 DIGIT
-EPS		# EPS is the empty set (stands for epsilon). Does not require geometric relations.
+EPS		# EPS is the empty set. Naturally, it does not require geometric relations.
 
 ---
 DECIMAL_NUMBER
@@ -27,13 +27,49 @@ MINUS_OP
 DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)}
 
 ---
-FRACTION
-MINUS_OP
-DECIMAL_NUMBER : {AlignCenter(0), PositionSouth(0)} # Denominator. TODO: Change to more general number types
-DECIMAL_NUMBER : {AlignCenter(0), PositionNorth(0)} # Numerator
+EXPR_LV1
+DECIMAL_NUMBER
+
+---
+ADDITION
+PLUS_OP
+EXPR_LV1 : {AlignMiddle(0), PositionWest(0)} # 1st number. TODO: Change to terms (i.e., results of multiplication / division).
+EXPR_LV1 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 
 ---
 SUBTRACTION
 MINUS_OP
-DECIMAL_NUMBER : {AlignMiddle(0), PositionWest(0)} # 1st number. TODO: Change to terms (i.e., results of multiplication / division).
-DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)} # 2nd number
+EXPR_LV1 : {AlignMiddle(0), PositionWest(0)} # 1st number. TODO: Change to terms (i.e., results of multiplication / division).
+EXPR_LV1 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+
+---
+EXPR_LV1
+ADDITION
+
+---
+EXPR_LV1
+SUBTRACTION
+
+---
+EXPR_LV2
+EXPR_LV1
+
+---
+FRACTION
+MINUS_OP
+EXPR_LV1 : {AlignCenter(0), PositionSouth(0)} # Denominator. TODO: Change to more general number types
+EXPR_LV1 : {AlignCenter(0), PositionNorth(0)} # Numerator
+
+---
+EXPR_LV2
+FRACTION
+
+---
+FRACTION
+MINUS_OP
+EXPR_LV2 : {AlignCenter(0), PositionSouth(0)} # Denominator. TODO: Change to more general number types
+EXPR_LV2 : {AlignCenter(0), PositionNorth(0)} # Numerator
+
+---
+ROOT
+EXPR_LV2

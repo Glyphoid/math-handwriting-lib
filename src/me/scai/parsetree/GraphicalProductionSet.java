@@ -107,8 +107,8 @@ public class GraphicalProductionSet {
 		
 		ArrayList<Integer> idxValidProdsList = new ArrayList<Integer>(); 
 		for (int i = 0; i < prods.size(); ++i) {
-			int [][] t_iph = prods.get(i).evalWrittenTokenSet(tokenSet, termSet);
-			if ( t_iph.length == 0 )
+			int [][] t_iph = evalWrittenTokenSet(i, tokenSet, termSet);
+			if ( t_iph == null || t_iph.length == 0 )
 				continue;
 			
 			boolean bExclude = false;
@@ -144,6 +144,106 @@ public class GraphicalProductionSet {
 		
 		return idxValidProds;
 	}
+	
+	
+	/* Evaluate whether a token set meets the requirement of this production, 
+	 * i.e., has the head node available. 
+	 * NOTE: this method does _not_ exclude productions that have extra head nodes.
+	 * E.g., for production "DIGIT_STRING --> DIGIT DIGIT_STRING", the only 
+	 * type of head node involved is DIGIT. So if a token set includes another
+	 * type of head node, e.g., POINT ("."), it is invalid for this production
+	 * but will still be included in the output. 
+	 * 
+	 * Return value: boolean: will contain all indices (within the token set)
+	 * of all tokens that can potentially be the head.
+	 *  */
+	public int [][] evalWrittenTokenSet(int prodIdx, 
+										CAbstractWrittenTokenSet wts, 
+			                            TerminalSet termSet) {
+		/* TODO: Deal with a production in which none of the rhs items are terminal */
+		/* Can use MathHelper.getFullDiscreteSpace() */
+		GraphicalProduction t_prod = prods.get(prodIdx);
+		
+		ArrayList<ArrayList<Integer>> possibleHeadIdx = new ArrayList<ArrayList<Integer>>();
+		String headNodeType = t_prod.rhs[0];
+		
+		if ( termSet.isTypeTerminal(headNodeType) ) {
+			/* The head node is a terminal (T). So each possible head 
+			 * is just a single token in the token set.
+			 */
+			for (int i = 0; i < wts.nTokens(); ++i) {
+				String tTokenName = wts.recogWinners.get(i);
+				String tTokenType = termSet.getTypeOfToken(tTokenName);
+				if ( tTokenType.equals(headNodeType) ) {
+					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
+					t_possibleHeadIdx.add(i);
+					
+					possibleHeadIdx.add(t_possibleHeadIdx);
+				}
+			}
+			
+		}
+		else {
+			/* The head node is a non-terminal (NT). 
+			 */
+			if ( t_prod.rhs.length == 1 ) {
+				/* The rhs is an NT head node. In this case, we need to
+				 * check whether this entire token is potentially suitable
+				 * for the production specified by this NT rhs, in a
+				 * recursive way. If the answer is no, will return empty.
+				 */
+				
+				String t_lhs = t_prod.rhs[0];
+				/* Find all productions that fit this lhs */
+				boolean anyRHSMatch = false;
+				for (int i = 0; i < prods.size(); ++i) { 
+					if ( prods.get(i).lhs.equals(t_lhs) ) {
+						int [][] t_t_iph = evalWrittenTokenSet(i, wts, termSet);
+						if ( t_t_iph != null && t_t_iph.length > 0 )
+							anyRHSMatch = true;
+					}
+				}
+				
+				if ( !anyRHSMatch ) {
+					return null;
+				}
+				else {
+					/* There is only one rhs, that is, the NT, and the RHS 
+					 * has potential matches to the token set. So all tokens 
+					 * in the token set should belong to the head. */
+					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
+					for (int i = 0; i < wts.nTokens(); ++i)
+						t_possibleHeadIdx.add(i);
+				
+					possibleHeadIdx.add(t_possibleHeadIdx);
+				}
+			}
+			else {
+				/* There are rhs items other than the head NT. */
+				int [][] combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());
+				for (int i = 0; i < combs.length; ++i) {
+					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
+					
+					for (int j = 0; j < combs.length; ++j)
+						if ( combs[i][j] == 1 )
+							t_possibleHeadIdx.add(j);
+					
+					possibleHeadIdx.add(t_possibleHeadIdx);	
+				}
+			}
+		}
+		
+		int [][] idx = new int[possibleHeadIdx.size()][];
+		for (int i = 0; i < possibleHeadIdx.size(); ++i) {
+			idx[i] = new int[possibleHeadIdx.get(i).size()];
+			
+			for (int j = 0; j < possibleHeadIdx.get(i).size(); ++j)
+				idx[i][j] = possibleHeadIdx.get(i).get(j);
+		}
+		
+		return idx;
+	}
+	
 	
 	/* Get the count of non-head tokens in production #i */
 	public int getNumNonHeadTokens(int i) {

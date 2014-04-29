@@ -93,6 +93,21 @@ public abstract class CAbstractWrittenTokenSet {
 		
 		return bnds;
 	}	
+
+	@Override
+	public String toString() {
+		String s = "Token [";
+		
+		for (int i = 0; i < recogWinners.size(); ++i) {
+			s += recogWinners.get(i);
+			
+			if ( i < recogWinners.size() - 1 )
+				s += ", ";
+		}
+		s += "]";
+		
+		return s;
+	}
 	
 	/* *** Abstract methods *** */
 	protected abstract void calcBounds();
@@ -101,5 +116,6 @@ public abstract class CAbstractWrittenTokenSet {
 	public abstract float [] getTokenBounds(int i);
 	public abstract float [] getTokenBounds(int [] is);
 	public abstract String getStringBrief();
+
 	
 }

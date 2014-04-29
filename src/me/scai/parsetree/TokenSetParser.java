@@ -2,7 +2,9 @@ package me.scai.parsetree;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
@@ -40,24 +42,12 @@ public class TokenSetParser implements ITokenSetParser {
 		return parse(tokenSet, null);
 	}
 	
-	/* This implements a recursive descend parser */
-	public Node parse(CAbstractWrittenTokenSet tokenSet, String lhs) {
-		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
-		/* Determine the name of the lhs */
-		
-		int [] idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead);
-		
-
-		if ( idxValidProds.length == 0 ) {
-			return null; /* No valid production for this token set */
-		}		
-		
-		/* Valid productions found */
-		/* Iterate through all possible productions */
-		
-		Node [][] nodes = new Node[idxValidProds.length][];
-		float [][] maxGeomScores = new float[idxValidProds.length][];
-		CAbstractWrittenTokenSet [][][] aRemainingSets = new CAbstractWrittenTokenSet[idxValidProds.length][][];
+	private float evalGeometry(CAbstractWrittenTokenSet tokenSet, 
+			                   int [] idxValidProds, 
+			                   ArrayList<int [][]> idxPossibleHead, 
+			                   Node [][] nodes,
+			                   float [][] maxGeomScores, 
+			                   CAbstractWrittenTokenSet [][][] aRemainingSets) {
 		for (int i = 0; i < idxValidProds.length; ++i) {
 			nodes[i] = new Node[idxPossibleHead.get(i).length];
 			maxGeomScores[i] = new float[idxPossibleHead.get(i).length];
@@ -69,10 +59,11 @@ public class TokenSetParser implements ITokenSetParser {
 				ArrayList<CAbstractWrittenTokenSet> remainingSets = new ArrayList<CAbstractWrittenTokenSet>();
 				
 				// DEBUG
-//				if ( i == 1 && idxHead == 0 )
-//					i = i + 0;
+				if ( i == 2 )
+					i = i + 0;
 				
 				float [] maxGeomScore = new float[1];
+				
 				Node n = gpSet.attempt(idxValidProds[i], tokenSet, idxHead, remainingSets, maxGeomScore);
 				/* If the head child is a terminal, replace tokenName with the actual name of the token */
 				if ( n != null && termSet.isTypeTerminal(n.ch[0].termName) )
@@ -86,6 +77,65 @@ public class TokenSetParser implements ITokenSetParser {
 				
 			}
 		}
+		
+		/* Get return value */
+		int [] idxMax2 = MathHelper.indexMax2D(maxGeomScores); /* TODO: Resolve ties */
+		float maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
+		
+		/* Look for flags that indicate the need for further parsing
+		 * and parse them further. Loop until all of them are gotten 
+		 * rid of through recursive calls.
+		 */
+		while ( maxScore == GraphicalProduction.flagNTNeedsParsing ) {
+			int i = idxMax2[0];
+			int j = idxMax2[1];
+			
+			GraphicalProduction c_prod = gpSet.prods.get(idxValidProds[i]);
+			String c_lhs = c_prod.rhs[0];
+			
+			ArrayList<int [][]> c_idxPossibleHead = new ArrayList<int [][]>();
+			int [] c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead);
+			
+			if ( c_idxValidProds == null || c_idxValidProds.length == 0 ) {
+				maxGeomScores[i][j] = 0.0f; /* Necessary? */
+			}
+			else {
+				Node [][] c_nodes = new Node[c_idxValidProds.length][];
+				float [][] c_maxGeomScores = new float[c_idxValidProds.length][];
+				CAbstractWrittenTokenSet [][][] c_aRemainingSets = new CAbstractWrittenTokenSet[c_idxValidProds.length][][];
+				
+				/* Recursive call */
+				float c_maxScore = evalGeometry(tokenSet, c_idxValidProds, c_idxPossibleHead, 
+					                            c_nodes, c_maxGeomScores, c_aRemainingSets);
+				maxGeomScores[i][j] = c_maxScore;
+			}
+			
+			/* Re-calculate the maximum */
+			idxMax2 = MathHelper.indexMax2D(maxGeomScores);
+			maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
+		}
+		
+		return maxScore;
+	}
+	
+	/* This implements a recursive descend parser */
+	public Node parse(CAbstractWrittenTokenSet tokenSet, String lhs) {
+		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
+		/* Determine the name of the lhs */
+		
+		int [] idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead);
+		
+		if ( idxValidProds.length == 0 ) {
+			return null; /* No valid production for this token set */
+		}		
+		
+		/* Geometric evaluation */
+		Node [][] nodes = new Node[idxValidProds.length][];
+		float [][] maxGeomScores = new float[idxValidProds.length][];
+		CAbstractWrittenTokenSet [][][] aRemainingSets = new CAbstractWrittenTokenSet[idxValidProds.length][][];
+		
+		evalGeometry(tokenSet, idxValidProds, idxPossibleHead, 
+				     nodes, maxGeomScores, aRemainingSets);
 		
 		/* Select the maximum geometric score */
 		int [] idxMax2 = MathHelper.indexMax2D(maxGeomScores); /* TODO: Resolve ties */
@@ -143,18 +193,33 @@ public class TokenSetParser implements ITokenSetParser {
 		/* TS_8: 69 (Geometric error: height difference too big) */
 		/* TS_9: .28 (Geometric error: vertical alignment) */
 		/* TS_5: 23 (Geometric error) */
-		int [] tokenSetNums           = {1, 2, 4, 6, 10, 13, 
-				                         15, 27, 36, 48, 49,
-				                         50, 67, 68, 69, 70, 
-				                         72, 73, 74, 75, 76};
-		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "(21 - 3)", "009", 
-										 "100", "(5 / 8)", "(23 / 4)", "8.3", "4.0", 
-										 "0.01", "2", "0", "1.20", "0.02", 
-										 "-1", "-1.2", "-0.11", "-12", "-13.9"};
-
-//		int [] tokenSetNums = {76};
-//		String [] tokenSetTrueStrings = {"(21 - 3)"};
 		
+		int [] tokenSetNums           = {1, 2, 4, 6, 9, 10, 
+									     11, 12, 13, 14, 
+				                         15, 18, 21, 22, 				                         
+				                         27, 28, 36, 
+				                         41, 42, 43, 44, 45, 
+				                         48, 49,
+				                         50, 51, 52, 67, 68, 69, 70, 
+				                         72, 73, 74, 75, 76, 
+				                         83, 84, 85, 86, 88, 89, 
+				                         90, 91};
+		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "-28", "(21 - 3)",  
+							             "(21 + 3)", "(21 - 5)", "009", "900", 
+										 "100", "(56 - 3)", "(29 / 3)", "--3", 
+										 "(5 / 8)", "((5 / 8) / 9)", "(23 / 4)", 
+										 "((4 - 2) / 3)", "((7 - 8) / 10)", "((3 + 1) / 4)", "(72 / 3)",  "((8 - 3) / 4)", 
+										 "8.3", "4.0", 
+									 	 "0.01", "-53", "-7.4", "2", "0", "1.20", "0.02", 
+										 "-1", "-1.2", "-0.11", "-12", "-13.9", 
+										 "(0 + 0)", "(1.3 + 4)", "(4 + 2.1)", "(2.0 + 1.1)", "(-1 + -3)", "(-3.0 + -1)", 
+										 "((1 + 2) + 3)", "((2 - 3) - 4)"};
+		
+		/* Single out for debugging */
+		Integer [] singleOutIdx = {28};	
+		/* Crash: ; 
+		 * Error: 28, 91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */
+
 		final String tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
 		final String tokenSetSuffix = ".wts";
 		final String prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
@@ -166,8 +231,18 @@ public class TokenSetParser implements ITokenSetParser {
 		TokenSetParser tokenSetParser = new TokenSetParser(termSetFN, prodSetFN);
 		
 		/* Create token set parser */
+		int nPass = 0;
+		int nTested = 0;
 		for (int i = 0; i < tokenSetNums.length; ++i) {
+			/* Single out option */
+			if ( singleOutIdx != null && singleOutIdx.length > 0 ) {
+				List<Integer> singleOutList = Arrays.asList(singleOutIdx); 
+				if ( !singleOutList.contains(tokenSetNums[i]) )
+					continue;
+			}
+			
 			String tokenSetFN = tokenSetPrefix + tokenSetNums[i] + tokenSetSuffix;
+			
 			try {
 				wts.readFromFile(tokenSetFN);
 			}
@@ -178,14 +253,23 @@ public class TokenSetParser implements ITokenSetParser {
 				System.err.println(ioe.getMessage());
 			}
 		
-			Node parseRoot = tokenSetParser.parse(wts, null);
+			/* Parse graphically */
+			Node parseRoot = tokenSetParser.parse(wts, "ROOT"); 
+			/* TODO: replace with parse(wts) */
 			
 			String stringized = ParseTreeStringizer.stringize(parseRoot);
 			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
 			String checkResultStr = checkResult ? "PASS" : "FAIL";
-			System.out.println("File " + tokenSetNums[i] + ": " +
-							   "\"" + stringized + "\"" + "\t[" + checkResultStr + "]");
+			nPass += checkResult ? 1 : 0; 
+			System.out.println("[" + checkResultStr + "] " + "File " + tokenSetNums[i] + ": " +
+							   "\"" + stringized + "\"");
+			
+			nTested ++;
 		}
+		
+		System.out.println("Tested: " + nTested + 
+				           "; Passed: " + nPass + 
+				           "; Failed: " + (nTested - nPass));
 		
 	}
 }
