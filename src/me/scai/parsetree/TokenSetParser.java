@@ -1,14 +1,11 @@
-package me.scai.handwriting;
+package me.scai.parsetree;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import me.scai.parsetree.MathHelper;
-import me.scai.parsetree.Node;
-import me.scai.parsetree.TerminalSet;
-import me.scai.parsetree.GraphicalProductionSet;
-import me.scai.parsetree.ParseTreeStringizer;
+import me.scai.handwriting.CAbstractWrittenTokenSet;
+import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 public class TokenSetParser implements ITokenSetParser {
 	protected TerminalSet termSet = null;
@@ -49,6 +46,7 @@ public class TokenSetParser implements ITokenSetParser {
 		/* Determine the name of the lhs */
 		
 		int [] idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead);
+		
 
 		if ( idxValidProds.length == 0 ) {
 			return null; /* No valid production for this token set */
@@ -140,27 +138,22 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* Testing routine */
 	public static void main(String [] args) {
-		/* TS_1: 12 */		/* TS_2: 236 */  		/* TS_4: 77 */
-		/* TS_6: 36 */		/* TS_10: 21 - 3 TODO */ /* TS_13: 009 */
-		/* TS_15: 100 */ 	/* TS_27: 5 / 8 */  	/* TS_36: 23 / 4 */
-		/* TS_48: 8.3 */ 	/* TS_49: 4.0 */ 		/* TS_50: 0.01 */
-		/* TS_67: 2 */		/* TS_68: 0 */			/* TS_69: 1.20 */
-		/* TS_70: 0.02 */	/* TS_72: -1 */			/* TS_73: -1.2 */
-		/* TS_74: -0.11 */	/* TS_75: -12 */		/* TS_76: -13.9 */
-		
 		/* TS_3: 34- (Grammatical error) TODO */
 		/* TS_7: 345 (Geometric error: height difference too big) */
 		/* TS_8: 69 (Geometric error: height difference too big) */
 		/* TS_9: .28 (Geometric error: vertical alignment) */
 		/* TS_5: 23 (Geometric error) */
-		int [] tokenSetNums           = {1, 2, 4, 6, 13, 
+		int [] tokenSetNums           = {1, 2, 4, 6, 10, 13, 
 				                         15, 27, 36, 48, 49,
 				                         50, 67, 68, 69, 70, 
 				                         72, 73, 74, 75, 76};
-		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "009", 
+		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "(21 - 3)", "009", 
 										 "100", "(5 / 8)", "(23 / 4)", "8.3", "4.0", 
 										 "0.01", "2", "0", "1.20", "0.02", 
-										 "-1", "-1.2", "-0.11", "-12", "-13.9"}; 
+										 "-1", "-1.2", "-0.11", "-12", "-13.9"};
+
+//		int [] tokenSetNums = {76};
+//		String [] tokenSetTrueStrings = {"(21 - 3)"};
 		
 		final String tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
 		final String tokenSetSuffix = ".wts";
@@ -186,6 +179,7 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 		
 			Node parseRoot = tokenSetParser.parse(wts, null);
+			
 			String stringized = ParseTreeStringizer.stringize(parseRoot);
 			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
 			String checkResultStr = checkResult ? "PASS" : "FAIL";

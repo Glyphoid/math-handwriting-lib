@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TextHelper {
 	public static String [] readLinesTrimmedNoComment(final String fileName, final String commentString)
@@ -48,5 +49,20 @@ public class TextHelper {
 		lineList.toArray(lines);
 		
 		return lines;
+	}
+	
+	public static String [] removeTrailingEmptyLines(String [] lines) {
+		ArrayList<String> linesList = new ArrayList<String>(Arrays.asList(lines));
+		boolean bEndEmptyLine = linesList.get(linesList.size() - 1).equals("");
+		while ( bEndEmptyLine ) {
+			linesList.remove(linesList.size() - 1);
+			
+			bEndEmptyLine = linesList.get(linesList.size() - 1).equals("");
+		}
+		
+		String [] newLines = new String[linesList.size()];
+		linesList.toArray(newLines);
+		
+		return newLines;
 	}
 }

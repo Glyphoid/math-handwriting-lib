@@ -149,7 +149,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	}
 	
 	/* Read from .wts file */
-	void readFromFile(String fileName) throws FileNotFoundException, IOException {
+	public void readFromFile(String fileName) throws FileNotFoundException, IOException {
 		clear();
 		
 		File wtsFile = new File(fileName);

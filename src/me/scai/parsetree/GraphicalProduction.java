@@ -153,10 +153,10 @@ class AlignRelation extends GeometricRelation {
 		float szTested, szInRel, szMean, edgeDiff;
 		if ( alignType == AlignType.AlignBottom || 
 			 alignType == AlignType.AlignTop ||
-			 alignType == AlignType.AlignMiddle ) {
+			 alignType == AlignType.AlignMiddle ) { /* Align in the vertical dimension */
 			/* sz is height */
 			szTested = bndsTested[3] - bndsTested[1];
-			szInRel = bndsInRel[3] - bndsTested[1];
+			szInRel = bndsInRel[3] - bndsInRel[1];
 			
 			if ( alignType == AlignType.AlignBottom ) 
 				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
@@ -945,7 +945,14 @@ public class GraphicalProduction {
 		    			else {
 		    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
 		    			}
-		    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);	    			
+		    			
+		    			if ( i == 2 && j == 1 && k == 0 ) //DEBUG
+		    				k = k; //DEBUG
+		    			
+		    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);
+		    			if ( v > 1.0 ) //DEBUG
+		    				v = v; // DEBUG
+		    			
 		    			t_t_geomScores[k] = v;
 		    			
 		    		}

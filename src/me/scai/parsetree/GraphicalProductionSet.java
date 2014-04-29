@@ -63,6 +63,9 @@ public class GraphicalProductionSet {
 		
 		int idxLine = 0;
 		
+		/* Remove the empty lines at the end */
+		lines = TextHelper.removeTrailingEmptyLines(lines);
+		
 		while ( idxLine < lines.length ) {
 			assert(lines[idxLine].startsWith(separatorString));
 			idxLine++;
@@ -177,6 +180,7 @@ public class GraphicalProductionSet {
 			 * parsing.
 			 * hc also needs to be expanded if it is an NT. 
 			 */
+			
 			Node hc = new Node(prods.get(i).rhs[0], prods.get(i).rhs[0]);
 			n.addChild(hc);
 			
