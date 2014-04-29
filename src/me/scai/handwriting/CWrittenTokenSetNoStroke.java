@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	public ArrayList<float []> tokenBounds = new ArrayList<float []>();
 	
+	/* ************ Methods ************ */
 	/* Default constructor */
 	public CWrittenTokenSetNoStroke() {}
 	
@@ -149,6 +150,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	
 	/* Read from .wts file */
 	void readFromFile(String fileName) throws FileNotFoundException, IOException {
+		clear();
+		
 		File wtsFile = new File(fileName);
 		if ( !wtsFile.isFile() )
 			throw new FileNotFoundException("Cannot find file for reading: " + fileName);
@@ -257,6 +260,19 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		}
 		
 		System.out.println("Done reading wts file: " + wtsFileName);
+	}
+	
+	@Override
+	public void clear() {
+		tokenBounds.clear();
+		
+		recogWinners.clear();
+		recogPs.clear();
+		
+		min_x = min_y = Float.MAX_VALUE;
+		max_x = max_y = Float.MIN_VALUE;
+		
+		nt = 0;
 	}
 
 	@Override

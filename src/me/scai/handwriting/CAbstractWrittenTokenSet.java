@@ -92,10 +92,11 @@ public abstract class CAbstractWrittenTokenSet {
 		bnds[3] = max_y;
 		
 		return bnds;
-	}
+	}	
 	
 	/* *** Abstract methods *** */
 	protected abstract void calcBounds();
+	protected abstract void clear();
 	
 	public abstract float [] getTokenBounds(int i);
 	public abstract float [] getTokenBounds(int [] is);

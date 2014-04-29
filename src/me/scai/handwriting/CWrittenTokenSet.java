@@ -84,9 +84,23 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		deleteOneToken();
 	}
 	
-	/* Clear all tokens */
-	public void clearToken() {
+//	/* Clear all tokens */
+//	public void clearToken() {
+//		tokens.clear();
+//		
+//		recogWinners.clear();
+//		recogPs.clear();
+//		
+//		min_x = min_y = Float.MAX_VALUE;
+//		max_x = max_y = Float.MIN_VALUE;
+//		
+//		nt = 0;
+//	}
+	
+	@Override
+	public void clear() {
 		tokens.clear();
+		
 		recogWinners.clear();
 		recogPs.clear();
 		

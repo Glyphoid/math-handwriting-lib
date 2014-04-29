@@ -38,8 +38,12 @@ public class TokenSetParser implements ITokenSetParser {
 	}
 	
 	
-	/* This implements a recursive descend parser */
 	@Override
+	public Node parse(CAbstractWrittenTokenSet tokenSet) {
+		return parse(tokenSet, null);
+	}
+	
+	/* This implements a recursive descend parser */
 	public Node parse(CAbstractWrittenTokenSet tokenSet, String lhs) {
 		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
 		/* Determine the name of the lhs */
@@ -149,7 +153,14 @@ public class TokenSetParser implements ITokenSetParser {
 		/* TS_8: 69 (Geometric error: height difference too big) */
 		/* TS_9: .28 (Geometric error: vertical alignment) */
 		/* TS_5: 23 (Geometric error) */
-		int [] tokenSetNums = {76};
+		int [] tokenSetNums           = {1, 2, 4, 6, 13, 
+				                         15, 27, 36, 48, 49,
+				                         50, 67, 68, 69, 70, 
+				                         72, 73, 74, 75, 76};
+		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "009", 
+										 "100", "(5 / 8)", "(23 / 4)", "8.3", "4.0", 
+										 "0.01", "2", "0", "1.20", "0.02", 
+										 "-1", "-1.2", "-0.11", "-12", "-13.9"}; 
 		
 		final String tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
 		final String tokenSetSuffix = ".wts";
@@ -175,8 +186,11 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 		
 			Node parseRoot = tokenSetParser.parse(wts, null);
-			System.out.println("Stringized tokenset = \"" + 
-	                   ParseTreeStringizer.stringize(parseRoot) + "\"");
+			String stringized = ParseTreeStringizer.stringize(parseRoot);
+			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
+			String checkResultStr = checkResult ? "PASS" : "FAIL";
+			System.out.println("File " + tokenSetNums[i] + ": " +
+							   "\"" + stringized + "\"" + "\t[" + checkResultStr + "]");
 		}
 		
 	}
