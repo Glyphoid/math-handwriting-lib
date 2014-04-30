@@ -36,14 +36,17 @@ public class ParseTreeStringizer {
 				break;
 			case "DECIMAL_NUMBER --> DIGIT_STRING":
 				s = stringize(n.ch[0]);
-				break;
-			case "EXPR_LV2 --> FRACTION":
-				s = stringize(n.ch[0]);
-				break;
+				break;			
 			case "EXPR_LV2 --> EXPR_LV1":		/* ? */
 				s = stringize(n.ch[0]);
 				break;
 			case "FRACTION --> MINUS_OP EXPR_LV1 EXPR_LV1":
+				s = "(" + stringize(n.ch[1]) + " / " + stringize(n.ch[2]) + ")"; /* Order??? */
+				break;
+			case "EXPR_LV2 --> FRACTION":
+				s = stringize(n.ch[0]);
+				break;
+			case "FRACTION --> MINUS_OP EXPR_LV2 EXPR_LV2":
 				s = "(" + stringize(n.ch[1]) + " / " + stringize(n.ch[2]) + ")"; /* Order??? */
 				break;
 			case "ROOT --> EXPR_LV2":

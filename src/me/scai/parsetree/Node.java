@@ -8,6 +8,9 @@ public class Node {
 	public String prodSumString = null;	/* Production summary string. See GraphicalProduction.sumString */
 	public String termName = null; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
 	String [] rhsTypes = null;		/* Child types: applies only to non-terminal nodes */
+	
+	private float geometricScore = 0.0f;
+	
 	int nc = 0; 					/* Number of children */
 	
 	Node p = null;					/* Parent */
@@ -120,5 +123,12 @@ public class Node {
 		return s;
 	}
 	
+	public void setGeometricScore(float gs) {
+		geometricScore = gs;
+	}
 	
+	public float getGeometricScore() {
+		return geometricScore;
+	}
 }
+	

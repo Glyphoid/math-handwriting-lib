@@ -91,8 +91,7 @@ public class TokenSetParser implements ITokenSetParser {
 			int j = idxMax2[1];
 			
 			GraphicalProduction c_prod = gpSet.prods.get(idxValidProds[i]);
-			String c_lhs = c_prod.rhs[0];
-			
+			String c_lhs = c_prod.rhs[0];			
 			ArrayList<int [][]> c_idxPossibleHead = new ArrayList<int [][]>();
 			int [] c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead);
 			
@@ -115,6 +114,7 @@ public class TokenSetParser implements ITokenSetParser {
 			maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
 		}
 		
+		/* This solution may not be 100% bullet proof */
 		return maxScore;
 	}
 	
@@ -138,51 +138,88 @@ public class TokenSetParser implements ITokenSetParser {
 				     nodes, maxGeomScores, aRemainingSets);
 		
 		/* Select the maximum geometric score */
-		int [] idxMax2 = MathHelper.indexMax2D(maxGeomScores); /* TODO: Resolve ties */
-		Node n = nodes[idxMax2[0]][idxMax2[1]];
-		CAbstractWrittenTokenSet [] remSets = aRemainingSets[idxMax2[0]][idxMax2[1]];
+		int [] idxMax2 = MathHelper.indexMax2D(maxGeomScores);
 		
-		if ( n.isTerminal() ) {
-			return n; /* Bottom-out condition for recursion */
-		}
-		else {
-			/* Call recursively */			
+		//n.setGeometricScore(maxGeomScores[idxMax2[0]][idxMax2[1]]);
+		
+		/* Search for ties */
+		float maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
+		int [][] idxTieMax = MathHelper.findTies2D(maxGeomScores, maxScore);
+		float [] childGeometricScores = new float[idxTieMax.length];
+		
+		/* TODO */
+		/* Iterate through all members of the tie and find the best one */
+		Node n;
+		CAbstractWrittenTokenSet [] remSets;
+		for (int i = 0; i < idxTieMax.length; ++i) {
+			int idx0 = idxTieMax[i][0];
+			int idx1 = idxTieMax[i][1];
 			
-			/* In case the head child of n is a non-terminal (NT), it needs 
-			 * to be parsed.
-			 */
-			/* Determine if the head child is an NT */
-			String headChildType = gpSet.getRHS(idxValidProds[idxMax2[0]])[0];
-			boolean bHeadChildNT = !termSet.isTypeTerminal(headChildType); 
-			if ( bHeadChildNT ) {
-				int [] headChildTokenIdx = idxPossibleHead.get(idxMax2[0])[idxMax2[1]];
-				CAbstractWrittenTokenSet headChildTokenSet = new CWrittenTokenSetNoStroke(tokenSet, headChildTokenIdx);
-				
-				n.ch[0] = parse(headChildTokenSet, headChildType);
+			n = nodes[idx0][idx1];
+			remSets = aRemainingSets[idx0][idx1];
+		
+			if ( n.isTerminal() ) {
+				childGeometricScores[i] = 1.0f;
+				//return n; /* Bottom-out condition for recursion */
 			}
-			
-			int nValidChildren = 0;
-			for (int k = 0; k < remSets.length; ++k) {
-				String requiredType = n.getRHSTypes()[n.ch.length];
-				Node cn = parse(remSets[k], requiredType);
-				if ( cn != null ) {
-					String actualType = cn.prodSumString.split(" ")[0];
-					if ( requiredType.equals(actualType) ) {
-						n.addChild(cn);
-						nValidChildren++;
+			else {
+				ArrayList<Float>  t_childGeometricScores = new ArrayList<Float>();
+				/* Call recursively */
+				
+				/* In case the head child of n is a non-terminal (NT), it needs 
+				 * to be parsed.
+				 */
+				/* Determine if the head child is an NT */
+				String headChildType = gpSet.getRHS(idxValidProds[idx0])[0];
+				boolean bHeadChildNT = !termSet.isTypeTerminal(headChildType); 
+				if ( bHeadChildNT ) {
+					int [] headChildTokenIdx = idxPossibleHead.get(idx0)[idx1];
+					CAbstractWrittenTokenSet headChildTokenSet = new CWrittenTokenSetNoStroke(tokenSet, headChildTokenIdx);
+					
+					n.ch[0] = parse(headChildTokenSet, headChildType);
+					
+					if ( n.ch[0] != null )
+						t_childGeometricScores.add(n.getGeometricScore());						
+					else
+						t_childGeometricScores.add(0.0f);
+				}
+				
+				int nValidChildren = 0;
+				for (int k = 0; k < remSets.length; ++k) {
+					String requiredType = n.getRHSTypes()[n.ch.length];
+					Node cn = parse(remSets[k], requiredType);
+					if ( cn != null ) {
+						String actualType = cn.prodSumString.split(" ")[0];
+						if ( requiredType.equals(actualType) ) {
+							n.addChild(cn);
+							nValidChildren++;
+						}
 					}
-//					else {
-//						return null;
-//					}
+				}
+				
+				if ( nValidChildren == remSets.length ) {
+					for (int h = 0; h < n.ch.length; ++h)
+						t_childGeometricScores.add(n.ch[h].getGeometricScore());
+					
+					childGeometricScores[i] = MathHelper.arrayMean(t_childGeometricScores);
+				}
+				else {
+//					return null;
+					childGeometricScores[i] = 0.0f;
 				}
 			}
 			
-			if ( nValidChildren == remSets.length )
-				return n;
-			else
-				return null;
 		}
-
+		
+		/* setGeometricScore() and return */
+		int idxBreakTie = MathHelper.indexMax(childGeometricScores); /* What if there is another tie? TODO */
+		int idx0 = idxTieMax[idxBreakTie][0];
+		int idx1 = idxTieMax[idxBreakTie][1];
+		
+		n = nodes[idx0][idx1];
+		n.setGeometricScore(maxGeomScores[idx0][idx1]);
+		
+		return n;
 	}
 
 	
@@ -216,9 +253,9 @@ public class TokenSetParser implements ITokenSetParser {
 										 "((1 + 2) + 3)", "((2 - 3) - 4)"};
 		
 		/* Single out for debugging */
-		Integer [] singleOutIdx = {28};	
+		Integer [] singleOutIdx = {28};
 		/* Crash: ; 
-		 * Error: 28, 91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */
+		 * Error: 91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */
 
 		final String tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
 		final String tokenSetSuffix = ".wts";
@@ -254,7 +291,7 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 		
 			/* Parse graphically */
-			Node parseRoot = tokenSetParser.parse(wts, "ROOT"); 
+			Node parseRoot = tokenSetParser.parse(wts, "ROOT");
 			/* TODO: replace with parse(wts) */
 			
 			String stringized = ParseTreeStringizer.stringize(parseRoot);

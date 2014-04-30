@@ -1,6 +1,7 @@
 package me.scai.parsetree;
 
 import java.lang.IllegalArgumentException;
+import java.util.ArrayList;
 
 public class MathHelper {
 	/* Arithmetic mean of an array of float */
@@ -14,6 +15,14 @@ public class MathHelper {
 			sum += xs[i];
 		
 		return sum / (float) xs.length;
+	}
+	
+	public static float arrayMean(ArrayList<Float> xs) {
+		float [] axs = new float[xs.size()];
+		for (int i = 0; i < xs.size(); ++i)
+			axs[i] = xs.get(i);
+		
+		return mean(axs);
 	}
 	
 	/* Find the index to the largest element of an array of float */
@@ -55,6 +64,33 @@ public class MathHelper {
 		int [] r = new int[2];
 		r[0] = idxMax2;
 		r[1] = idxMax1[idxMax2];
+		
+		return r;
+	}
+	
+	public static int [][] findTies2D(float [][] xs, float maxScore) {
+		/* Search for ties */
+		ArrayList<int []> idxTieMax = new ArrayList<int []>();
+		for (int i = 0; i < xs.length; ++i) {
+			for (int j = 0; j < xs[i].length; ++j) {
+				if ( xs[i][j] == maxScore ) {
+					int [] t_idx = new int[2];
+					t_idx[0] = i;
+					t_idx[1] = j;
+					
+					idxTieMax.add(t_idx);
+				}
+			}
+		}
+		
+		if ( idxTieMax.size() > 1 ) {
+			/* Found tie */
+			int i = 0; /* TODO */
+		}
+		
+		int [][] r = new int[idxTieMax.size()][];
+		for (int i = 0; i < idxTieMax.size(); ++i)
+			r[i] = idxTieMax.get(i);
 		
 		return r;
 	}
