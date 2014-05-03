@@ -109,6 +109,10 @@ public abstract class CAbstractWrittenTokenSet {
 		return s;
 	}
 	
+	public int getNumTokens() {
+		return nt;
+	}
+	
 	/* *** Abstract methods *** */
 	protected abstract void calcBounds();
 	protected abstract void clear();

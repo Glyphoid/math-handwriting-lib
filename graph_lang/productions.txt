@@ -31,16 +31,22 @@ EXPR_LV1
 DECIMAL_NUMBER
 
 ---
+MULTIPLICATION
+MULT_OP
+EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number.
+EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+
+---
 ADDITION
 PLUS_OP
-EXPR_LV1 : {AlignMiddle(0), PositionWest(0)} # 1st number. TODO: Change to terms (i.e., results of multiplication / division).
-EXPR_LV1 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number.
+EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 
 ---
 SUBTRACTION
 MINUS_OP
-EXPR_LV1 : {AlignMiddle(0), PositionWest(0)} # 1st number. TODO: Change to terms (i.e., results of multiplication / division).
-EXPR_LV1 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number.
+EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 
 ---
 EXPR_LV1
@@ -51,15 +57,29 @@ EXPR_LV1
 SUBTRACTION
 
 ---
+EXPR_LV1
+MULTIPLICATION
+
+---
 EXPR_LV2
 EXPR_LV1
 
 ---
-FRACTION
+EXPR_LV2	# Negative
 MINUS_OP
-EXPR_LV1 : {AlignCenter(0), PositionSouth(0)} # Denominator. TODO: Change to more general number types
-EXPR_LV1 : {AlignCenter(0), PositionNorth(0)} # Numerator
+EXPR_LV2 : {AlignMiddle(0), PositionWest(0)}
 
+--- 
+EXPR_LV2	# Superfluous positive sign
+PLUS_OP
+EXPR_LV2 : {AlignMiddle(0), PositionEast(0)}
+
+#---
+#FRACTION
+#MINUS_OP
+#EXPR_LV1 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator. TODO: #Change to more general number types
+#EXPR_LV1 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
+#
 ---
 EXPR_LV2
 FRACTION
@@ -67,8 +87,8 @@ FRACTION
 ---
 FRACTION
 MINUS_OP
-EXPR_LV2 : {AlignCenter(0), PositionSouth(0)} # Denominator. TODO: Change to more general number types
-EXPR_LV2 : {AlignCenter(0), PositionNorth(0)} # Numerator
+EXPR_LV2 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator. TODO: Change to more general number types
+EXPR_LV2 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
 
 ---
 ROOT

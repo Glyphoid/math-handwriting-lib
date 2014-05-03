@@ -66,7 +66,7 @@ abstract class GeometricRelation {
 	/*     Output is a float number between 0 and 1 */
 	/*     0: 100% not true; 1: 100% true */
 	/*	   "ti" stands for token index */
-	public abstract float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel); /* To remove? */
+	//public abstract float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel); /* To remove? */
 	public abstract void parseString(String str, int t_idxTested);
 	public abstract float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel);
 }
@@ -78,9 +78,11 @@ class AlignRelation extends GeometricRelation {
 		AlignBottom, 
 		AlignTop, 
 		AlignMiddle,  /* Middle of the vertical dimension */
+		AlignHeightInclusion, /* Within the height range of the in-rel */ 
 		AlignLeft,
 		AlignRight,
-		AlignCenter   /* Center of the left-right dimension */
+		AlignCenter,   /* Center of the left-right dimension */
+		AlignWidthInclusion, /* Within the width range of the in-rel */
 	};
 	
 	/* Member variables */
@@ -88,6 +90,18 @@ class AlignRelation extends GeometricRelation {
 	
 	/* Constructor */
 	private AlignRelation() {}
+	
+	private static float inclusionEdgeDiff(float [] limsTested, float [] limsInRel) {
+		if ( limsTested[0] >= limsInRel[0] && limsTested[1] <= limsInRel[1] )
+			return 0.0f;
+		else if ( limsTested[0] < limsInRel[0] && limsTested[1] > limsInRel[1] )
+			return ((limsInRel[0] - limsTested[0]) + (limsTested[1] - limsInRel[1])) * 0.5f;
+		else
+			if ( limsTested[0] < limsInRel[0] )
+				return (limsInRel[0] - limsTested[0]);
+			else
+				return (limsTested[1] - limsInRel[1]);
+	}
 	
 	public AlignRelation(AlignType at, int t_idxTested, int t_idxInRel) {
 		alignType = at;
@@ -97,51 +111,6 @@ class AlignRelation extends GeometricRelation {
 		
 		idxInRel = new int[1];
 		idxInRel[0] = t_idxInRel;
-	}
-
-	@Override
-	public float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel) 
-		throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		
-		if ( tiTested.length != 1 )
-			throw new IllegalArgumentException("tiTested does not have length 1");
-		
-		if ( tiInRel.length != 1 )
-			throw new IllegalArgumentException("tiInRel does not have length 1");
-		
-		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
-		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);		
-		
-		float szTested, szInRel, szMean, edgeDiff;
-		if ( alignType == AlignType.AlignBottom || 
-			 alignType == AlignType.AlignTop ) {
-			/* sz is height */
-			szTested = bndsTested[3] - bndsTested[1];
-			szInRel = bndsInRel[3] - bndsTested[1];
-			
-			if ( alignType == AlignType.AlignBottom ) 
-				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
-			else
-				edgeDiff = Math.abs(bndsTested[1] - bndsInRel[1]);
-		}
-		else {	/* sz is width */
-			szTested = bndsTested[2] - bndsTested[0];
-			szInRel = bndsInRel[2] - bndsTested[0];
-			
-			if ( alignType == AlignType.AlignRight ) 
-				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]);
-			else
-				edgeDiff = Math.abs(bndsTested[0] - bndsInRel[0]);
-		}
-		
-		szMean = (szTested + szInRel) * 0.5f;
-		
-		float v = 1 - edgeDiff / szMean;
-		if ( v < 0f ) 
-			v = 0f;
-		
-		return v;
 	}
 	
 	@Override
@@ -153,30 +122,57 @@ class AlignRelation extends GeometricRelation {
 		float szTested, szInRel, szMean, edgeDiff;
 		if ( alignType == AlignType.AlignBottom || 
 			 alignType == AlignType.AlignTop ||
-			 alignType == AlignType.AlignMiddle ) { /* Align in the vertical dimension */
+			 alignType == AlignType.AlignMiddle || 
+			 alignType == AlignType.AlignHeightInclusion ) { /* Align in the vertical dimension */
 			/* sz is height */
 			szTested = bndsTested[3] - bndsTested[1];
 			szInRel = bndsInRel[3] - bndsInRel[1];
 			
-			if ( alignType == AlignType.AlignBottom ) 
+			if ( alignType == AlignType.AlignBottom ) {
 				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
-			else if ( alignType == AlignType.AlignTop )
+			}
+			else if ( alignType == AlignType.AlignTop ) {
 				edgeDiff = Math.abs(bndsTested[1] - bndsInRel[1]);
-			else
+			}
+			else if ( alignType == AlignType.AlignMiddle ) {
 				edgeDiff = Math.abs((bndsTested[1] + bndsTested[3]) * 0.5f - 
 						            (bndsInRel[1] + bndsInRel[3]) * 0.5f);
+			}
+			else {
+				float [] limsTested = new float[2];
+				float [] limsInRel = new float[2];
+				limsTested[0] = bndsTested[1]; 
+				limsTested[1] = bndsTested[3];
+				limsInRel[0] = bndsInRel[1];
+				limsInRel[1] = bndsInRel[3]; 
+				
+				edgeDiff = inclusionEdgeDiff(limsTested, limsInRel);
+			}
 		}
 		else {	/* sz is width */
 			szTested = bndsTested[2] - bndsTested[0];
 			szInRel = bndsInRel[2] - bndsInRel[0];
 			
-			if ( alignType == AlignType.AlignLeft )
+			if ( alignType == AlignType.AlignLeft ) {
 				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]);
-			else if ( alignType == AlignType.AlignRight )
+			}
+			else if ( alignType == AlignType.AlignRight ) {
 				edgeDiff = Math.abs(bndsTested[0] - bndsInRel[0]);
-			else
+			}
+			else if ( alignType == AlignType.AlignCenter ) {
 				edgeDiff = Math.abs((bndsTested[0] + bndsTested[2]) * 0.5f - 
 			                        (bndsInRel[0] + bndsInRel[2]) * 0.5f);
+			}
+			else {
+				float [] limsTested = new float[2];
+				float [] limsInRel = new float[2];
+				limsTested[0] = bndsTested[0]; 
+				limsTested[1] = bndsTested[2];
+				limsInRel[0] = bndsInRel[0];
+				limsInRel[1] = bndsInRel[2]; 
+				
+				edgeDiff = inclusionEdgeDiff(limsTested, limsInRel);				
+			}
 		}
 		
 		szMean = (szTested + szInRel) * 0.5f;
@@ -198,12 +194,16 @@ class AlignRelation extends GeometricRelation {
 			alignType = AlignType.AlignTop;
 		else if ( items[0].equals("AlignMiddle") )
 			alignType = AlignType.AlignMiddle;
+		else if ( items[0].equals("AlignHeightInclusion") )
+			alignType = AlignType.AlignHeightInclusion;
 		else if ( items[0].equals("AlignLeft") )
 			alignType = AlignType.AlignLeft;
 		else if ( items[0].equals("AlignRight") )
 			alignType = AlignType.AlignRight;
-		else
+		else if ( items[0].equals("AlignCenter") )
 			alignType = AlignType.AlignCenter;
+		else
+			alignType = AlignType.AlignWidthInclusion;
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;
@@ -262,105 +262,6 @@ class PositionRelation extends GeometricRelation {
 		idxInRel[0] = t_idxInRel;
 	}
 
-	@Override
-	public float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel) 
-		throws IllegalArgumentException {
-		if ( tiTested.length != 1 )
-			throw new IllegalArgumentException("tiTested does not have length 1");
-		
-		if ( tiInRel.length != 1 )
-			throw new IllegalArgumentException("tiInRel does not have length 1");
-		
-		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
-		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);		
-		
-		float [] oldStayBnds = new float[2];
-		float [] newStayBnds = new float[2];
-		float [] lesserMoveBnds = new float[2];
-		float [] greaterMoveBnds = new float[2];
-		if ( positionType == PositionType.PositionEast || 
-			 positionType == PositionType.PositionWest ||
-			 positionType == PositionType.PositionGenEast ||
-			 positionType == PositionType.PositionGenWest ) {
-			/* Staying bounds are top and bottom */
-			oldStayBnds[0] = bndsTested[1];
-			oldStayBnds[1] = bndsTested[3];
-			
-			newStayBnds[0] = bndsInRel[1];
-			newStayBnds[1] = bndsInRel[3];
-			
-			if ( positionType == PositionType.PositionEast || 
-				 positionType == PositionType.PositionGenEast ) { 
-				/* InRel is on the smaller side */
-				lesserMoveBnds[0] = bndsInRel[0];
-				lesserMoveBnds[1] = bndsInRel[2];
-			
-				greaterMoveBnds[0] = bndsTested[0];
-				greaterMoveBnds[1] = bndsTested[2];
-			}
-			else {
-				/* Tested is on the smaller side */
-				lesserMoveBnds[0] = bndsTested[0];
-				lesserMoveBnds[1] = bndsTested[2];
-			
-				greaterMoveBnds[0] = bndsInRel[0];
-				greaterMoveBnds[1] = bndsInRel[2];
-			}
-			
-		}
-		else if ( positionType == PositionType.PositionSouth || 
-				  positionType == PositionType.PositionNorth || 
-				  positionType == PositionType.PositionGenSouth || 
-				  positionType == PositionType.PositionGenNorth) {	/* sz is width */
-			/* Staying bounds are left and right */
-			oldStayBnds[0] = bndsTested[0];
-			oldStayBnds[1] = bndsTested[2];
-			
-			newStayBnds[0] = bndsInRel[0];
-			newStayBnds[1] = bndsInRel[2];
-			
-			if ( positionType == PositionType.PositionNorth ||
-				 positionType == PositionType.PositionGenNorth) { 
-				/* InRel is on the smaller side */
-				lesserMoveBnds[0] = bndsInRel[1];
-				lesserMoveBnds[1] = bndsInRel[3];
-			
-				greaterMoveBnds[0] = bndsTested[1];
-				greaterMoveBnds[1] = bndsTested[3];
-			}		
-			else {
-				/* Tested is on the smaller side */
-				lesserMoveBnds[0] = bndsTested[1];
-				lesserMoveBnds[1] = bndsTested[3];
-			
-				greaterMoveBnds[0] = bndsInRel[1];
-				greaterMoveBnds[1] = bndsInRel[3];
-			}
-		}
-		
-		float stayScore;
-		if ( positionType == PositionType.PositionGenEast || 
-			 positionType == PositionType.PositionGenWest ||
-			 positionType == PositionType.PositionGenNorth ||
-		     positionType == PositionType.PositionGenSouth ) {
-			stayScore = 1.0f;
-		}
-		else {
-			stayScore = GeometryHelper.pctOverlap(oldStayBnds, newStayBnds);
-			if ( stayScore > 0.5f )
-				stayScore = 1.0f;
-		}
-		
-		float moveScore = GeometryHelper.pctMove(lesserMoveBnds, greaterMoveBnds);
-		
-		float v = stayScore * moveScore;
-		if ( v < 0.0f ) 
-			v = 0.0f;
-		else if ( v > 1.0f )
-			v = 1.0f;
-		
-		return v;
-	}
 	
 	@Override
 	public float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel) {
@@ -524,46 +425,6 @@ class HeightRelation extends GeometricRelation {
 
 	
 	@Override
-	public float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel) {
-		if ( tiTested.length != 1 )
-			throw new IllegalArgumentException("tiTested does not have length 1");
-		
-		if ( tiInRel.length != 1 )
-			throw new IllegalArgumentException("tiInRel does not have length 1");
-		
-		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
-		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);
-		
-		float hTested = bndsTested[3] - bndsTested[1];
-		float hInRel = bndsInRel[3] - bndsInRel[1];
-		float hMean = (hTested + hInRel) * 0.5f;
-		
-		float v;
-		if ( heightRelationType == HeightRelationType.HeightRelationEqual ) {
-			v = 1.0f - Math.abs(hTested - hInRel) / hMean;
-			if ( v > 0.75f ) /* Slack */
-				v = 1.0f;
-		}
-		else if ( heightRelationType == HeightRelationType.HeightRelationGreater  ) {
-			v = (hTested - hInRel) / hInRel;
-			if ( v > 0.5f )
-				v = 1.0f;
-		}
-		else /* heightRelationType == HeightRelationType.HeightRelationLess */ {
-			v = (hInRel - hTested) / hInRel;
-			if ( v > 0.5f )
-				v = 1.0f;
-		}
-		
-		if ( v > 1.0f )
-			v = 1.0f;
-		else if ( v < 0.0f )
-			v = 0.0f;
-		
-		return v;
-	}
-	
-	@Override
 	public float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel) {
 		float [] bndsTested = wtsTested.getSetBounds();
 		if ( bndsInRel.length != 4 )
@@ -653,46 +514,6 @@ class WidthRelation extends GeometricRelation {
 		idxInRel[0] = t_idxInRel;
 	}
 
-	
-	@Override
-	public float eval(CWrittenTokenSet wts, int [] tiTested, int [] tiInRel) {
-		if ( tiTested.length != 1 )
-			throw new IllegalArgumentException("tiTested does not have length 1");
-		
-		if ( tiInRel.length != 1 )
-			throw new IllegalArgumentException("tiInRel does not have length 1");
-		
-		float [] bndsTested = wts.getTokenBounds(tiTested[0]);
-		float [] bndsInRel = wts.getTokenBounds(tiInRel[1]);
-		
-		float wTested = bndsTested[3] - bndsTested[1];
-		float wInRel = bndsInRel[3] - bndsInRel[1];
-		float wMean = (wTested + wInRel) * 0.5f;
-		
-		float v;
-		if ( widthRelationType == WidthRelationType.WidthRelationEqual ) {
-			v = 1.0f - Math.abs(wTested - wInRel) / wMean;
-			if ( v > 0.75f ) /* Slack */
-				v = 1.0f;
-		}
-		else if ( widthRelationType == WidthRelationType.WidthRelationGreater  ) {
-			v = (wTested - wInRel) / wInRel;
-			if ( v > 0.5f )
-				v = 1.0f;
-		}
-		else /* widthRelationType == WidthRelationType.WidthRelationLess */ {
-			v = (wInRel - wTested) / wInRel;
-			if ( v > 0.5f )
-				v = 1.0f;
-		}
-		
-		if ( v > 1.0f )
-			v = 1.0f;
-		else if ( v < 0.0f )
-			v = 0.0f;
-		
-		return v;
-	}
 	
 	@Override
 	public float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel) {
@@ -1060,8 +881,6 @@ public class GraphicalProduction {
 	public int getNumNonHeadTokens() {
 		return nrhs - 1;
 	}
-	
-	
 	
 	@Override
 	public String toString() {

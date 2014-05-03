@@ -123,6 +123,13 @@ public class TokenSetParser implements ITokenSetParser {
 		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
 		/* Determine the name of the lhs */
 		
+		//DEBUG
+		int nt = tokenSet.getNumTokens(); 
+		String tStr = tokenSet.toString();
+		if ( lhs.equals("MULTIPLICATION") ) {
+			nt = nt + 0;
+		}
+		
 		int [] idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead);
 		
 		if ( idxValidProds.length == 0 ) {
@@ -147,10 +154,13 @@ public class TokenSetParser implements ITokenSetParser {
 		int [][] idxTieMax = MathHelper.findTies2D(maxGeomScores, maxScore);
 		float [] childGeometricScores = new float[idxTieMax.length];
 		
-		/* TODO */
 		/* Iterate through all members of the tie and find the best one */
 		Node n;
 		CAbstractWrittenTokenSet [] remSets;
+		 
+		if ( idxTieMax.length > 1 )
+			n = null; //DEBUG
+		
 		for (int i = 0; i < idxTieMax.length; ++i) {
 			int idx0 = idxTieMax[i][0];
 			int idx1 = idxTieMax[i][1];
@@ -176,7 +186,20 @@ public class TokenSetParser implements ITokenSetParser {
 					int [] headChildTokenIdx = idxPossibleHead.get(idx0)[idx1];
 					CAbstractWrittenTokenSet headChildTokenSet = new CWrittenTokenSetNoStroke(tokenSet, headChildTokenIdx);
 					
-					n.ch[0] = parse(headChildTokenSet, headChildType);
+					//DEBUG
+					if ( headChildTokenSet.toString().equals("Token [5, +, -, 3]") && headChildType.equals("EXPR_LV1") )
+						nt = nt + 0;
+					if ( headChildTokenSet.toString().equals("Token [5, +, -, 3]") && headChildType.equals("ADDITION") )
+						nt = nt + 0;
+					if ( headChildTokenSet.toString().equals("Token [-]") && headChildType.equals("EXPR_LV2") )
+						nt = nt + 0;
+					if ( headChildTokenSet.toString().equals("Token [-]") && headChildType.equals("EXPR_LV1") )
+						nt = nt + 0;
+					if ( headChildTokenSet.toString().equals("Token [-]") && headChildType.equals("DECIMAL_NUMBER") )
+						nt = nt + 0;
+					
+					/* Recursive call */
+					n.ch[0] = parse(headChildTokenSet, headChildType); 
 					
 					if ( n.ch[0] != null )
 						t_childGeometricScores.add(n.getGeometricScore());						
@@ -187,6 +210,15 @@ public class TokenSetParser implements ITokenSetParser {
 				int nValidChildren = 0;
 				for (int k = 0; k < remSets.length; ++k) {
 					String requiredType = n.getRHSTypes()[n.ch.length];
+					
+					/* Recursive call */
+					//DEBUG
+					if ( remSets[k].toString().equals("Token [5, +, -, 3]") && requiredType.equals("EXPR_LV2") )
+						nt = nt + 0;
+					
+					if ( remSets[k].toString().equals("Token [-]") && requiredType.equals("EXPR_LV2") )
+						nt = nt + 0;
+					
 					Node cn = parse(remSets[k], requiredType);
 					if ( cn != null ) {
 						String actualType = cn.prodSumString.split(" ")[0];
@@ -212,16 +244,23 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 		
 		/* setGeometricScore() and return */
-		int idxBreakTie = MathHelper.indexMax(childGeometricScores); /* What if there is another tie? TODO */
+		if ( idxTieMax.length > 1 )
+			n = null; //DEBUG
+		
+		/* What if there is still a tie? TODO */
+		int idxBreakTie = MathHelper.indexMax(childGeometricScores); 
 		int idx0 = idxTieMax[idxBreakTie][0];
 		int idx1 = idxTieMax[idxBreakTie][1];
 		
 		n = nodes[idx0][idx1];
 		n.setGeometricScore(maxGeomScores[idx0][idx1]);
 		
+		//DEBUG
+		if ( n.prodSumString.equals("DECIMAL_NUMBER --> MINUS_OP DECIMAL_NUMBER") )
+			nt = nt + 0;
+		
 		return n;
 	}
-
 	
 	/* Testing routine */
 	public static void main(String [] args) {
@@ -233,28 +272,35 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		int [] tokenSetNums           = {1, 2, 4, 6, 9, 10, 
 									     11, 12, 13, 14, 
-				                         15, 18, 21, 22, 				                         
-				                         27, 28, 36, 
+				                         15, 18, 21, 22,                    
+				                         27, 28, 29, 
+				                         32, 34, 36, 37, 
 				                         41, 42, 43, 44, 45, 
 				                         48, 49,
-				                         50, 51, 52, 67, 68, 69, 70, 
+				                         50, 51, 52, 53, 54, 55, 
+				                         56, 57, 58, 59, 
+				                         //60, 
+				                         67, 68, 69, 70, 
 				                         72, 73, 74, 75, 76, 
 				                         83, 84, 85, 86, 88, 89, 
 				                         90, 91};
 		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "-28", "(21 - 3)",  
 							             "(21 + 3)", "(21 - 5)", "009", "900", 
 										 "100", "(56 - 3)", "(29 / 3)", "--3", 
-										 "(5 / 8)", "((5 / 8) / 9)", "(23 / 4)", 
+										 "(5 / 8)", "((5 / 8) / 9)", "(3 / (2 / 7))", 
+										 "(1 - (2 / 3))", "(4 / (5 + (2 / 3)))", "(23 / 4)", "((5 + 9) / ((3 / 2) - 1))", 
 										 "((4 - 2) / 3)", "((7 - 8) / 10)", "((3 + 1) / 4)", "(72 / 3)",  "((8 - 3) / 4)", 
 										 "8.3", "4.0", 
-									 	 "0.01", "-53", "-7.4", "2", "0", "1.20", "0.02", 
+									 	 "0.01", "-53", "-7.4", "(8.1 / 0.9)", "(-1 / -3.2)", "(-4.2 / (7 + 3))", 
+									 	 "(5 * 3)", "(3 * 4)",  "(-2 * 8)", "(2 * -3)", 
+									 	 //"(2 * +3)",
+									 	 "2", "0", "1.20", "0.02", 
 										 "-1", "-1.2", "-0.11", "-12", "-13.9", 
 										 "(0 + 0)", "(1.3 + 4)", "(4 + 2.1)", "(2.0 + 1.1)", "(-1 + -3)", "(-3.0 + -1)", 
-										 "((1 + 2) + 3)", "((2 - 3) - 4)"};
-		
+										 "((1 + 2) + 3)", "((2 - 3) - 4)"};		
 		/* Single out for debugging */
-		Integer [] singleOutIdx = {28};
-		/* Crash: ; 
+		Integer [] singleOutIdx = {};
+		/* Crash: 60: (2 * +3), superfluous plus sign
 		 * Error: 91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */
 
 		final String tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";

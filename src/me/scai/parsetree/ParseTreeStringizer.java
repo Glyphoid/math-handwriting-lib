@@ -28,11 +28,17 @@ public class ParseTreeStringizer {
 			case "EXPR_LV1 --> SUBTRACTION":
 				s = stringize(n.ch[0]);
 				break;
-			case "ADDITION --> PLUS_OP EXPR_LV1 EXPR_LV1":
+			case "EXPR_LV1 --> MULTIPLICATION":
+				s = stringize(n.ch[0]);
+				break;
+			case "ADDITION --> PLUS_OP EXPR_LV2 EXPR_LV2":
 				s = "(" + stringize(n.ch[1]) + " + " + stringize(n.ch[2]) + ")"; /* Order??? */
 				break;
-			case "SUBTRACTION --> MINUS_OP EXPR_LV1 EXPR_LV1":
+			case "SUBTRACTION --> MINUS_OP EXPR_LV2 EXPR_LV2":
 				s = "(" + stringize(n.ch[1]) + " - " + stringize(n.ch[2]) + ")"; /* Order??? */
+				break;
+			case "MULTIPLICATION --> MULT_OP EXPR_LV2 EXPR_LV2":
+				s = "(" + stringize(n.ch[1]) + " * " + stringize(n.ch[2]) + ")"; /* Order??? */
 				break;
 			case "DECIMAL_NUMBER --> DIGIT_STRING":
 				s = stringize(n.ch[0]);
@@ -40,9 +46,15 @@ public class ParseTreeStringizer {
 			case "EXPR_LV2 --> EXPR_LV1":		/* ? */
 				s = stringize(n.ch[0]);
 				break;
-			case "FRACTION --> MINUS_OP EXPR_LV1 EXPR_LV1":
-				s = "(" + stringize(n.ch[1]) + " / " + stringize(n.ch[2]) + ")"; /* Order??? */
+			case "EXPR_LV2 --> MINUS_OP EXPR_LV2":
+				s = "-" + stringize(n.ch[0]);
 				break;
+			case "EXPR_LV2 --> PLUS_OP EXPR_LV2":
+				s = "+" + stringize(n.ch[0]);
+				break;
+//			case "FRACTION --> MINUS_OP EXPR_LV1 EXPR_LV1":
+//				s = "(" + stringize(n.ch[1]) + " / " + stringize(n.ch[2]) + ")"; /* Order??? */
+//				break;
 			case "EXPR_LV2 --> FRACTION":
 				s = stringize(n.ch[0]);
 				break;
