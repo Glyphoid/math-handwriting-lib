@@ -59,8 +59,8 @@ public class TokenSetParser implements ITokenSetParser {
 				ArrayList<CAbstractWrittenTokenSet> remainingSets = new ArrayList<CAbstractWrittenTokenSet>();
 				
 				// DEBUG
-				if ( i == 2 )
-					i = i + 0;
+				if ( idxValidProds.length == 2 && idxValidProds[0] == 0 )
+					idxValidProds[0] += 0;
 				
 				float [] maxGeomScore = new float[1];
 				
@@ -104,6 +104,10 @@ public class TokenSetParser implements ITokenSetParser {
 				CAbstractWrittenTokenSet [][][] c_aRemainingSets = new CAbstractWrittenTokenSet[c_idxValidProds.length][][];
 				
 				/* Recursive call */
+				//DEBUG
+				if ( c_idxValidProds.length == 2 && c_idxValidProds[0] == 0 )
+					c_idxValidProds[0] += 0;
+					
 				float c_maxScore = evalGeometry(tokenSet, c_idxValidProds, c_idxPossibleHead, 
 					                            c_nodes, c_maxGeomScores, c_aRemainingSets);
 				maxGeomScores[i][j] = c_maxScore;

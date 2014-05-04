@@ -289,13 +289,14 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		for (int i = 0; i < is.length; ++i) {
 			float [] t_bnds = getTokenBounds(is[i]);
 			
-			if ( t_bnds[0] < bnds[0] )
+			if ( t_bnds[0] < bnds[0] )	/* min_x */
 				bnds[0] = t_bnds[0];
-			if ( t_bnds[1] < bnds[1] )
+			if ( t_bnds[1] < bnds[1] )	/* min_y */
 				bnds[1] = t_bnds[1];
-			if ( t_bnds[2] > bnds[2] )
+			
+			if ( t_bnds[2] > bnds[2] )	/* max_x */
 				bnds[2] = t_bnds[2];
-			if ( t_bnds[3] > bnds[3] )
+			if ( t_bnds[3] > bnds[3] )	/* max_y */
 				bnds[3] = t_bnds[3];
 		}
 		
