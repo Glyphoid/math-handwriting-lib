@@ -7,7 +7,7 @@ public class GeometryHelper {
 		
 		if ( oldBnds[1] < oldBnds[0] || newBnds[1] < newBnds[0] )
 			throw new IllegalArgumentException("Input bounds are not all in the ascending order");
-			
+		
 		float oldSize = oldBnds[1] - oldBnds[0];
 		float newSize = newBnds[1] - newBnds[0];
 		float meanSize = (oldSize + newSize) * 0.5f;

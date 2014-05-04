@@ -33,13 +33,13 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 		catch ( IOException e ) {
 			System.err.println(e.getMessage());
-		}		
+		}
 	}
 	
 	
 	@Override
 	public Node parse(CAbstractWrittenTokenSet tokenSet) {
-		return parse(tokenSet, null);
+		return parse(tokenSet, "ROOT");
 	}
 	
 	private float evalGeometry(CAbstractWrittenTokenSet tokenSet, 
@@ -337,8 +337,8 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 		
 			/* Parse graphically */
-			Node parseRoot = tokenSetParser.parse(wts, "ROOT");
-			/* TODO: replace with parse(wts) */
+			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
+			Node parseRoot = tokenSetParser.parse(wts);
 			
 			String stringized = ParseTreeStringizer.stringize(parseRoot);
 			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
