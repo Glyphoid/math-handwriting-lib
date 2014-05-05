@@ -33,13 +33,13 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 		catch ( IOException e ) {
 			System.err.println(e.getMessage());
-		}		
+		}
 	}
 	
 	
 	@Override
 	public Node parse(CAbstractWrittenTokenSet tokenSet) {
-		return parse(tokenSet, null);
+		return parse(tokenSet, "ROOT");
 	}
 	
 	private float evalGeometry(CAbstractWrittenTokenSet tokenSet, 
@@ -100,6 +100,10 @@ public class TokenSetParser implements ITokenSetParser {
 				CAbstractWrittenTokenSet [][][] c_aRemainingSets = new CAbstractWrittenTokenSet[c_idxValidProds.length][][];
 				
 				/* Recursive call */
+				//DEBUG
+				if ( c_idxValidProds.length == 2 && c_idxValidProds[0] == 0 )
+					c_idxValidProds[0] += 0;
+					
 				float c_maxScore = evalGeometry(tokenSet, c_idxValidProds, c_idxPossibleHead, 
 					                            c_nodes, c_maxGeomScores, c_aRemainingSets);
 				maxGeomScores[i][j] = c_maxScore;
@@ -372,8 +376,8 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 		
 			/* Parse graphically */
-			Node parseRoot = tokenSetParser.parse(wts, "ROOT");
-			/* TODO: replace with parse(wts) */
+			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
+			Node parseRoot = tokenSetParser.parse(wts);
 			
 			String stringized = ParseTreeStringizer.stringize(parseRoot);
 			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
