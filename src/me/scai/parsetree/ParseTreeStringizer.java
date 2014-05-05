@@ -1,10 +1,15 @@
 package me.scai.parsetree;
 
 public class ParseTreeStringizer {
+	public final static String parsingErrString = "[Parsing failed: Syntax error]";
+	
 	/* Input: n: root of the parse tree */
 	/* Currently based on recursion. */
 	public static String stringize(Node n) {
-		String s = null;
+		if ( n == null )
+			return parsingErrString;
+					
+			String s = null;
 		
 		if ( n.prodSumString.equals("DIGIT_STRING --> DIGIT DIGIT_STRING") )
 			s = n.ch[0].termName + stringize(n.ch[1]);
@@ -33,12 +38,9 @@ public class ParseTreeStringizer {
 		else if ( n.prodSumString.equals("EXPR_LV2 --> EXPR_LV1") )		/* ? */
 			s = stringize(n.ch[0]);
 		else if ( n.prodSumString.equals("EXPR_LV2 --> MINUS_OP EXPR_LV2") )
-			s = "-" + stringize(n.ch[0]);
+			s = "-" + stringize(n.ch[1]);
 		else if ( n.prodSumString.equals("EXPR_LV2 --> PLUS_OP EXPR_LV2") )
-			s = "+" + stringize(n.ch[0]);
-//			case "FRACTION --> MINUS_OP EXPR_LV1 EXPR_LV1":
-//				s = "(" + stringize(n.ch[1]) + " / " + stringize(n.ch[2]) + ")"; /* Order??? */
-//				break;
+			s = "+" + stringize(n.ch[1]);
 		else if ( n.prodSumString.equals("EXPR_LV2 --> FRACTION") )
 			s = stringize(n.ch[0]);
 		else if ( n.prodSumString.equals("FRACTION --> MINUS_OP EXPR_LV2 EXPR_LV2") )

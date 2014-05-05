@@ -221,6 +221,8 @@ public class GraphicalProductionSet {
 			else {
 				/* There are rhs items other than the head NT. */
 				int [][] combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());
+				/* TODO: Discard the partitions that don't make sense to speed things up */
+				
 				for (int i = 0; i < combs.length; ++i) {
 					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
 					

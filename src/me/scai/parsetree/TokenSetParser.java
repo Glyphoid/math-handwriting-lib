@@ -58,10 +58,6 @@ public class TokenSetParser implements ITokenSetParser {
 				int [] idxHead = idxPossibleHead.get(i)[j];
 				ArrayList<CAbstractWrittenTokenSet> remainingSets = new ArrayList<CAbstractWrittenTokenSet>();
 				
-				// DEBUG
-				if ( i == 2 )
-					i = i + 0;
-				
 				float [] maxGeomScore = new float[1];
 				
 				Node n = gpSet.attempt(idxValidProds[i], tokenSet, idxHead, remainingSets, maxGeomScore);
@@ -120,6 +116,8 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* This implements a recursive descend parser */
 	public Node parse(CAbstractWrittenTokenSet tokenSet, String lhs) {
+		final boolean bTentative = true; // DEBUG
+		
 		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
 		/* Determine the name of the lhs */
 		
@@ -134,7 +132,7 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		if ( idxValidProds.length == 0 ) {
 			return null; /* No valid production for this token set */
-		}		
+		}
 		
 		/* Geometric evaluation */
 		Node [][] nodes = new Node[idxValidProds.length][];
@@ -151,6 +149,9 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		/* Search for ties */
 		float maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
+		if ( maxScore == 0.0 )
+			return null;
+		
 		int [][] idxTieMax = MathHelper.findTies2D(maxGeomScores, maxScore);
 		float [] childGeometricScores = new float[idxTieMax.length];
 		
@@ -161,6 +162,9 @@ public class TokenSetParser implements ITokenSetParser {
 		if ( idxTieMax.length > 1 )
 			n = null; //DEBUG
 		
+		/* TODO: iterate through all possible productions and heads in descending order of geomScore, 
+		 * util the first successful parsing is hit. (More time consuming)?
+		 */
 		for (int i = 0; i < idxTieMax.length; ++i) {
 			int idx0 = idxTieMax[i][0];
 			int idx1 = idxTieMax[i][1];
@@ -221,17 +225,33 @@ public class TokenSetParser implements ITokenSetParser {
 					
 					Node cn = parse(remSets[k], requiredType);
 					if ( cn != null ) {
+						nValidChildren++;
+						
 						String actualType = cn.prodSumString.split(" ")[0];
 						if ( requiredType.equals(actualType) ) {
 							n.addChild(cn);
-							nValidChildren++;
 						}
 					}
+						
 				}
 				
 				if ( nValidChildren == remSets.length ) {
-					for (int h = 0; h < n.ch.length; ++h)
-						t_childGeometricScores.add(n.ch[h].getGeometricScore());
+					for (int h = 0; h < n.ch.length; ++h) {
+						if ( !bTentative ) {
+							t_childGeometricScores.add(n.ch[h].getGeometricScore());
+						}
+						else {
+							if ( h < n.ch.length && n.ch[h] != null ) {
+								if ( n.ch[h].isTerminal )
+									t_childGeometricScores.add(1.0f);
+								else
+									t_childGeometricScores.add(n.ch[h].getGeometricScore()); // Why is it zero? DEBUG
+							}
+							else {
+								t_childGeometricScores.add(0.0f);
+							}
+						}
+					}
 					
 					childGeometricScores[i] = MathHelper.arrayMean(t_childGeometricScores);
 				}
@@ -249,6 +269,15 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		/* What if there is still a tie? TODO */
 		int idxBreakTie = MathHelper.indexMax(childGeometricScores); 
+		
+		if ( bTentative ) {
+			float maxChildGeometricScore = childGeometricScores[idxBreakTie];
+			if ( maxChildGeometricScore == 0.0f ) {
+				maxChildGeometricScore += 0.0f; //DEBUG
+				return null;
+			}
+		}
+		
 		int idx0 = idxTieMax[idxBreakTie][0];
 		int idx1 = idxTieMax[idxBreakTie][1];
 		
@@ -270,6 +299,8 @@ public class TokenSetParser implements ITokenSetParser {
 		/* TS_9: .28 (Geometric error: vertical alignment) */
 		/* TS_5: 23 (Geometric error) */
 		
+		final String errStr = ParseTreeStringizer.parsingErrString;
+		
 		int [] tokenSetNums           = {1, 2, 4, 6, 9, 10, 
 									     11, 12, 13, 14, 
 				                         15, 18, 21, 22,                    
@@ -279,11 +310,12 @@ public class TokenSetParser implements ITokenSetParser {
 				                         48, 49,
 				                         50, 51, 52, 53, 54, 55, 
 				                         56, 57, 58, 59, 
-				                         //60, 
+				                         60, 
 				                         67, 68, 69, 70, 
 				                         72, 73, 74, 75, 76, 
 				                         83, 84, 85, 86, 88, 89, 
-				                         90, 91};
+				                         90, 91, 100, 101,
+				                         98, 99}; /* Begins token sets with syntax errors */
 		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "-28", "(21 - 3)",  
 							             "(21 + 3)", "(21 - 5)", "009", "900", 
 										 "100", "(56 - 3)", "(29 / 3)", "--3", 
@@ -293,15 +325,18 @@ public class TokenSetParser implements ITokenSetParser {
 										 "8.3", "4.0", 
 									 	 "0.01", "-53", "-7.4", "(8.1 / 0.9)", "(-1 / -3.2)", "(-4.2 / (7 + 3))", 
 									 	 "(5 * 3)", "(3 * 4)",  "(-2 * 8)", "(2 * -3)", 
-									 	 //"(2 * +3)",
+									 	 "(2 * +3)",
 									 	 "2", "0", "1.20", "0.02", 
 										 "-1", "-1.2", "-0.11", "-12", "-13.9", 
 										 "(0 + 0)", "(1.3 + 4)", "(4 + 2.1)", "(2.0 + 1.1)", "(-1 + -3)", "(-3.0 + -1)", 
-										 "((1 + 2) + 3)", "((2 - 3) - 4)"};		
+										 "((1 + 2) + 3)", "((2 - 3) - 4)", "-3", "+3", 
+										 errStr, errStr};
+
 		/* Single out for debugging */
 		Integer [] singleOutIdx = {};
-		/* Crash: 60: (2 * +3), superfluous plus sign
-		 * Error: 91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */
+		/* Crash: 
+		 * Error: 60: (2 * +3), superfluous plus sign
+		 *        91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */
 
 		final String tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
 		final String tokenSetSuffix = ".wts";
