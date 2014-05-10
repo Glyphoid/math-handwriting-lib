@@ -87,7 +87,7 @@ FRACTION
 ---
 FRACTION
 MINUS_OP
-EXPR_LV2 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator. TODO: Change to more general number types
+EXPR_LV2 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator.
 EXPR_LV2 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
 
 ---

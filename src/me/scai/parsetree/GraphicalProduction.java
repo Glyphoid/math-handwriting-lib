@@ -7,6 +7,7 @@ import java.util.Arrays;
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
+import me.scai.handwriting.Rectangle;
 
 abstract class GeometricRelation {
 	protected int [] idxTested;      /* Indices to the tested tokens */ 
@@ -580,6 +581,162 @@ class WidthRelation extends GeometricRelation {
 	}
 }
 
+/* Class GeometricShortcut 
+ * Detects short cut for dividing non-head tokens into sets for parsing 
+ * see: GraphicalProduction.attempt(); MathHelper.getFullDiscreteSpace();
+ */
+class GeometricShortcut {
+	public enum ShortcutType {
+		noShortcut,
+		horizontalDivideNS,		/* North to south */ 
+		horizontalDivideSN,		/* South to north */
+		verticalDivideWE,		/* West to east */
+		verticalDivideEW,		/* East to west */
+	}
+	
+	/* Member variables */
+	public ShortcutType shortcutType = ShortcutType.noShortcut;
+	
+	/* Methods */
+	public GeometricShortcut(GraphicalProduction gp) {
+		if ( gp.geomRels.length != 3 ) {
+			/* Currently, we deal with only bipartite shortcuts, such as linear divides.
+			 * This may change in the future.
+			 */
+			shortcutType = ShortcutType.noShortcut;
+			return;
+		}
+
+		PositionRelation.PositionType [] posType = new PositionRelation.PositionType[2];
+		int [] nPosRels = new int[2];
+		/* Only if each of the two non-head tokens have exactly one positional relation, 
+		 * can we construct a meaningful shortcut (at least for the time being).
+		 */
+		
+		for (int i = 1; i < 3; ++i) {
+			for (int j = 0; j < gp.geomRels[i].length; ++j) {
+				if ( gp.geomRels[i][j].getClass() == PositionRelation.class ) {
+					nPosRels[i - 1]++;
+					
+					PositionRelation posRel = (PositionRelation) gp.geomRels[i][j];					
+					posType[i - 1] = posRel.positionType;
+				}
+			}
+		}
+		
+		if ( nPosRels[0] == 1 && nPosRels[1] == 1 ) {
+			if ( posType[0] == PositionRelation.PositionType.PositionWest && posType[1] == PositionRelation.PositionType.PositionEast ||
+				 posType[0] == PositionRelation.PositionType.PositionGenWest && posType[1] == PositionRelation.PositionType.PositionGenEast ) {
+				shortcutType = ShortcutType.verticalDivideWE;
+			}
+			else if ( posType[0] == PositionRelation.PositionType.PositionEast && posType[1] == PositionRelation.PositionType.PositionWest ||
+					  posType[0] == PositionRelation.PositionType.PositionGenEast && posType[1] == PositionRelation.PositionType.PositionGenWest ) {
+				shortcutType = ShortcutType.verticalDivideEW;
+			}
+			else if ( posType[0] == PositionRelation.PositionType.PositionNorth && posType[1] == PositionRelation.PositionType.PositionSouth ||
+					  posType[0] == PositionRelation.PositionType.PositionGenNorth && posType[1] == PositionRelation.PositionType.PositionGenSouth ) {
+				shortcutType = ShortcutType.horizontalDivideNS;
+			}
+			else if ( posType[0] == PositionRelation.PositionType.PositionSouth && posType[1] == PositionRelation.PositionType.PositionNorth ||
+					  posType[0] == PositionRelation.PositionType.PositionGenSouth && posType[1] == PositionRelation.PositionType.PositionGenNorth ) {
+				shortcutType = ShortcutType.horizontalDivideSN;
+			}
+		}
+	}
+	
+	public boolean exists() {
+		return (shortcutType != ShortcutType.noShortcut);
+	}
+	
+	/* Main work: divide a token set into two (or more, for future) parts b
+	 * based on the type of the geometric shortcut.
+	 */
+	public int [][] getPartition(CAbstractWrittenTokenSet wts, int [] iHead) {
+		if ( !exists() ) {
+			throw new RuntimeException("Geometric shortcut does not exist");
+		}
+		
+		if ( iHead.length >= wts.nTokens() ) {
+			throw new RuntimeException("The number of indices to heads equals or exceeds the number of tokens in the token set");
+		}
+		
+		Rectangle rectHead = new Rectangle(wts, iHead);
+		float headCenterX = rectHead.getCentralX();
+		float headCenterY = rectHead.getCentralY();
+		
+		int [][] labels = new int[1][];
+		int nnht = wts.nTokens() - iHead.length;
+		labels[0] = new int[nnht];
+		
+		/* Get indices to all non-head tokens */
+		ArrayList<Integer> inht = new ArrayList<Integer>();
+	    ArrayList<Rectangle> rnht = new ArrayList<Rectangle>();
+	    for (int i = 0; i < wts.nTokens(); ++i) {
+	    	boolean bContains = false;
+	    	for (int j = 0; j < iHead.length; ++j) {
+	    		if ( iHead[j] == i ) {
+	    			bContains = true;
+	    			break;
+	    		}
+	    	}
+	    	if ( !bContains ) {
+	    		inht.add(i);
+	    		rnht.add(new Rectangle(wts.getTokenBounds(i)));
+	    	}
+	    }
+	    
+		for (int i = 0; i < inht.size(); ++i) {
+			int idx;
+			if ( shortcutType == ShortcutType.verticalDivideWE ) {
+				idx = rnht.get(i).isCenterWestOf(headCenterX) ? 0 : 1;
+			}
+			else if ( shortcutType == ShortcutType.verticalDivideEW ) {
+				idx = rnht.get(i).isCenterEastOf(headCenterX) ? 0 : 1;
+			}
+			else if ( shortcutType == ShortcutType.horizontalDivideNS ) {
+				idx = rnht.get(i).isCenterNorthOf(headCenterX) ? 1 : 0;
+			}
+			else if ( shortcutType == ShortcutType.horizontalDivideSN ) {
+				idx = rnht.get(i).isCenterSouthOf(headCenterY) ? 1 : 0;
+			}
+			else {
+				throw new RuntimeException("Unrecognized shortcut type");
+			}
+			
+			labels[0][i] = idx;
+		}
+		
+		return labels;
+	}
+	
+	
+	@Override
+	public String toString() {
+		String s = "GeometricShortcut: ";
+				
+		if ( shortcutType == ShortcutType.noShortcut ) {
+			s += "noShortcut";
+		}
+		else if ( shortcutType == ShortcutType.horizontalDivideNS ) {
+			s += "horiztonalDivdeNS";
+		}
+		else if ( shortcutType == ShortcutType.horizontalDivideSN ) {
+			s += "horizontalDivideSN";
+		}
+		else if ( shortcutType == ShortcutType.verticalDivideWE ) {
+			s += "verticalDivideWE";
+		}
+		else if ( shortcutType == ShortcutType.verticalDivideEW ) {
+			s += "verticalDivideEW";
+		}
+		else {
+			s += "(unknown shortcut type)";
+		}
+		
+		return s;
+	}
+}
+
 /* GraphicalProduction: Key class in the parser infrastructure.
  *     This specify the rules by which multiple 
  * tokens (CWrittenToken) or nodes (Node) combine into a meaningful 
@@ -609,6 +766,7 @@ public class GraphicalProduction {
 	 */
 	
 	GeometricRelation [][] geomRels;
+	GeometricShortcut geomShortcut;
 	
 	//int headNode;	/* Index to the "head node" */
 	/* Leaving this out for now, since the first rhs will always be the 
@@ -640,12 +798,20 @@ public class GraphicalProduction {
 		else {
 			System.err.println("WARNING: no rhs");
 		}
-			
 		
-		getSumString();
+		/* Generate geometric shortcut, if any. 
+		 * If there is no shortcut, shortcutType will be noShortcut. */
+		geomShortcut = new GeometricShortcut(this);
+//		if ( geomShortcut.shortcutType != GeometricShortcut.ShortcutType.noShortcut ) { //DEBUG
+//			int i = 0; //DEBUG
+//			i = 1;
+//		}
+		
+		/* Generate summary string */
+		genSumString();
 	}
 	
-	private void getSumString() {
+	private void genSumString() {
 		sumString = lhs + " " + sumStringArrow + " ";
 		for (int i = 0; i < rhs.length; ++i) {
 			sumString += rhs[i];
@@ -668,6 +834,9 @@ public class GraphicalProduction {
 			            int [] iHead,
 			            ArrayList<CAbstractWrittenTokenSet> remainingSets, 
 			            float [] maxGeomScore) {		
+		/* Configuration constants */
+		final boolean bUseShortcut = true; /* TODO: Get rid of this constant when the method proves to be reliable */
+		
 //		final float verifyThresh = 0.50f; /* TODO: make less ad hoc */
 		int nnht = tokenSet.nTokens() - iHead.length; /* Number of non-head tokens */
 		int nrn = nrhs - 1; /* Number of remaining nodes to match */
@@ -698,9 +867,26 @@ public class GraphicalProduction {
 			Node n = new Node(sumString, rhs);		
 			return n;
 		}
+		
+		//DEBUG
+		if ( this.lhs.equals("FRACTION") ) {
+			int ii;
+			ii = 0;
+		}
+		//~DEBUG
 
-		/* Get all possible partitions: in "labels" */
-		int [][] labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
+		int [][] labels = null;
+		if ( geomShortcut.exists() && bUseShortcut ) {
+			/* Use this smarter approach when a geometric shortcut exists */
+			labels = geomShortcut.getPartition(tokenSet, iHead);
+		}
+		else {
+			/* Get all possible partitions: in "labels" */
+			/* This is the brute-force approach. */
+			labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
+		}
+		
+		/* TODO: Use shortcuts based on the production */
 
 	    /* Get index to all non-head token */
 	    ArrayList<Integer> inht = new ArrayList<Integer>();
@@ -737,7 +923,11 @@ public class GraphicalProduction {
     			a_rems[i][inode].setTokenNames(tokenSet.getTokenNames());
     			a_rems[i][inode].addToken(tokenSet.getTokenBounds(irt), 
     					                  tokenSet.recogWinners.get(irt), 
-    					                  tokenSet.recogPs.get(irt));
+    					                  tokenSet.recogPs.get(irt), 
+    					                  false);		
+    			/* The last input argument sets bCheck to false for speed */
+    			/* Is this a dangerous action? */
+    			
     			remsFilled[inode] = true;
     		}
     		

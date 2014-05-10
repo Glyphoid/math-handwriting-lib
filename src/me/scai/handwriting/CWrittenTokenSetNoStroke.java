@@ -31,24 +31,29 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		
 		calcBounds();
 	}
-	
-	
+
 	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP) {
+		addToken(bounds, t_recogWinner, t_recogP, true);
+	}
+	
+	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP, boolean bCheck) {
 		/* Input sanity checks */
 		if ( bounds.length != 4 ) {
 			System.err.println("Input bounds is not a length-4 float array");
 			return;
 		}
 		
-		if ( tokenNames.length != t_recogP.length ) {
-			System.err.println("Input t_recogP doesn't have the same length as tokenNames");
-			return;
-		}
-		
-		/* Make sure that t_recogWinner belongs to the set tokenNames */
-		if ( !Arrays.asList(tokenNames).contains(t_recogWinner) ) {
-			System.err.println("Value of t_recogWinner (" + t_recogWinner + ") does not belong to tokenNames");
-			return;
+		if ( bCheck ) {
+			if ( tokenNames.length != t_recogP.length ) {
+				System.err.println("Input t_recogP doesn't have the same length as tokenNames");
+				return;
+			}
+			
+			/* Make sure that t_recogWinner belongs to the set tokenNames */
+			if ( !Arrays.asList(tokenNames).contains(t_recogWinner) ) {
+				System.err.println("Value of t_recogWinner (" + t_recogWinner + ") does not belong to tokenNames");
+				return;
+			}
 		}
 		
 		tokenBounds.add(bounds);
@@ -57,7 +62,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 				
 		addOneToken(); /* Takes care of things including incrementing nt */
 	}
-	
+		
 	@Override
 	public void calcBounds() {
 		min_x = min_y = Float.MAX_VALUE;

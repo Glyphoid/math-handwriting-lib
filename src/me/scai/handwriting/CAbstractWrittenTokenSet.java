@@ -92,7 +92,7 @@ public abstract class CAbstractWrittenTokenSet {
 		bnds[3] = max_y;
 		
 		return bnds;
-	}	
+	}
 
 	@Override
 	public String toString() {

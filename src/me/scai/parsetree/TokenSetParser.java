@@ -82,6 +82,9 @@ public class TokenSetParser implements ITokenSetParser {
 		 * and parse them further. Loop until all of them are gotten 
 		 * rid of through recursive calls.
 		 */
+		/* We probably don't need to store all the aRemainingSets.
+		 * This can probably reduce the number of GC and speed things up. 
+		 * Make this an option? */
 		while ( maxScore == GraphicalProduction.flagNTNeedsParsing ) {
 			int i = idxMax2[0];
 			int j = idxMax2[1];
@@ -337,6 +340,7 @@ public class TokenSetParser implements ITokenSetParser {
 										 errStr, errStr};
 
 		/* Single out for debugging */
+//		Integer [] singleOutIdx = {36, 37, 41};
 		Integer [] singleOutIdx = {};
 		/* Crash: 
 		 * Error: 60: (2 * +3), superfluous plus sign
@@ -377,14 +381,21 @@ public class TokenSetParser implements ITokenSetParser {
 		
 			/* Parse graphically */
 			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
-			Node parseRoot = tokenSetParser.parse(wts);
+			long millis_0 = System.currentTimeMillis();
 			
+			Node parseRoot = tokenSetParser.parse(wts);
+			long millis_1 = System.currentTimeMillis();
+			
+			long parsingTime = millis_1 - millis_0;
+						
 			String stringized = ParseTreeStringizer.stringize(parseRoot);
 			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
 			String checkResultStr = checkResult ? "PASS" : "FAIL";
 			nPass += checkResult ? 1 : 0; 
-			System.out.println("[" + checkResultStr + "] " + "File " + tokenSetNums[i] + ": " +
-							   "\"" + stringized + "\"");
+			System.out.println("[" + checkResultStr + "] "
+					          + "(" + parsingTime + " ms) " 
+			                  + "File " + tokenSetNums[i] + ": " 
+					          + "\"" + stringized + "\"");
 			
 			nTested ++;
 		}

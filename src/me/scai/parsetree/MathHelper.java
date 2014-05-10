@@ -114,4 +114,14 @@ public class MathHelper {
 	    
 	    return labels;
 	}
+	
+	/* Get the bigger of two float numbers */
+	public static float max(float x, float y) {
+		return (x > y) ? x : y;
+	}
+	
+	/* Get the smaller of two float numbers */
+	public static float min(float x, float y) {
+		return (x < y) ? x : y;
+	}
 }
