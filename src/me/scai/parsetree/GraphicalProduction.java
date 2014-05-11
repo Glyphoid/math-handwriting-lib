@@ -84,6 +84,8 @@ class AlignRelation extends GeometricRelation {
 		AlignRight,
 		AlignCenter,   /* Center of the left-right dimension */
 		AlignWidthInclusion, /* Within the width range of the in-rel */
+		AlignBottomNorthPastMiddle, /* The bottom of the token should be more north than the middle of the in-rel token */
+		AlignTopNorthPastTop, 		/* The top of the token should be more north than the top of the in-rel token */
 	};
 	
 	/* Member variables */
@@ -124,7 +126,9 @@ class AlignRelation extends GeometricRelation {
 		if ( alignType == AlignType.AlignBottom || 
 			 alignType == AlignType.AlignTop ||
 			 alignType == AlignType.AlignMiddle || 
-			 alignType == AlignType.AlignHeightInclusion ) { /* Align in the vertical dimension */
+			 alignType == AlignType.AlignHeightInclusion || 
+			 alignType == AlignType.AlignBottomNorthPastMiddle || 
+			 alignType == AlignType.AlignTopNorthPastTop ) { /* Align in the vertical dimension */
 			/* sz is height */
 			szTested = bndsTested[3] - bndsTested[1];
 			szInRel = bndsInRel[3] - bndsInRel[1];
@@ -139,7 +143,7 @@ class AlignRelation extends GeometricRelation {
 				edgeDiff = Math.abs((bndsTested[1] + bndsTested[3]) * 0.5f - 
 						            (bndsInRel[1] + bndsInRel[3]) * 0.5f);
 			}
-			else {
+			else if ( alignType == AlignType.AlignHeightInclusion ) {
 				float [] limsTested = new float[2];
 				float [] limsInRel = new float[2];
 				limsTested[0] = bndsTested[1]; 
@@ -148,6 +152,20 @@ class AlignRelation extends GeometricRelation {
 				limsInRel[1] = bndsInRel[3]; 
 				
 				edgeDiff = inclusionEdgeDiff(limsTested, limsInRel);
+			}
+			else if ( alignType == AlignType.AlignBottomNorthPastMiddle ) {
+				float midYInRel = (bndsInRel[3] + bndsInRel[1]) * 0.5f;
+				edgeDiff = (bndsTested[3] - midYInRel);
+				if ( edgeDiff < 0f )
+					edgeDiff = 0f;
+			}
+			else if ( alignType == AlignType.AlignTopNorthPastTop ) {
+				edgeDiff = (bndsInRel[1] - bndsTested[1]);
+				if ( edgeDiff < 0f )
+					edgeDiff = 0f;
+			}
+			else {
+				throw new RuntimeException("Unrecognized alignType");
 			}
 		}
 		else {	/* sz is width */
@@ -203,8 +221,14 @@ class AlignRelation extends GeometricRelation {
 			alignType = AlignType.AlignRight;
 		else if ( items[0].equals("AlignCenter") )
 			alignType = AlignType.AlignCenter;
-		else
+		else if ( items[0].equals("AlignWidthInclusion") )
 			alignType = AlignType.AlignWidthInclusion;
+		else if ( items[0].equals("AlignBottomNorthPastMiddle") )
+			alignType = AlignType.AlignBottomNorthPastMiddle;
+		else if ( items[0].equals("AlignTopNorthPastTop") )
+			alignType = AlignType.AlignTopNorthPastTop;
+		else
+			throw new RuntimeException("Unrecognized AlignRelation type: " + items[0]);
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;
@@ -376,8 +400,10 @@ class PositionRelation extends GeometricRelation {
 			positionType = PositionType.PositionGenEast;
 		else if ( items[0].equals("PositionGenSouth") )
 			positionType = PositionType.PositionGenSouth;
-		else
+		else if ( items[0].equals("PositionGenNorth") )
 			positionType = PositionType.PositionGenNorth;
+		else
+			throw new RuntimeException("Unrecognized PositionType: " + items[0]);
 		
 		
 		idxTested = new int[1];
@@ -468,9 +494,11 @@ class HeightRelation extends GeometricRelation {
 			heightRelationType = HeightRelationType.HeightRelationLess;
 		else if ( items[0].equals("HeightRelationEqual") )
 			heightRelationType = HeightRelationType.HeightRelationEqual;
-		else
+		else if ( items[0].equals("HeightRelationGreater") )
 			heightRelationType = HeightRelationType.HeightRelationGreater;
-		
+		else
+			throw new RuntimeException("Unrecognized HeightRelation: " + items[0]);
+			
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;
 		
@@ -559,8 +587,10 @@ class WidthRelation extends GeometricRelation {
 			widthRelationType = WidthRelationType.WidthRelationLess;
 		else if ( items[0].equals("WidthRelationEqual") )
 			widthRelationType = WidthRelationType.WidthRelationEqual;
-		else
+		else if ( items[0].equals("WidthRelationGreater") )
 			widthRelationType = WidthRelationType.WidthRelationGreater;
+		else
+			throw new RuntimeException("Unrecognized WidthRelationType: " + items[0]);
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;
@@ -971,12 +1001,12 @@ public class GraphicalProduction {
 		    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
 		    			}
 		    			
-		    			if ( i == 2 && j == 1 && k == 0 ) //DEBUG
-		    				k = k; //DEBUG
+//		    			if ( i == 2 && j == 1 && k == 0 ) //DEBUG
+//		    				k = k; //DEBUG
 		    			
 		    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);
-		    			if ( v > 1.0 ) //DEBUG
-		    				v = v; // DEBUG
+//		    			if ( v > 1.0 ) //DEBUG
+//		    				v = v; // DEBUG
 		    			
 		    			t_t_geomScores[k] = v;
 		    			

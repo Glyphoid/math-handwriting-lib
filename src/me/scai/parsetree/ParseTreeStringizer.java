@@ -19,6 +19,10 @@ public class ParseTreeStringizer {
 			s = stringize(n.ch[1]) + n.ch[0].termName + stringize(n.ch[2]);
 		else if ( n.prodSumString.equals("DECIMAL_NUMBER --> MINUS_OP DECIMAL_NUMBER") )
 			s = "-" +  stringize(n.ch[1]);
+		else if ( n.prodSumString.equals("EXPR_LV1 --> EXPONENTIATION") ) 
+			s = stringize(n.ch[0]);
+		else if ( n.prodSumString.equals("EXPONENTIATION --> EXPR_LV2 EXPR_LV2") )
+			s = "(" + stringize(n.ch[0]) + " ^ " + stringize(n.ch[1]) + ")";
 		else if ( n.prodSumString.equals("EXPR_LV1 --> DECIMAL_NUMBER") )
 			s = stringize(n.ch[0]);
 		else if ( n.prodSumString.equals("EXPR_LV1 --> ADDITION") )
@@ -48,7 +52,7 @@ public class ParseTreeStringizer {
 		else if ( n.prodSumString.equals("ROOT --> EXPR_LV2") )
 			s = stringize(n.ch[0]);
 		else
-			System.err.println("stringize(): unrecognized production summary string: " + n.prodSumString);
+			throw new RuntimeException("stringize(): unrecognized production summary string: " + n.prodSumString);
 		
 		return s;
 	}

@@ -17,6 +17,19 @@ public class MathHelper {
 		return sum / (float) xs.length;
 	}
 	
+	/* Geometric mean of an array of float */
+	public static float geometricMean(float [] xs) {
+		if ( xs == null || xs.length == 0 )
+			throw new IllegalArgumentException("Input to mean() is an empty array");
+		
+		float prod = 1.0f;
+		
+		for (int i = 0; i < xs.length; ++i)
+			prod *= xs[i];
+		
+		return (float) Math.pow((double) prod, 1.0 / xs.length);
+	}
+	
 	public static float arrayMean(ArrayList<Float> xs) {
 		float [] axs = new float[xs.size()];
 		for (int i = 0; i < xs.size(); ++i)

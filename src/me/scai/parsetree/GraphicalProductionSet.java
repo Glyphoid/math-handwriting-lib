@@ -226,7 +226,7 @@ public class GraphicalProductionSet {
 				for (int i = 0; i < combs.length; ++i) {
 					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
 					
-					for (int j = 0; j < combs.length; ++j)
+					for (int j = 0; j < combs[i].length; ++j)
 						if ( combs[i][j] == 1 )
 							t_possibleHeadIdx.add(j);
 					
@@ -272,6 +272,9 @@ public class GraphicalProductionSet {
 						int [] idxHead,
 						ArrayList<CAbstractWrittenTokenSet> remainingSets, 
 						float [] maxGeomScore) {
+		if ( idxHead.length == 0 ) 
+			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
+		
 		Node n = prods.get(i).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
 		
 		/* Create head child node */
