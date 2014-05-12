@@ -458,7 +458,7 @@ public class TokenSetParser implements ITokenSetParser {
 
 		/* Single out for debugging */
 		Integer [] singleOutIdx = {};
-//		Integer [] singleOutIdx = {1};
+//		Integer [] singleOutIdx = {};
 		/* Crash: 
 		 * Error: 104: "((2 ^ 3) ^ 4)" <>  "(2 ^ 34)". Need to change Production: DIGIT_STRING --> DIGIT DIGIT STRING
 		 *        91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */

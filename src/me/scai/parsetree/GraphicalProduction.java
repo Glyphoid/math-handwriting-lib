@@ -89,6 +89,12 @@ class AlignRelation extends GeometricRelation {
 	};
 	
 	/* Member variables */
+	/* Constants */
+	static final float pastMiddleDisplacementLB = 0.25f; 	
+	static final float pastMiddleDisplacementUB = 0.75f;	/* Apply to relations such as AlignBottomNorthPastMiddle */
+	static final float pastEdgeDisplacementLB = -0.25f;
+	static final float pastEdgeDisplacementUB = 0.00f;		/* Apply to relations such as AlignTopNorthPastTop */
+	
 	AlignType alignType;
 	
 	/* Constructor */
@@ -123,6 +129,7 @@ class AlignRelation extends GeometricRelation {
 			throw new IllegalArgumentException("tiTested does not have length 1");
 	
 		float szTested, szInRel, szMean, edgeDiff;
+		float v;	/* Return value */
 		if ( alignType == AlignType.AlignBottom || 
 			 alignType == AlignType.AlignTop ||
 			 alignType == AlignType.AlignMiddle || 
@@ -132,16 +139,20 @@ class AlignRelation extends GeometricRelation {
 			/* sz is height */
 			szTested = bndsTested[3] - bndsTested[1];
 			szInRel = bndsInRel[3] - bndsInRel[1];
+			szMean = (szTested + szInRel) * 0.5f;
 			
 			if ( alignType == AlignType.AlignBottom ) {
 				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
+				v = 1 - edgeDiff / szMean;
 			}
 			else if ( alignType == AlignType.AlignTop ) {
 				edgeDiff = Math.abs(bndsTested[1] - bndsInRel[1]);
+				v = 1 - edgeDiff / szMean;				
 			}
 			else if ( alignType == AlignType.AlignMiddle ) {
 				edgeDiff = Math.abs((bndsTested[1] + bndsTested[3]) * 0.5f - 
 						            (bndsInRel[1] + bndsInRel[3]) * 0.5f);
+				v = 1 - edgeDiff / szMean;
 			}
 			else if ( alignType == AlignType.AlignHeightInclusion ) {
 				float [] limsTested = new float[2];
@@ -152,17 +163,24 @@ class AlignRelation extends GeometricRelation {
 				limsInRel[1] = bndsInRel[3]; 
 				
 				edgeDiff = inclusionEdgeDiff(limsTested, limsInRel);
+				v = 1 - edgeDiff / szMean;
 			}
 			else if ( alignType == AlignType.AlignBottomNorthPastMiddle ) {
 				float midYInRel = (bndsInRel[3] + bndsInRel[1]) * 0.5f;
-				edgeDiff = (bndsTested[3] - midYInRel);
-				if ( edgeDiff < 0f )
-					edgeDiff = 0f;
+				
+				float sb = bndsTested[3] - pastMiddleDisplacementLB * szTested;
+				float nb = bndsTested[3] - pastMiddleDisplacementUB * szTested;
+				
+				v = (sb - midYInRel) / (sb - nb);
 			}
 			else if ( alignType == AlignType.AlignTopNorthPastTop ) {
-				edgeDiff = (bndsInRel[1] - bndsTested[1]);
-				if ( edgeDiff < 0f )
-					edgeDiff = 0f;
+				float sb = bndsInRel[1] + pastEdgeDisplacementUB * szTested;
+				float nb = bndsInRel[1] + pastEdgeDisplacementLB * szTested;
+				
+				v = (sb - bndsTested[1]) / (sb - nb);
+//				edgeDiff = (bndsInRel[1] - bndsTested[1]);
+//				if ( edgeDiff < 0f )
+//					edgeDiff = 0f;
 			}
 			else {
 				throw new RuntimeException("Unrecognized alignType");
@@ -171,16 +189,20 @@ class AlignRelation extends GeometricRelation {
 		else {	/* sz is width */
 			szTested = bndsTested[2] - bndsTested[0];
 			szInRel = bndsInRel[2] - bndsInRel[0];
+			szMean = (szTested + szInRel) * 0.5f;
 			
 			if ( alignType == AlignType.AlignLeft ) {
 				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]);
+				v = 1 - edgeDiff / szMean;
 			}
 			else if ( alignType == AlignType.AlignRight ) {
 				edgeDiff = Math.abs(bndsTested[0] - bndsInRel[0]);
+				v = 1 - edgeDiff / szMean;
 			}
 			else if ( alignType == AlignType.AlignCenter ) {
 				edgeDiff = Math.abs((bndsTested[0] + bndsTested[2]) * 0.5f - 
 			                        (bndsInRel[0] + bndsInRel[2]) * 0.5f);
+				v = 1 - edgeDiff / szMean;
 			}
 			else {
 				float [] limsTested = new float[2];
@@ -190,13 +212,13 @@ class AlignRelation extends GeometricRelation {
 				limsInRel[0] = bndsInRel[0];
 				limsInRel[1] = bndsInRel[2]; 
 				
-				edgeDiff = inclusionEdgeDiff(limsTested, limsInRel);				
+				edgeDiff = inclusionEdgeDiff(limsTested, limsInRel);
+				v = 1 - edgeDiff / szMean;
 			}
 		}
 		
-		szMean = (szTested + szInRel) * 0.5f;
-		
-		float v = 1 - edgeDiff / szMean;
+		if ( v > 1f )
+			v = 1f;
 		if ( v < 0f ) 
 			v = 0f;
 		
