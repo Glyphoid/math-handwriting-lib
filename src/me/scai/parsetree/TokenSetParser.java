@@ -426,7 +426,7 @@ public class TokenSetParser implements ITokenSetParser {
 		int [] tokenSetNums           = {1, 2, 4, 6, 9, 10, 
 									     11, 12, 13, 14, 
 				                         15, 18, 21, 22, 
-				                         23, 24, 103, 104,			/* Exponentiation */
+				                         23, 24, 103, 104, 106,	107, 108,		/* Exponentiation */
 				                         27, 28, 29, 
 				                         32, 34, 36, 37, 
 				                         41, 42, 43, 44, 45, 
@@ -442,7 +442,7 @@ public class TokenSetParser implements ITokenSetParser {
 		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "-28", "(21 - 3)",  
 							             "(21 + 3)", "(21 - 5)", "009", "900", 
 										 "100", "(56 - 3)", "(29 / 3)", "--3", 
-										 "(9 ^ 3)", "(2 ^ -3)", "(68 ^ 75)", "(2 ^ 34)",		/* Exponentiation */
+										 "(9 ^ 3)", "(2 ^ -3)", "(68 ^ 75)", "(2 ^ 34)", "(258 ^ 76)", "(256 ^ 481)", "(289 ^ 643)", /* Exponentiation */
 										 "(5 / 8)", "((5 / 8) / 9)", "(3 / (2 / 7))", 
 										 "(1 - (2 / 3))", "(4 / (5 + (2 / 3)))", "(23 / 4)", "((5 + 9) / ((3 / 2) - 1))", 
 										 "((4 - 2) / 3)", "((7 - 8) / 10)", "((3 + 1) / 4)", "(72 / 3)",  "((8 - 3) / 4)", 
@@ -456,9 +456,9 @@ public class TokenSetParser implements ITokenSetParser {
 										 "((1 + 2) + 3)", "((2 - 3) - 4)", "-3", "+3",  
 										 errStr, errStr};
 
-		/* Single out for debugging */
+		/* Single out for debugging */		
+//		Integer [] singleOutIdx = {106, 90, 27};
 		Integer [] singleOutIdx = {};
-//		Integer [] singleOutIdx = {};
 		/* Crash: 
 		 * Error: 104: "((2 ^ 3) ^ 4)" <>  "(2 ^ 34)". Need to change Production: DIGIT_STRING --> DIGIT DIGIT STRING
 		 *        91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */
@@ -517,10 +517,14 @@ public class TokenSetParser implements ITokenSetParser {
 			if ( !checkResult )
 				strPrint += " <> " + " \"" + tokenSetTrueStrings[i] + "\"";
 			
-			if ( checkResult )
+			if ( checkResult ) {
 				System.out.println(strPrint);
-			else
+				System.out.flush();
+			}
+			else {
 				System.err.println(strPrint);
+				System.err.flush();
+			}
 			
 			nTested ++;
 		}

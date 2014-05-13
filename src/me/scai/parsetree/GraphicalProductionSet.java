@@ -220,7 +220,16 @@ public class GraphicalProductionSet {
 			}
 			else {
 				/* There are rhs items other than the head NT. */
-				int [][] combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());
+				int [][] combs = null;
+				if ( wts.nTokens() < 1)	//DEBUG
+//					System.out.println("Empty wts");
+					combs = null;			//DEBUG
+				if ( t_prod.geomShortcut.existsBipartite() ) {
+					combs = t_prod.geomShortcut.getPartitionBipartite(wts);
+				}
+				else {
+					combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());
+				}
 				/* TODO: Discard the partitions that don't make sense to speed things up */
 				
 				for (int i = 0; i < combs.length; ++i) {

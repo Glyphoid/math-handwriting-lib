@@ -2,7 +2,34 @@ package me.scai.parsetree;
 
 import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
+/* Helper class for sort */
+class PairedValueIndex implements Comparable<PairedValueIndex> {
+	public float x;
+	int index;
+	
+	/* Methods */
+	public PairedValueIndex(float t_x, int i) {
+		x = t_x;
+		index = i;
+	}
+
+	@Override
+	public int compareTo(PairedValueIndex pvi0) {
+		
+		// TODO Auto-generated method stub
+		if ( this.x > pvi0.x )
+			return 1;
+		else  if ( this.x < pvi0.x )
+			return -1;
+		else
+			return 0;
+			
+	}
+}
+
+/* Class: MathHelper */
 public class MathHelper {
 	/* Arithmetic mean of an array of float */
 	public static float mean(float [] xs) {
@@ -136,5 +163,25 @@ public class MathHelper {
 	/* Get the smaller of two float numbers */
 	public static float min(float x, float y) {
 		return (x < y) ? x : y;
+	}
+	
+	/* Sorting an array of float and give the indices in the sorted array */
+	public static void sort(float [] xs, int [] idxInSorted) {
+		if ( xs.length != idxInSorted.length )
+			throw new RuntimeException("Length of idxInSorted does not equal length of x");
+			
+		
+		PairedValueIndex [] pvis = new PairedValueIndex[xs.length];
+		
+		for (int i = 0; i < xs.length; ++i)
+			pvis[i] = new PairedValueIndex(xs[i], i);
+		
+		Arrays.sort(pvis);
+		
+		for (int i = 0; i < xs.length; ++i) {
+			xs[i] = pvis[i].x;
+			idxInSorted[i] = pvis[i].index;
+		}		
+		
 	}
 }

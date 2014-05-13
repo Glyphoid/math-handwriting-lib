@@ -178,9 +178,6 @@ class AlignRelation extends GeometricRelation {
 				float nb = bndsInRel[1] + pastEdgeDisplacementLB * szTested;
 				
 				v = (sb - bndsTested[1]) / (sb - nb);
-//				edgeDiff = (bndsInRel[1] - bndsTested[1]);
-//				if ( edgeDiff < 0f )
-//					edgeDiff = 0f;
 			}
 			else {
 				throw new RuntimeException("Unrecognized alignType");
@@ -640,10 +637,11 @@ class WidthRelation extends GeometricRelation {
 class GeometricShortcut {
 	public enum ShortcutType {
 		noShortcut,
-		horizontalDivideNS,		/* North to south */ 
+		horizontalDivideNS,		/* 2-part shortcut types */ /* North to south */ 
 		horizontalDivideSN,		/* South to north */
 		verticalDivideWE,		/* West to east */
 		verticalDivideEW,		/* East to west */
+		westEast, 				/* 1-part shortcut type: head is at west and the (only) non-head is at the east */
 	}
 	
 	/* Member variables */
@@ -651,61 +649,207 @@ class GeometricShortcut {
 	
 	/* Methods */
 	public GeometricShortcut(GraphicalProduction gp) {
-		if ( gp.geomRels.length != 3 ) {
-			/* Currently, we deal with only bipartite shortcuts, such as linear divides.
+		int nrhs = gp.geomRels.length; 	/* Number of rhs items */
+		
+//		if ( nrhs != 3 ) {
+//			/* Currently, we deal with only bipartite shortcuts, such as linear divides.
+//			 * This may change in the future.
+//			 */
+//			shortcutType = ShortcutType.noShortcut;
+//			return;
+//		}
+		if ( !(nrhs == 2 || nrhs == 3) ) {
+			/* Currently, we deal with only bipartite or tripartite shortcuts, such as linear divides.
 			 * This may change in the future.
 			 */
 			shortcutType = ShortcutType.noShortcut;
 			return;
 		}
 
-		PositionRelation.PositionType [] posType = new PositionRelation.PositionType[2];
-		int [] nPosRels = new int[2];
-		/* Only if each of the two non-head tokens have exactly one positional relation, 
-		 * can we construct a meaningful shortcut (at least for the time being).
-		 */
-		
-		for (int i = 1; i < 3; ++i) {
-			for (int j = 0; j < gp.geomRels[i].length; ++j) {
-				if ( gp.geomRels[i][j].getClass() == PositionRelation.class ) {
-					nPosRels[i - 1]++;
-					
-					PositionRelation posRel = (PositionRelation) gp.geomRels[i][j];					
-					posType[i - 1] = posRel.positionType;
+		if ( nrhs == 2 ) {
+			if ( gp.geomRels[1] == null ) {
+				shortcutType = ShortcutType.noShortcut;
+			}
+			else {
+				PositionRelation.PositionType posType = null;
+				int nPosRels = 0;
+				
+				for (int j = 0; j < gp.geomRels[1].length; ++j) {
+					if ( gp.geomRels[1][j].getClass() == PositionRelation.class ) {
+						nPosRels++;
+						
+						PositionRelation posRel = (PositionRelation) gp.geomRels[1][j];					
+						posType = posRel.positionType;
+					}
+				}
+				
+				if ( nPosRels == 1 ) {
+					if ( posType == PositionRelation.PositionType.PositionEast || 
+						 posType == PositionRelation.PositionType.PositionGenEast )
+						shortcutType = ShortcutType.westEast;
 				}
 			}
 		}
-		
-		if ( nPosRels[0] == 1 && nPosRels[1] == 1 ) {
-			if ( posType[0] == PositionRelation.PositionType.PositionWest && posType[1] == PositionRelation.PositionType.PositionEast ||
-				 posType[0] == PositionRelation.PositionType.PositionGenWest && posType[1] == PositionRelation.PositionType.PositionGenEast ) {
-				shortcutType = ShortcutType.verticalDivideWE;
+		else if ( nrhs == 3 ){
+			PositionRelation.PositionType [] posType = new PositionRelation.PositionType[2];
+			int [] nPosRels = new int[2];
+			/* Only if each of the two non-head tokens have exactly one positional relation, 
+			 * can we construct a meaningful shortcut (at least for the time being).
+			 */
+			
+			for (int i = 1; i < 3; ++i) {
+				for (int j = 0; j < gp.geomRels[i].length; ++j) {
+					if ( gp.geomRels[i][j].getClass() == PositionRelation.class ) {
+						nPosRels[i - 1]++;
+						
+						PositionRelation posRel = (PositionRelation) gp.geomRels[i][j];					
+						posType[i - 1] = posRel.positionType;
+					}
+				}
 			}
-			else if ( posType[0] == PositionRelation.PositionType.PositionEast && posType[1] == PositionRelation.PositionType.PositionWest ||
-					  posType[0] == PositionRelation.PositionType.PositionGenEast && posType[1] == PositionRelation.PositionType.PositionGenWest ) {
-				shortcutType = ShortcutType.verticalDivideEW;
+			
+			if ( nPosRels[0] == 1 && nPosRels[1] == 1 ) {
+				if ( posType[0] == PositionRelation.PositionType.PositionWest && posType[1] == PositionRelation.PositionType.PositionEast ||
+					 posType[0] == PositionRelation.PositionType.PositionGenWest && posType[1] == PositionRelation.PositionType.PositionGenEast ) {
+					shortcutType = ShortcutType.verticalDivideWE;
+				}
+				else if ( posType[0] == PositionRelation.PositionType.PositionEast && posType[1] == PositionRelation.PositionType.PositionWest ||
+						  posType[0] == PositionRelation.PositionType.PositionGenEast && posType[1] == PositionRelation.PositionType.PositionGenWest ) {
+					shortcutType = ShortcutType.verticalDivideEW;
+				}
+				else if ( posType[0] == PositionRelation.PositionType.PositionNorth && posType[1] == PositionRelation.PositionType.PositionSouth ||
+						  posType[0] == PositionRelation.PositionType.PositionGenNorth && posType[1] == PositionRelation.PositionType.PositionGenSouth ) {
+					shortcutType = ShortcutType.horizontalDivideNS;
+				}
+				else if ( posType[0] == PositionRelation.PositionType.PositionSouth && posType[1] == PositionRelation.PositionType.PositionNorth ||
+						  posType[0] == PositionRelation.PositionType.PositionGenSouth && posType[1] == PositionRelation.PositionType.PositionGenNorth ) {
+					shortcutType = ShortcutType.horizontalDivideSN;
+				}
 			}
-			else if ( posType[0] == PositionRelation.PositionType.PositionNorth && posType[1] == PositionRelation.PositionType.PositionSouth ||
-					  posType[0] == PositionRelation.PositionType.PositionGenNorth && posType[1] == PositionRelation.PositionType.PositionGenSouth ) {
-				shortcutType = ShortcutType.horizontalDivideNS;
-			}
-			else if ( posType[0] == PositionRelation.PositionType.PositionSouth && posType[1] == PositionRelation.PositionType.PositionNorth ||
-					  posType[0] == PositionRelation.PositionType.PositionGenSouth && posType[1] == PositionRelation.PositionType.PositionGenNorth ) {
-				shortcutType = ShortcutType.horizontalDivideSN;
-			}
+		}
+		else {
+			throw new RuntimeException("Unexpected number of rhs items: " + nrhs);
 		}
 	}
 	
-	public boolean exists() {
-		return (shortcutType != ShortcutType.noShortcut);
+	public boolean existsTripartite() {
+		return (shortcutType != ShortcutType.noShortcut) && (!existsBipartite());
 	}
+	
+	public boolean existsBipartite() {
+		return (shortcutType == ShortcutType.westEast);
+	}
+
 	
 	/* Main work: divide a token set into two (or more, for future) parts b
 	 * based on the type of the geometric shortcut.
 	 */
-	public int [][] getPartition(CAbstractWrittenTokenSet wts, int [] iHead) {
-		if ( !exists() ) {
-			throw new RuntimeException("Geometric shortcut does not exist");
+//	public int [][] getPartitionTripartite(CAbstractWrittenTokenSet wts, int [] iHead) {
+//		if ( !existsTripartite() ) {
+//			throw new RuntimeException("Tripartite geometric shortcuts do not exist");
+//		}
+//		
+//		if ( iHead.length >= wts.nTokens() ) {
+//			throw new RuntimeException("The number of indices to heads equals or exceeds the number of tokens in the token set");
+//		}
+//		
+//		Rectangle rectHead = new Rectangle(wts, iHead);
+//		float headCenterX = rectHead.getCentralX();
+//		float headCenterY = rectHead.getCentralY();
+//		
+//		int [][] labels = new int[1][];
+//		int nnht = wts.nTokens() - iHead.length;
+//		labels[0] = new int[nnht];
+//		
+//		/* Get indices to all non-head tokens */
+//		ArrayList<Integer> inht = new ArrayList<Integer>();
+//	    ArrayList<Rectangle> rnht = new ArrayList<Rectangle>();
+//	    for (int i = 0; i < wts.nTokens(); ++i) {
+//	    	boolean bContains = false;
+//	    	for (int j = 0; j < iHead.length; ++j) {
+//	    		if ( iHead[j] == i ) {
+//	    			bContains = true;
+//	    			break;
+//	    		}
+//	    	}
+//	    	if ( !bContains ) {
+//	    		inht.add(i);
+//	    		rnht.add(new Rectangle(wts.getTokenBounds(i)));
+//	    	}
+//	    }
+//	    
+//		for (int i = 0; i < inht.size(); ++i) {
+//			int idx;
+//			if ( shortcutType == ShortcutType.verticalDivideWE ) {
+//				idx = rnht.get(i).isCenterWestOf(headCenterX) ? 0 : 1;
+//			}
+//			else if ( shortcutType == ShortcutType.verticalDivideEW ) {
+//				idx = rnht.get(i).isCenterEastOf(headCenterX) ? 0 : 1;
+//			}
+//			else if ( shortcutType == ShortcutType.horizontalDivideNS ) {
+//				idx = rnht.get(i).isCenterNorthOf(headCenterX) ? 1 : 0;
+//			}
+//			else if ( shortcutType == ShortcutType.horizontalDivideSN ) {
+//				idx = rnht.get(i).isCenterSouthOf(headCenterY) ? 1 : 0;
+//			}
+//			else {
+//				throw new RuntimeException("Unrecognized shortcut type");
+//			}
+//			
+//			labels[0][i] = idx;
+//		}
+//		
+//		return labels;
+//	}
+	
+	public int [][] getPartitionBipartite(CAbstractWrittenTokenSet wts) {
+		int nt = wts.nTokens();
+		int [][] labels = null;
+		
+		if ( nt == 0 ) 
+			throw new RuntimeException("Attempting to apply bipartite shortcut on one or fewer tokens");
+		
+		if ( nt == 1 ) {
+			labels = new int[2][];
+			
+			labels[0] = new int[1];
+			labels[0][0] = 0;
+			
+			labels[1] = new int[1];
+			labels[1][0] = 1;
+		}
+			
+		if ( shortcutType == ShortcutType.westEast ) {
+			/* Calculate the center X of all tokens */
+			float [] cntX = new float[nt];
+			
+			for (int i = 0; i < nt; ++i) {
+				float [] t_bnds = wts.getTokenBounds(i);
+				
+				cntX[i] = (t_bnds[0] + t_bnds[2]) * 0.5f;
+			}
+			
+			/* Sort */
+			int [] srtIdx = new int[nt]; 
+			MathHelper.sort(cntX, srtIdx);
+			
+			/* Generate all the valid partitions */
+			labels = new int[nt - 1][];
+			for (int i = 0; i < nt - 1; ++i) {
+				labels[i] = new int[nt];
+				
+				for (int j = 0; j < nt; ++j)
+					if ( j > i )
+						labels[i][srtIdx[j]] = 1;
+			}
+		}
+		
+		return labels;
+	}
+	
+	public int [][] getPartitionTripartite(CAbstractWrittenTokenSet wts, int [] iHead) {
+		if ( !existsTripartite() ) {
+			throw new RuntimeException("Geometric shortcuts do not exist");
 		}
 		
 		if ( iHead.length >= wts.nTokens() ) {
@@ -851,6 +995,9 @@ public class GraphicalProduction {
 			System.err.println("WARNING: no rhs");
 		}
 		
+		/* Generate summary string */
+		genSumString();
+		
 		/* Generate geometric shortcut, if any. 
 		 * If there is no shortcut, shortcutType will be noShortcut. */
 		geomShortcut = new GeometricShortcut(this);
@@ -858,9 +1005,6 @@ public class GraphicalProduction {
 //			int i = 0; //DEBUG
 //			i = 1;
 //		}
-		
-		/* Generate summary string */
-		genSumString();
 	}
 	
 	private void genSumString() {
@@ -928,9 +1072,18 @@ public class GraphicalProduction {
 		//~DEBUG
 
 		int [][] labels = null;
-		if ( geomShortcut.exists() && bUseShortcut ) {
+//		if ( geomShortcut.existsTripartite() && bUseShortcut ) {
+//			/* Use this smarter approach when a geometric shortcut exists */
+//			labels = geomShortcut.getPartitionTripartite(tokenSet, iHead);
+//		}
+//		else {
+//			/* Get all possible partitions: in "labels" */
+//			/* This is the brute-force approach. */
+//			labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
+//		}
+		if ( geomShortcut.existsTripartite() && bUseShortcut ) {
 			/* Use this smarter approach when a geometric shortcut exists */
-			labels = geomShortcut.getPartition(tokenSet, iHead);
+			labels = geomShortcut.getPartitionTripartite(tokenSet, iHead);
 		}
 		else {
 			/* Get all possible partitions: in "labels" */
