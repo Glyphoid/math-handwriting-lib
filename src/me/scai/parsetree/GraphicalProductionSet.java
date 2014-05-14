@@ -221,11 +221,9 @@ public class GraphicalProductionSet {
 			else {
 				/* There are rhs items other than the head NT. */
 				int [][] combs = null;
-				if ( wts.nTokens() < 1)	//DEBUG
-//					System.out.println("Empty wts");
-					combs = null;			//DEBUG
+
 				if ( t_prod.geomShortcut.existsBipartite() ) {
-					combs = t_prod.geomShortcut.getPartitionBipartite(wts);
+					combs = t_prod.geomShortcut.getPartitionBipartite(wts, true);
 				}
 				else {
 					combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());

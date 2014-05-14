@@ -211,19 +211,6 @@ public class TokenSetParser implements ITokenSetParser {
 				float [][] c_maxGeomScores = new float[c_idxValidProds.length][];
 				CAbstractWrittenTokenSet [][][] c_aRemainingSets = new CAbstractWrittenTokenSet[c_idxValidProds.length][][];
 				
-				//DEBUG
-//				if ( tokenSet.toString().equals("Token [2, 3]") && c_idxValidProds.length == 2 && 
-//				     c_idxValidProds[0] == 0 && c_idxValidProds[1] == 1 ) {
-//					int kk;
-//					kk = 0;
-//				}
-//				if ( tokenSet.toString().equals("Token [3, 4]") && c_idxValidProds.length == 2 && 
-//				     c_idxValidProds[0] == 0 && c_idxValidProds[1] == 1 ) {
-//					int kk;
-//					kk = 0;
-//				}
-				//~DEBUG
-				
 				/* Recursive call */				
 				int [] c_idxMax2 = new int[2];
 				float c_maxScore = evalGeometry(tokenSet, c_idxValidProds, c_idxPossibleHead, 
@@ -458,7 +445,7 @@ public class TokenSetParser implements ITokenSetParser {
 
 		/* Single out for debugging */		
 //		Integer [] singleOutIdx = {106, 90, 27};
-		Integer [] singleOutIdx = {};
+		Integer [] singleOutIdx = {14};
 		/* Crash: 
 		 * Error: 104: "((2 ^ 3) ^ 4)" <>  "(2 ^ 34)". Need to change Production: DIGIT_STRING --> DIGIT DIGIT STRING
 		 *        91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */

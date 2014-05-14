@@ -651,13 +651,6 @@ class GeometricShortcut {
 	public GeometricShortcut(GraphicalProduction gp) {
 		int nrhs = gp.geomRels.length; 	/* Number of rhs items */
 		
-//		if ( nrhs != 3 ) {
-//			/* Currently, we deal with only bipartite shortcuts, such as linear divides.
-//			 * This may change in the future.
-//			 */
-//			shortcutType = ShortcutType.noShortcut;
-//			return;
-//		}
 		if ( !(nrhs == 2 || nrhs == 3) ) {
 			/* Currently, we deal with only bipartite or tripartite shortcuts, such as linear divides.
 			 * This may change in the future.
@@ -744,65 +737,7 @@ class GeometricShortcut {
 	/* Main work: divide a token set into two (or more, for future) parts b
 	 * based on the type of the geometric shortcut.
 	 */
-//	public int [][] getPartitionTripartite(CAbstractWrittenTokenSet wts, int [] iHead) {
-//		if ( !existsTripartite() ) {
-//			throw new RuntimeException("Tripartite geometric shortcuts do not exist");
-//		}
-//		
-//		if ( iHead.length >= wts.nTokens() ) {
-//			throw new RuntimeException("The number of indices to heads equals or exceeds the number of tokens in the token set");
-//		}
-//		
-//		Rectangle rectHead = new Rectangle(wts, iHead);
-//		float headCenterX = rectHead.getCentralX();
-//		float headCenterY = rectHead.getCentralY();
-//		
-//		int [][] labels = new int[1][];
-//		int nnht = wts.nTokens() - iHead.length;
-//		labels[0] = new int[nnht];
-//		
-//		/* Get indices to all non-head tokens */
-//		ArrayList<Integer> inht = new ArrayList<Integer>();
-//	    ArrayList<Rectangle> rnht = new ArrayList<Rectangle>();
-//	    for (int i = 0; i < wts.nTokens(); ++i) {
-//	    	boolean bContains = false;
-//	    	for (int j = 0; j < iHead.length; ++j) {
-//	    		if ( iHead[j] == i ) {
-//	    			bContains = true;
-//	    			break;
-//	    		}
-//	    	}
-//	    	if ( !bContains ) {
-//	    		inht.add(i);
-//	    		rnht.add(new Rectangle(wts.getTokenBounds(i)));
-//	    	}
-//	    }
-//	    
-//		for (int i = 0; i < inht.size(); ++i) {
-//			int idx;
-//			if ( shortcutType == ShortcutType.verticalDivideWE ) {
-//				idx = rnht.get(i).isCenterWestOf(headCenterX) ? 0 : 1;
-//			}
-//			else if ( shortcutType == ShortcutType.verticalDivideEW ) {
-//				idx = rnht.get(i).isCenterEastOf(headCenterX) ? 0 : 1;
-//			}
-//			else if ( shortcutType == ShortcutType.horizontalDivideNS ) {
-//				idx = rnht.get(i).isCenterNorthOf(headCenterX) ? 1 : 0;
-//			}
-//			else if ( shortcutType == ShortcutType.horizontalDivideSN ) {
-//				idx = rnht.get(i).isCenterSouthOf(headCenterY) ? 1 : 0;
-//			}
-//			else {
-//				throw new RuntimeException("Unrecognized shortcut type");
-//			}
-//			
-//			labels[0][i] = idx;
-//		}
-//		
-//		return labels;
-//	}
-	
-	public int [][] getPartitionBipartite(CAbstractWrittenTokenSet wts) {
+	public int [][] getPartitionBipartite(CAbstractWrittenTokenSet wts, boolean bReverse) {
 		int nt = wts.nTokens();
 		int [][] labels = null;
 		
@@ -838,9 +773,17 @@ class GeometricShortcut {
 			for (int i = 0; i < nt - 1; ++i) {
 				labels[i] = new int[nt];
 				
-				for (int j = 0; j < nt; ++j)
+				for (int j = 0; j < nt; ++j) {
 					if ( j > i )
 						labels[i][srtIdx[j]] = 1;
+					else
+						labels[i][srtIdx[j]] = 0;
+					
+					if ( bReverse )
+						labels[i][srtIdx[j]] = 1 - labels[i][srtIdx[j]];
+				}
+				
+				
 			}
 		}
 		
@@ -1001,10 +944,7 @@ public class GraphicalProduction {
 		/* Generate geometric shortcut, if any. 
 		 * If there is no shortcut, shortcutType will be noShortcut. */
 		geomShortcut = new GeometricShortcut(this);
-//		if ( geomShortcut.shortcutType != GeometricShortcut.ShortcutType.noShortcut ) { //DEBUG
-//			int i = 0; //DEBUG
-//			i = 1;
-//		}
+
 	}
 	
 	private void genSumString() {
@@ -1072,15 +1012,7 @@ public class GraphicalProduction {
 		//~DEBUG
 
 		int [][] labels = null;
-//		if ( geomShortcut.existsTripartite() && bUseShortcut ) {
-//			/* Use this smarter approach when a geometric shortcut exists */
-//			labels = geomShortcut.getPartitionTripartite(tokenSet, iHead);
-//		}
-//		else {
-//			/* Get all possible partitions: in "labels" */
-//			/* This is the brute-force approach. */
-//			labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
-//		}
+
 		if ( geomShortcut.existsTripartite() && bUseShortcut ) {
 			/* Use this smarter approach when a geometric shortcut exists */
 			labels = geomShortcut.getPartitionTripartite(tokenSet, iHead);
@@ -1176,13 +1108,8 @@ public class GraphicalProduction {
 		    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
 		    			}
 		    			
-//		    			if ( i == 2 && j == 1 && k == 0 ) //DEBUG
-//		    				k = k; //DEBUG
-		    			
 		    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);
-//		    			if ( v > 1.0 ) //DEBUG
-//		    				v = v; // DEBUG
-		    			
+
 		    			t_t_geomScores[k] = v;
 		    			
 		    		}
@@ -1285,12 +1212,5 @@ public class GraphicalProduction {
 		return s;
 	}
 	
-	
-	/* Error classes */
-//	class GeometricRelationCreationException extends Exception {
-//		public GeometricRelationCreationException() {}
-//		
-//		public GeometricRelationCreationException(String s) { super(s); }
-//	};
 }
 
