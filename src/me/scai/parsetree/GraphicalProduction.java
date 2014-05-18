@@ -1,11 +1,8 @@
 package me.scai.parsetree;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
-import me.scai.handwriting.CWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 import me.scai.handwriting.Rectangle;
 
@@ -1002,14 +999,7 @@ public class GraphicalProduction {
 			maxGeomScore[0] = 0.0f;
 			Node n = new Node(sumString, rhs);		
 			return n;
-		}
-		
-		//DEBUG
-		if ( this.lhs.equals("FRACTION") ) {
-			int ii;
-			ii = 0;
-		}
-		//~DEBUG
+		}		
 
 		int [][] labels = null;
 
@@ -1041,7 +1031,7 @@ public class GraphicalProduction {
 	    }
 	    
 	    /* Construct the remaining sets and evaluate their geometric relations */
-	    boolean bFound = false;
+//	    boolean bFound = false;
 	    CWrittenTokenSetNoStroke [][] a_rems = new CWrittenTokenSetNoStroke[labels.length][];
 	    float [] geomScores = new float[labels.length];
 	    
@@ -1091,7 +1081,7 @@ public class GraphicalProduction {
 		    		/* Assume: there is only one head 
 		    		 * TODO: Make more general */
 		    		
-		    		boolean bVerified = true;
+//		    		boolean bVerified = true;
 		    		if ( geomRels[j + 1] == null ) {
 		    			t_geomScores[j] = 1.0f;
 		    			continue;

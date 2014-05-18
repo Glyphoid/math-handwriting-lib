@@ -1,8 +1,7 @@
 package me.scai.parsetree;
 
 public class Node {
-//	private static final int prodNumTerminal = -1;
-	private float x_min = 0.0f, y_min = 0.0f, x_max = 0.0f, y_max = 0.0f; /* Location information */
+//	private float x_min = 0.0f, y_min = 0.0f, x_max = 0.0f, y_max = 0.0f; /* Location information */
 	
 	boolean isTerminal = true;
 	public String prodSumString = null;	/* Production summary string. See GraphicalProduction.sumString */

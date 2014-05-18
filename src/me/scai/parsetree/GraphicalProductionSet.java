@@ -1,11 +1,7 @@
 package me.scai.parsetree;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +10,6 @@ import java.util.Set;
 import java.util.HashSet;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
-import me.scai.handwriting.CWrittenTokenSet;
 
 public class GraphicalProductionSet {
 	private static final String commentString = "#";

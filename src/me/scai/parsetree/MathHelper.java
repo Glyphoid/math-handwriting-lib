@@ -125,7 +125,7 @@ public class MathHelper {
 		
 		if ( idxTieMax.size() > 1 ) {
 			/* Found tie */
-			int i = 0; /* TODO */
+			/* TODO */
 		}
 		
 		int [][] r = new int[idxTieMax.size()][];

@@ -99,7 +99,7 @@ public class TerminalSet {
 		final String tsFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
 		
 		try {
-			TerminalSet ts = TerminalSet.createFromFile(tsFN);
+			TerminalSet.createFromFile(tsFN);
 		}
 		catch ( Exception e ) {
 			System.err.println(e.getMessage());
