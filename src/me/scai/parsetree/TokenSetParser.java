@@ -73,6 +73,8 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	@Override
 	public Node parse(CAbstractWrittenTokenSet tokenSet) {
+		init();
+		
 		return parse(tokenSet, "ROOT");
 	}
 	
@@ -348,7 +350,7 @@ public class TokenSetParser implements ITokenSetParser {
 	}
 	
 	/* This implements a recursive descend parser */
-	public Node parse(CAbstractWrittenTokenSet tokenSet, String lhs) {
+	private Node parse(CAbstractWrittenTokenSet tokenSet, String lhs) {
 		final boolean bTentative = true; // DEBUG
 		
 		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
@@ -624,9 +626,9 @@ public class TokenSetParser implements ITokenSetParser {
 			/* Parse graphically */
 			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
 			long millis_0 = System.currentTimeMillis();
-			
-			tokenSetParser.init();
+						
 			Node parseRoot = tokenSetParser.parse(wts);
+			
 			long millis_1 = System.currentTimeMillis();
 			
 			long parsingTime = millis_1 - millis_0;
