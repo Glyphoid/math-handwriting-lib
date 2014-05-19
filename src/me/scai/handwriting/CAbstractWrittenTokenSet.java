@@ -100,6 +100,10 @@ public abstract class CAbstractWrittenTokenSet {
 		
 		for (int i = 0; i < recogWinners.size(); ++i) {
 			s += recogWinners.get(i);
+			s += "-(" + String.format("%.1f",  min_x) + ", "
+			          + String.format("%.1f",  min_y) + ", "
+					  + String.format("%.1f",  max_x) + ", "
+			          + String.format("%.1f",  max_y) + ")";
 			
 			if ( i < recogWinners.size() - 1 )
 				s += ", ";

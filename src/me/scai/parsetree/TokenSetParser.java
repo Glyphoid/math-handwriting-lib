@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
@@ -16,6 +17,21 @@ public class TokenSetParser implements ITokenSetParser {
 	/* Properties */
 	private int drillDepthLimit = Integer.MAX_VALUE;
 	private int currDrillDepth = 0;	/* Thread-safe? */
+	
+	private boolean bDebug = false;
+	private boolean bDebug2 = false;
+	private boolean bUseHashMaps = false;
+	private boolean bUseHashMaps2 = true;
+	
+	/* Temporary variables for parsing */
+	private HashMap<String, int []> tokenSetLHS2IdxValidProdsMap;
+	private HashMap<String, ArrayList<int [][]>> tokenSetLHS2IdxPossibleHeadsMap;
+	
+	private HashMap<String, Float> evalGeom2MaxScoreMap;
+	private HashMap<String, Node [][]> evalGeom2NodesMap;
+	private HashMap<String, float [][]> evalGeom2ScoresMap;
+	private HashMap<String, CAbstractWrittenTokenSet [][][]> evalGeom2RemSetsMap;
+	private HashMap<String, int []> evalGeom2IdxMaxMap;
 	
 	/* Methods */
 	
@@ -40,6 +56,20 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 	}
 	
+	public void setDebug(boolean t_bDebug) {
+		bDebug = t_bDebug;
+	}
+	
+	public void init() {
+		tokenSetLHS2IdxValidProdsMap = new HashMap<String, int []>();
+		tokenSetLHS2IdxPossibleHeadsMap = new HashMap<String, ArrayList<int [][]>>();
+		
+		evalGeom2MaxScoreMap = new HashMap<String, Float>();
+		evalGeom2NodesMap = new HashMap<String, Node [][]>();
+		evalGeom2ScoresMap = new HashMap<String, float [][]>();
+		evalGeom2RemSetsMap = new HashMap<String, CAbstractWrittenTokenSet [][][]>();
+		evalGeom2IdxMaxMap = new HashMap<String, int []>();
+	}
 	
 	@Override
 	public Node parse(CAbstractWrittenTokenSet tokenSet) {
@@ -54,6 +84,34 @@ public class TokenSetParser implements ITokenSetParser {
 			                   CAbstractWrittenTokenSet [][][] aRemainingSets, 
 			                   int [] idxMax) {
 		final boolean bDebug = false;
+		
+		String tHashKey = tokenSet.toString() + "@" + MathHelper.intArray2String(idxValidProds);
+		
+		if ( this.bUseHashMaps2 && evalGeom2MaxScoreMap.containsKey(tHashKey) ) {
+			if ( this.bDebug2 )
+				System.out.println("Hash map contains key: " + tHashKey);
+			
+			Node [][] r_nodes = evalGeom2NodesMap.get(tHashKey);			
+			for (int i = 0; i < r_nodes.length; ++i)
+				nodes[i] = r_nodes[i];
+			
+			float [][] r_maxGeomScores = evalGeom2ScoresMap.get(tHashKey);
+			for (int i = 0; i < r_nodes.length; ++i)
+				maxGeomScores[i] = r_maxGeomScores[i];
+				
+			CAbstractWrittenTokenSet [][][] r_aRemainingSets = evalGeom2RemSetsMap.get(tHashKey);
+			for (int i = 0; i < r_aRemainingSets.length; ++i)
+				aRemainingSets[i] = r_aRemainingSets[i];
+			
+			int [] r_idxMax = evalGeom2IdxMaxMap.get(tHashKey);
+			for (int i = 0; i < r_idxMax.length; ++i)
+				idxMax[i] = r_idxMax[i];
+			
+			return evalGeom2MaxScoreMap.get(tHashKey);
+		}
+		
+		if ( this.bDebug2 )
+			System.out.println("evalGeometry: " + tHashKey);
 		
 		for (int i = 0; i < idxValidProds.length; ++i) {
 			nodes[i] = new Node[idxPossibleHead.get(i).length];
@@ -147,8 +205,29 @@ public class TokenSetParser implements ITokenSetParser {
 									           	   " to level " + (currDrillDepth + 1) + ": " +
 									           	   gpSet.prods.get(idxValidProds[i]).lhs + 
 									               " --> " + d_lhs);
+						
+							int [] d_idxValidProds = null;
+							if ( bUseHashMaps ) {
+								String hashKey = d_tokenSet.toString() + "@" + d_lhs;
+								if ( !tokenSetLHS2IdxValidProdsMap.containsKey(hashKey) ) {								
+									d_idxValidProds = gpSet.getIdxValidProds(d_tokenSet, termSet, d_lhs, d_idxPossibleHead, this.bDebug);
+									
+									/* Store results in hash maps */
+									tokenSetLHS2IdxValidProdsMap.put(hashKey, d_idxValidProds);
+									tokenSetLHS2IdxPossibleHeadsMap.put(hashKey, d_idxPossibleHead);
+								}
+								else {
+									if ( this.bDebug ) 
+										System.out.println("Hash map getting: " + hashKey);
+									/* Retrieve results from hash maps */
+									d_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey);
+									d_idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey);
+								}
+							}
+							else {
+								d_idxValidProds = gpSet.getIdxValidProds(d_tokenSet, termSet, d_lhs, d_idxPossibleHead, this.bDebug);
+							}
 							
-							int [] d_idxValidProds = gpSet.getIdxValidProds(d_tokenSet, termSet, d_lhs, d_idxPossibleHead);
 							if ( d_idxValidProds.length == 0 ) {
 								d_scores[k] = 0.0f;
 								continue;
@@ -161,7 +240,7 @@ public class TokenSetParser implements ITokenSetParser {
 							
 //							if ( d_aRemainingSets.length == 1 && idxValidProds
 							
-							currDrillDepth++; /* To check: thread-safe? */
+							currDrillDepth++; /* To check: thread-safe? */		
 							float d_maxGeomScore = evalGeometry(d_tokenSet, d_idxValidProds, d_idxPossibleHead, 
 																d_nodes, d_c_maxGeomScores, d_aRemainingSets, d_t_idxMax2);
 							currDrillDepth--;
@@ -201,7 +280,29 @@ public class TokenSetParser implements ITokenSetParser {
 			GraphicalProduction c_prod = gpSet.prods.get(idxValidProds[i]);
 			String c_lhs = c_prod.rhs[0];			
 			ArrayList<int [][]> c_idxPossibleHead = new ArrayList<int [][]>();
-			int [] c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead);
+			
+			int [] c_idxValidProds = null;
+			if ( bUseHashMaps ) {
+				String hashKey = tokenSet.toString() + "@" + c_lhs;
+				if ( !tokenSetLHS2IdxValidProdsMap.containsKey(tokenSet.toString()) ) {
+					c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead, this.bDebug);
+					                  
+					/* Store results in hash maps */
+					tokenSetLHS2IdxValidProdsMap.put(hashKey, c_idxValidProds);
+					tokenSetLHS2IdxPossibleHeadsMap.put(hashKey, c_idxPossibleHead);
+				}
+				else {
+					if ( this.bDebug )
+						System.out.println("Hash map getting: " + hashKey);
+					
+					/* Retrieve results from hash maps */
+					c_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey);
+					c_idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey);
+				}
+			}
+			else {
+				c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead, this.bDebug);
+			}
 			
 			if ( c_idxValidProds == null || c_idxValidProds.length == 0 ) {
 				maxGeomScores[i][j] = 0.0f; /* Necessary? */
@@ -232,6 +333,17 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		idxMax[0] = idxMax2[0];
 		idxMax[1] = idxMax2[1];
+		
+		
+		/* Optional: store result in hash map */
+		if ( this.bUseHashMaps2 ) {
+			evalGeom2MaxScoreMap.put(tHashKey, maxScore);
+			evalGeom2NodesMap.put(tHashKey, nodes);
+			evalGeom2ScoresMap.put(tHashKey, maxGeomScores);
+			evalGeom2RemSetsMap.put(tHashKey, aRemainingSets);
+			evalGeom2IdxMaxMap.put(tHashKey, idxMax);
+		}
+		
 		return maxScore;
 	}
 	
@@ -247,7 +359,28 @@ public class TokenSetParser implements ITokenSetParser {
 //			nt = nt + 0; // DEBUG
 //		}  // DEBUG
 		
-		int [] idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead);
+		int [] idxValidProds = null;
+		if ( bUseHashMaps ) {
+			String hashKey = tokenSet.toString() + "@" + lhs;
+			if ( !tokenSetLHS2IdxValidProdsMap.containsKey(hashKey) ) {
+				idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead, this.bDebug);
+				
+				/* Store results in hash maps */
+				tokenSetLHS2IdxValidProdsMap.put(hashKey, idxValidProds);
+				tokenSetLHS2IdxPossibleHeadsMap.put(hashKey, idxPossibleHead);
+			}
+			else {
+				if ( this.bDebug )
+					System.out.println("Hash map getting: " + hashKey);
+				
+				/* Retrieve results from hash maps */
+				idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey);
+				idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey);
+			}
+		}
+		else {
+			idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead, this.bDebug);
+		}
 		/* TODO: Speed up for EXPONENTIATION */
 		
 		if ( idxValidProds.length == 0 ) {
@@ -264,7 +397,7 @@ public class TokenSetParser implements ITokenSetParser {
 		evalGeometry(tokenSet, idxValidProds, idxPossibleHead, 
 				     nodes, maxGeomScores, aRemainingSets, t_idxMax2);
 		
-		/* Select the maximum geometric score */
+		/* Select the maximum geometric score */		
 		int [] idxMax2 = MathHelper.indexMax2D(maxGeomScores);
 		
 		//n.setGeometricScore(maxGeomScores[idxMax2[0]][idxMax2[1]]);
@@ -460,6 +593,11 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		TokenSetParser tokenSetParser = new TokenSetParser(termSetFN, prodSetFN);
 		
+//		if ( singleOutIdx.length == 1 )
+//			tokenSetParser.setDebug(false);
+//		else
+//			tokenSetParser.setDebug(false);
+		
 		/* Create token set parser */
 		int nPass = 0;
 		int nTested = 0;
@@ -487,6 +625,7 @@ public class TokenSetParser implements ITokenSetParser {
 			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
 			long millis_0 = System.currentTimeMillis();
 			
+			tokenSetParser.init();
 			Node parseRoot = tokenSetParser.parse(wts);
 			long millis_1 = System.currentTimeMillis();
 			

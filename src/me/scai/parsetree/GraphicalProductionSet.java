@@ -94,7 +94,11 @@ public class GraphicalProductionSet {
 	public int [] getIdxValidProds(CAbstractWrittenTokenSet tokenSet, 
 			                       TerminalSet termSet, 	
 			                       String lhs,
-			                       ArrayList<int [][]> idxPossibleHead) {
+			                       ArrayList<int [][]> idxPossibleHead, 
+			                       boolean bDebug) {
+		if ( bDebug )
+			System.out.println("Calling getIdxValidProds on token set: " + tokenSet);
+		
 		if ( idxPossibleHead.size() != 0 ) {
 			System.err.println("WARNING: Input ArrayList of int [], idxPossibleHead, is not empty.");
 			idxPossibleHead.clear();

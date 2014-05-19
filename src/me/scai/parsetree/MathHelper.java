@@ -184,4 +184,20 @@ public class MathHelper {
 		}		
 		
 	}
+	
+	/* Convert an array of integers to string */
+	public static String intArray2String(int [] xs) {
+		String s = "[";
+		
+		for (int i = 0; i < xs.length; ++i) {
+			s += xs[i];
+			
+			if ( i < xs.length - 1 )
+				s += ", ";
+		}
+		
+		s += "]";
+		
+		return s;
+	}
 }
