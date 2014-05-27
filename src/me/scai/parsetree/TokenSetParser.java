@@ -15,13 +15,14 @@ public class TokenSetParser implements ITokenSetParser {
 	protected GraphicalProductionSet gpSet = null;
 	
 	/* Properties */
-	private int drillDepthLimit = Integer.MAX_VALUE;
+//	private int drillDepthLimit = Integer.MAX_VALUE; 	/* No limit on levels of recursive drill */
+	private int drillDepthLimit = 4;
 	private int currDrillDepth = 0;	/* Thread-safe? */
 	
 	private boolean bDebug = false;
 	private boolean bDebug2 = false;
-	private boolean bUseHashMaps = false;
-	private boolean bUseHashMaps2 = true;
+	private boolean bUseHashMaps = false;		/* For getIdxValidProds() */
+	private boolean bUseHashMaps2 = true;		/* For evalGeometry() */
 	
 	/* Temporary variables for parsing */
 	private HashMap<String, int []> tokenSetLHS2IdxValidProdsMap;
@@ -93,7 +94,7 @@ public class TokenSetParser implements ITokenSetParser {
 			if ( this.bDebug2 )
 				System.out.println("Hash map contains key: " + tHashKey);
 			
-			Node [][] r_nodes = evalGeom2NodesMap.get(tHashKey);			
+			Node [][] r_nodes = evalGeom2NodesMap.get(tHashKey);
 			for (int i = 0; i < r_nodes.length; ++i)
 				nodes[i] = r_nodes[i];
 			
@@ -161,21 +162,17 @@ public class TokenSetParser implements ITokenSetParser {
 													
 							if ( termSet.isTypeTerminal(d_lhs) ) {
 								int nTokens;
-								if ( k == 0 ) {
+								if ( k == 0 )
 									nTokens = idxHead.length;
-								}
-								else {
+								else
 									nTokens = remainingSets.get(k - 1).nTokens();
-								}
 								
-								if ( nTokens == 1 ) {
+								if ( nTokens == 1 )
 									d_scores[k] = 1.0f; 
-									continue;
-								}
-								else {
+								else
 									d_scores[k] = 0.0f;
-									continue;
-								}
+								
+								continue;
 							}
 							
 							CAbstractWrittenTokenSet d_tokenSet;
@@ -239,9 +236,7 @@ public class TokenSetParser implements ITokenSetParser {
 							float [][] d_c_maxGeomScores = new float[d_idxValidProds.length][];
 							CAbstractWrittenTokenSet [][][] d_aRemainingSets = new CAbstractWrittenTokenSet[d_idxValidProds.length][][];
 							int [] d_t_idxMax2 = new int[2];
-							
-//							if ( d_aRemainingSets.length == 1 && idxValidProds
-							
+														
 							currDrillDepth++; /* To check: thread-safe? */		
 							float d_maxGeomScore = evalGeometry(d_tokenSet, d_idxValidProds, d_idxPossibleHead, 
 																d_nodes, d_c_maxGeomScores, d_aRemainingSets, d_t_idxMax2);
@@ -381,9 +376,12 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 		}
 		else {
+			//DEBUG
+			if ( lhs.equals("EXPONENTIATION") )
+				lhs = lhs;
+			//~DEBUG
 			idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead, this.bDebug);
 		}
-		/* TODO: Speed up for EXPONENTIATION */
 		
 		if ( idxValidProds.length == 0 ) {
 			return null; /* No valid production for this token set */
@@ -419,9 +417,6 @@ public class TokenSetParser implements ITokenSetParser {
 //		if ( idxTieMax.length > 1 )
 //			n = null; //DEBUG
 		
-		/* TODO: iterate through all possible productions and heads in descending order of geomScore, 
-		 * util the first successful parsing is hit. (More time consuming)?
-		 */
 		for (int i = 0; i < idxTieMax.length; ++i) {
 			int idx0 = idxTieMax[i][0];
 			int idx1 = idxTieMax[i][1];
@@ -579,7 +574,7 @@ public class TokenSetParser implements ITokenSetParser {
 										 errStr, errStr};
 
 		/* Single out for debugging */		
-//		Integer [] singleOutIdx = {106, 90, 27};
+//		Integer [] singleOutIdx = {107};
 		Integer [] singleOutIdx = {};
 		/* Crash: 
 		 * Error: 104: "((2 ^ 3) ^ 4)" <>  "(2 ^ 34)". Need to change Production: DIGIT_STRING --> DIGIT DIGIT STRING
@@ -627,7 +622,7 @@ public class TokenSetParser implements ITokenSetParser {
 			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
 			long millis_0 = System.currentTimeMillis();
 						
-			Node parseRoot = tokenSetParser.parse(wts);
+			Node parseRoot = tokenSetParser.parse(wts);	/* Parsing action */
 			
 			long millis_1 = System.currentTimeMillis();
 			

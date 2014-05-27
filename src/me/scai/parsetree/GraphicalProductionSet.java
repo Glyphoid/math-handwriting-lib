@@ -96,6 +96,8 @@ public class GraphicalProductionSet {
 			                       String lhs,
 			                       ArrayList<int [][]> idxPossibleHead, 
 			                       boolean bDebug) {
+		/* TODO: Make use of geomShortcuts */
+		
 		if ( bDebug )
 			System.out.println("Calling getIdxValidProds on token set: " + tokenSet);
 		
