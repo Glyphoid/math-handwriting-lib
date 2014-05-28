@@ -19,6 +19,9 @@ public class CWrittenToken {
 	public float width = 0f;
 	public float height = 0f;
 	
+	String recogWinner;
+	double [] recogPs;
+	
 	/* Constructor */
 	public CWrittenToken() {};
 	

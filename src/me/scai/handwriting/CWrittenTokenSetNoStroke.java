@@ -57,9 +57,13 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		}
 		
 		tokenBounds.add(bounds);
-		recogWinners.add(t_recogWinner);
-		recogPs.add(t_recogP);
-				
+		
+		if ( t_recogWinner != null )
+			recogWinners.add(t_recogWinner);
+		
+		if ( t_recogP != null )
+			recogPs.add(t_recogP);
+
 		addOneToken(); /* Takes care of things including incrementing nt */
 	}
 		

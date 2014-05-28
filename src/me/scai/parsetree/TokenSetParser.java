@@ -15,8 +15,8 @@ public class TokenSetParser implements ITokenSetParser {
 	protected GraphicalProductionSet gpSet = null;
 	
 	/* Properties */
-//	private int drillDepthLimit = Integer.MAX_VALUE; 	/* No limit on levels of recursive drill */
-	private int drillDepthLimit = 4;
+	private int drillDepthLimit = Integer.MAX_VALUE; 	/* No limit on levels of recursive drill */
+//	private int drillDepthLimit = 3;	/* Limiting it to a specific number runs without errors, but may cause wrong parsing */
 	private int currDrillDepth = 0;	/* Thread-safe? */
 	
 	private boolean bDebug = false;
@@ -82,7 +82,7 @@ public class TokenSetParser implements ITokenSetParser {
 	private float evalGeometry(CAbstractWrittenTokenSet tokenSet, 
 			                   int [] idxValidProds, 
 			                   ArrayList<int [][]> idxPossibleHead, 
-			                   Node [][] nodes,
+			                   Node [][] nodes, 
 			                   float [][] maxGeomScores, 
 			                   CAbstractWrittenTokenSet [][][] aRemainingSets, 
 			                   int [] idxMax) {
@@ -117,6 +117,9 @@ public class TokenSetParser implements ITokenSetParser {
 			System.out.println("evalGeometry: " + tHashKey);
 		
 		for (int i = 0; i < idxValidProds.length; ++i) {
+			int nrhs =  gpSet.prods.get(idxValidProds[i]).rhs.length;
+			/* Number of right-hand size elements, including the head */
+					
 			nodes[i] = new Node[idxPossibleHead.get(i).length];
 			maxGeomScores[i] = new float[idxPossibleHead.get(i).length];
 			aRemainingSets[i] = new CAbstractWrittenTokenSet[idxPossibleHead.get(i).length][];
@@ -124,7 +127,9 @@ public class TokenSetParser implements ITokenSetParser {
 			/* Iterate through all potential heads */
 			for (int j = 0; j < idxPossibleHead.get(i).length; ++j) {
 				int [] idxHead = idxPossibleHead.get(i)[j];
-				ArrayList<CAbstractWrittenTokenSet> remainingSets = new ArrayList<CAbstractWrittenTokenSet>();
+				
+				//ArrayList<CAbstractWrittenTokenSet> AL_remainingSets = new ArrayList<CAbstractWrittenTokenSet>(); //PerfTweak old
+				CAbstractWrittenTokenSet [] remainingSets = new CAbstractWrittenTokenSet[nrhs - 1];
 				
 				float [] maxGeomScore = new float[1];
 				
@@ -135,12 +140,18 @@ public class TokenSetParser implements ITokenSetParser {
 					maxGeomScores[i][j] = 0.0f;
 				}
 				else {
-					Node n = gpSet.attempt(idxValidProds[i], tokenSet, idxHead, remainingSets, maxGeomScore);
+//					Node n = gpSet.attempt(idxValidProds[i], tokenSet, idxHead, AL_remainingSets, remainingSets, maxGeomScore);		//PerfTweak old
+					Node n = gpSet.attempt(idxValidProds[i], tokenSet, idxHead, remainingSets, maxGeomScore);		//PerfTweak old
+					
+					if ( remainingSets.length == 1 && remainingSets[0] == null )
+						remainingSets = new CAbstractWrittenTokenSet[0];	/* TODO: Get rid of this illogical-looking statement */
+					
+//					if ( remainingSets.size() > nrhs - 1 ) //DEBUG //PerfTweak old
+//						System.err.println("Incorrect number of elements in remainingSets"); //DEBUG
+					
 					/* If the head child is a terminal, replace tokenName with the actual name of the token */
 					if ( n != null && termSet.isTypeTerminal(n.ch[0].termName) )
 						n.ch[0].termName = tokenSet.recogWinners.get(idxPossibleHead.get(i)[j][0]);
-					
-					int nrhs =  gpSet.prods.get(idxValidProds[i]).rhs.length;	/* Number of rhs items */
 					
 					if ( currDrillDepth < drillDepthLimit 
 					     && maxGeomScore[0] != 0.0f 
@@ -165,7 +176,8 @@ public class TokenSetParser implements ITokenSetParser {
 								if ( k == 0 )
 									nTokens = idxHead.length;
 								else
-									nTokens = remainingSets.get(k - 1).nTokens();
+									//nTokens = remainingSets.get(k - 1).nTokens(); //PerfTweak old
+									nTokens = remainingSets[k - 1].nTokens();
 								
 								if ( nTokens == 1 )
 									d_scores[k] = 1.0f; 
@@ -187,7 +199,7 @@ public class TokenSetParser implements ITokenSetParser {
 					    			d_tokenSetNoStroke.addToken(tokenSet.getTokenBounds(irt), 
 					    					            		tokenSet.recogWinners.get(irt), 
 					    					            		tokenSet.recogPs.get(irt), 
-					    					            		false);		
+					    					            		false);
 					    			/* The last input argument sets bCheck to false for speed */
 					    			/* Is this a dangerous action? */
 					    		}
@@ -196,7 +208,8 @@ public class TokenSetParser implements ITokenSetParser {
 							}
 							else {
 								/* Non-head */
-								d_tokenSet = remainingSets.get(k - 1);
+								//d_tokenSet = remainingSets.get(k - 1);	//PerfTweak old;
+								d_tokenSet = remainingSets[k - 1];
 							}
 							
 							if ( bDebug )
@@ -252,8 +265,9 @@ public class TokenSetParser implements ITokenSetParser {
 					nodes[i][j] = n;
 					maxGeomScores[i][j] = maxGeomScore[0];
 	
-					aRemainingSets[i][j] = new CAbstractWrittenTokenSet[remainingSets.size()];
-					remainingSets.toArray(aRemainingSets[i][j]);
+//					aRemainingSets[i][j] = new CAbstractWrittenTokenSet[AL_remainingSets.size()]; 	//PerfTweak old key
+//					AL_remainingSets.toArray(aRemainingSets[i][j]);		//PerfTweak old key
+					aRemainingSets[i][j] = remainingSets;	//PerfTweak new key
 				}
 				
 			}
@@ -299,6 +313,11 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 			else {
 				c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead, this.bDebug);
+				
+				//DEBUG
+//				System.out.println("Found " + c_idxValidProds.length + " valid productions and " 
+//						           + c_idxPossibleHead.size() + " valid possible heads");
+				//~DEBUG
 			}
 			
 			if ( c_idxValidProds == null || c_idxValidProds.length == 0 ) {
@@ -346,6 +365,10 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* This implements a recursive descend parser */
 	private Node parse(CAbstractWrittenTokenSet tokenSet, String lhs) {
+		/* Input sanity check */		
+		if ( tokenSet == null )
+			System.err.println("Parsing null token set!");
+		
 		final boolean bTentative = true; // DEBUG
 		
 		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
@@ -377,8 +400,8 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 		else {
 			//DEBUG
-			if ( lhs.equals("EXPONENTIATION") )
-				lhs = lhs;
+//			if ( lhs.equals("EXPONENTIATION") )
+//				lhs = lhs;
 			//~DEBUG
 			idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead, this.bDebug);
 		}
@@ -423,7 +446,16 @@ public class TokenSetParser implements ITokenSetParser {
 			
 			n = nodes[idx0][idx1];
 			remSets = aRemainingSets[idx0][idx1];
-		
+			
+			// Find out how many valid token sets there are in remSets
+			int nValidRemSets = 0;
+			if ( remSets != null ) {
+				nValidRemSets = remSets.length - 1;		//PerfTweak new
+				while ( nValidRemSets >= 0 && remSets[nValidRemSets] == null )
+					nValidRemSets--;
+				nValidRemSets++;
+			}
+			
 			if ( n.isTerminal() ) {
 				childGeometricScores[i] = 1.0f;
 				//return n; /* Bottom-out condition for recursion */
@@ -456,7 +488,8 @@ public class TokenSetParser implements ITokenSetParser {
 				}
 				
 				int nValidChildren = 0;
-				for (int k = 0; k < remSets.length; ++k) {
+//				for (int k = 0; k < remSets.length; ++k) { //PerfTweak old
+				for (int k = 0; k < nValidRemSets; ++k) { //PerfTweak old
 					String requiredType = n.getRHSTypes()[n.ch.length];
 					
 					/* Recursive call */
@@ -467,7 +500,7 @@ public class TokenSetParser implements ITokenSetParser {
 //					if ( remSets[k].toString().equals("Token [-]") && requiredType.equals("EXPR_LV2") )
 //						nt = nt + 0;
 					
-					Node cn = parse(remSets[k], requiredType);
+					Node cn = parse(remSets[k], requiredType);		/* Recursive call */
 					if ( cn != null ) {
 						nValidChildren++;
 						
@@ -573,7 +606,7 @@ public class TokenSetParser implements ITokenSetParser {
 										 "((1 + 2) + 3)", "((2 - 3) - 4)", "-3", "+3",  
 										 errStr, errStr};
 
-		/* Single out for debugging */		
+		/* Single out for debugging */
 //		Integer [] singleOutIdx = {107};
 		Integer [] singleOutIdx = {};
 		/* Crash: 
@@ -598,6 +631,8 @@ public class TokenSetParser implements ITokenSetParser {
 		/* Create token set parser */
 		int nPass = 0;
 		int nTested = 0;
+		long totalParsingTime_ms = 0;
+		
 		for (int i = 0; i < tokenSetNums.length; ++i) {
 			/* Single out option */
 			if ( singleOutIdx != null && singleOutIdx.length > 0 ) {
@@ -627,7 +662,8 @@ public class TokenSetParser implements ITokenSetParser {
 			long millis_1 = System.currentTimeMillis();
 			
 			long parsingTime = millis_1 - millis_0;
-
+			totalParsingTime_ms += parsingTime; 
+			
 			String stringized = ParseTreeStringizer.stringize(parseRoot);
 			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
 			String checkResultStr = checkResult ? "PASS" : "FAIL";
@@ -655,6 +691,7 @@ public class TokenSetParser implements ITokenSetParser {
 		System.out.println("Tested: " + nTested + 
 				           "; Passed: " + nPass + 
 				           "; Failed: " + (nTested - nPass));
+		System.out.println("Total parsing time = " + totalParsingTime_ms + " ms");
 		
 	}
 }

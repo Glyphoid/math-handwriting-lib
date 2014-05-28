@@ -965,8 +965,9 @@ public class GraphicalProduction {
 	 */
 	public Node attempt(CAbstractWrittenTokenSet tokenSet, 
 			            int [] iHead,
-			            ArrayList<CAbstractWrittenTokenSet> remainingSets, 
-			            float [] maxGeomScore) {		
+			            //ArrayList<CAbstractWrittenTokenSet> AL_remainingSets, //PerfTweak old
+			            CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
+			            float [] maxGeomScore) {
 		/* Configuration constants */
 		final boolean bUseShortcut = true; /* TODO: Get rid of this constant when the method proves to be reliable */
 		
@@ -975,10 +976,10 @@ public class GraphicalProduction {
 		int nrn = nrhs - 1; /* Number of remaining nodes to match */
 		
 		/* TODO: check that remainingSets is empty */
-		if ( remainingSets.size() != 0 ) {
-			System.err.println("WARNING: remainingSets input to attempt() is not empty");
-			remainingSets.clear();
-		}
+//		if ( AL_remainingSets.size() != 0 ) { 	//PerfTweak old 
+//			System.err.println("WARNING: remainingSets input to attempt() is not empty");
+//			AL_remainingSets.clear();
+//		} //~PerfTweak old 
 		
 		if ( nrn == 1 && rhs[rhs.length - 1].equals(TerminalSet.epsString) ) {
 			/* Empty set matches EPS */
@@ -1035,6 +1036,9 @@ public class GraphicalProduction {
 	    CWrittenTokenSetNoStroke [][] a_rems = new CWrittenTokenSetNoStroke[labels.length][];
 	    float [] geomScores = new float[labels.length];
 	    
+	    if ( labels.length > 1 )
+	    	System.out.println("labels.length = " + labels.length); 	//DEBUG
+	    
 	    for (int i = 0; i < labels.length; ++i) {
 	    	a_rems[i] = new CWrittenTokenSetNoStroke[nrn];
 	    	boolean [] remsFilled = new boolean[nrn];
@@ -1051,7 +1055,7 @@ public class GraphicalProduction {
     			a_rems[i][inode].addToken(tokenSet.getTokenBounds(irt), 
     					                  tokenSet.recogWinners.get(irt), 
     					                  tokenSet.recogPs.get(irt), 
-    					                  false);		
+    					                  false);
     			/* The last input argument sets bCheck to false for speed */
     			/* Is this a dangerous action? */
     			
@@ -1124,8 +1128,14 @@ public class GraphicalProduction {
 	    /* Find the partition that leads to the maximum geometric score */
 	    int idxMax = MathHelper.indexMax(geomScores);
 	    maxGeomScore[0] = geomScores[idxMax];
-	    for (int i = 0; i < a_rems[idxMax].length; ++i)
-	    	remainingSets.add(a_rems[idxMax][i]);
+	    for (int i = 0; i < a_rems[idxMax].length; ++i) {
+//	    	AL_remainingSets.add(a_rems[idxMax][i]); 	//PerfTweak old
+	    	remainingSets[i] = a_rems[idxMax][i];		//PerfTweak new
+	    }
+	    
+//	    if ( remainingSets.length != AL_remainingSets.size() ) //DEBUG PerfTweak
+//	    	remainingSets = remainingSets;
+	    
 	    return new Node(sumString, rhs);
 	}
 	

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.lang.IllegalStateException;
 
 public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
+//	public ArrayList<String> recogWinners = new ArrayList<String>();
+//	public ArrayList<double []> recogPs = new ArrayList<double []>();
+	
 	public ArrayList<CWrittenToken> tokens = new ArrayList<CWrittenToken>();
 	
 	/* Constructor */

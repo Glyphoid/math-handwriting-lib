@@ -161,7 +161,6 @@ public class GraphicalProductionSet {
 	public int [][] evalWrittenTokenSet(int prodIdx, 
 										CAbstractWrittenTokenSet wts, 
 			                            TerminalSet termSet) {
-		/* TODO: Deal with a production in which none of the rhs items are terminal */
 		/* Can use MathHelper.getFullDiscreteSpace() */
 		GraphicalProduction t_prod = prods.get(prodIdx);
 		
@@ -278,12 +277,15 @@ public class GraphicalProductionSet {
 	public Node attempt(int i, 
 						CAbstractWrittenTokenSet tokenSet, 
 						int [] idxHead,
-						ArrayList<CAbstractWrittenTokenSet> remainingSets, 
+						//ArrayList<CAbstractWrittenTokenSet> AL_remainingSets, //PerfTweak old
+						CAbstractWrittenTokenSet [] remainingSets, 		//PerfTweak new
 						float [] maxGeomScore) {
+		/* TODO: Eliminate this stage and let caller call GraphicalProduction.attempt() directly, for performance. */
 		if ( idxHead.length == 0 ) 
 			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
 		
-		Node n = prods.get(i).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
+//		Node n = prods.get(i).attempt(tokenSet, idxHead, AL_remainingSets, remainingSets, maxGeomScore); //PerfTweak old
+		Node n = prods.get(i).attempt(tokenSet, idxHead, remainingSets, maxGeomScore); //PerfTweak old
 		
 		/* Create head child node */
 		if ( n != null && 
