@@ -2,11 +2,13 @@ package me.scai.parsetree;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.HashMap;
+
 
 //import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
@@ -701,16 +703,31 @@ public class TokenSetParser implements ITokenSetParser {
 										 errStr, errStr};
 
 		/* Single out for debugging */
-		Integer [] singleOutIdx = {};
-//		Integer [] singleOutIdx = {1};
-		/* Crash: 
-		 * Error: 104: "((2 ^ 3) ^ 4)" <>  "(2 ^ 34)". Need to change Production: DIGIT_STRING --> DIGIT DIGIT STRING
-		 *        91: (2 - 3) - 4 vs. 2 - (3 - 4) needs some sort of geometric biaser? */
+//		Integer [] singleOutIdx = {};
+		Integer [] singleOutIdx = {1};
 
-		final String tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
-		final String tokenSetSuffix = ".wts";
-		final String prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
-		final String termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
+		String tokenSetSuffix = ".wts";
+		String tokenSetPrefix = null;
+		String prodSetFN = null;
+		String termSetFN = null;
+		
+		String hostName;
+		try {
+			hostName = InetAddress.getLocalHost().getHostName();
+			if ( hostName.toLowerCase().equals("smcg_w510") ) {
+				tokenSetPrefix = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\tokensets\\TS_";
+				prodSetFN = "C:\\Users\\systemxp\\Documents\\My Dropbox\\javaWS\\handwriting\\graph_lang\\productions.txt";
+				termSetFN = "C:\\Users\\systemxp\\Documents\\My Dropbox\\javaWS\\handwriting\\graph_lang\\terminals.txt";
+			}
+			else {
+				tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
+				prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
+				termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
+			}
+		}
+		catch (Exception e) {
+			System.err.println("Cannot determine host name");
+		}
 		
 		/* Create written token set */
 		CWrittenTokenSetNoStroke wts = new CWrittenTokenSetNoStroke();
