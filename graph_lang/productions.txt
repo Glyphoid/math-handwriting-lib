@@ -10,7 +10,7 @@ DIGIT_STRING : {AlignMiddle(0), PositionEast(0)}
 ---
 DIGIT_STRING
 DIGIT
-EPS		# EPS is the empty set. Naturally, it does not require geometric relations.
+# EPS		# EPS is the empty set. Naturally, it does not require geometric relations. # We have eliminated the need for EPS in this graphical parsing.
 
 ---
 DECIMAL_NUMBER

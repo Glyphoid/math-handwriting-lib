@@ -15,8 +15,8 @@ public abstract class CAbstractWrittenTokenSet {
 	protected float max_x = Float.NEGATIVE_INFINITY;
 	protected float max_y = Float.NEGATIVE_INFINITY;
 	
-	public ArrayList<String> recogWinners = new ArrayList<String>();
-	public ArrayList<double []> recogPs = new ArrayList<double []>();
+//	public ArrayList<String> recogWinners = new ArrayList<String>();
+//	public ArrayList<double []> recogPs = new ArrayList<double []>();
 	
 	/* Get the number of tokens */
 	public int nTokens() {
@@ -92,25 +92,6 @@ public abstract class CAbstractWrittenTokenSet {
 		bnds[3] = max_y;
 		
 		return bnds;
-	}
-
-	@Override
-	public String toString() {
-		String s = "Token [";
-		
-		for (int i = 0; i < recogWinners.size(); ++i) {
-			s += recogWinners.get(i);
-			s += "-(" + String.format("%.1f",  min_x) + ", "
-			          + String.format("%.1f",  min_y) + ", "
-					  + String.format("%.1f",  max_x) + ", "
-			          + String.format("%.1f",  max_y) + ")";
-			
-			if ( i < recogWinners.size() - 1 )
-				s += ", ";
-		}
-		s += "]";
-		
-		return s;
 	}
 	
 	public int getNumTokens() {

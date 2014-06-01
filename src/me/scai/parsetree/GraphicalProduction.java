@@ -953,6 +953,21 @@ public class GraphicalProduction {
 		}
 	}
 	
+	private void createHeadChild(Node n) {
+		/* Create head child node */
+		if ( n != null && 
+	         rhs.length > 0 ) {
+			/* TODO: hc should contain information about the 
+			 * tokens that make up of the head child for further 
+			 * parsing.
+			 * hc also needs to be expanded if it is an NT. 
+			 */
+			
+			Node hc = new Node(rhs[0], rhs[0]);
+			n.addChild(hc);
+		}
+	}
+	
 	/* Attempt to parse the input token set with this production, 
 	 * given that the j-th token is used as the head.
 	 * 
@@ -963,11 +978,15 @@ public class GraphicalProduction {
 	 *         remaainingSets: token sets after the head node is 
 	 *         parsed out. null if parsing is unsuccessful. 
 	 */
-	public Node attempt(CAbstractWrittenTokenSet tokenSet, 
+	public Node attempt(//CAbstractWrittenTokenSet tokenSet,
+						CWrittenTokenSetNoStroke tokenSet, 
 			            int [] iHead,
 			            //ArrayList<CAbstractWrittenTokenSet> AL_remainingSets, //PerfTweak old
 			            CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
 			            float [] maxGeomScore) {
+		if ( iHead.length == 0 )
+			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
+		
 		/* Configuration constants */
 		final boolean bUseShortcut = true; /* TODO: Get rid of this constant when the method proves to be reliable */
 		
@@ -981,24 +1000,30 @@ public class GraphicalProduction {
 //			AL_remainingSets.clear();
 //		} //~PerfTweak old 
 		
-		if ( nrn == 1 && rhs[rhs.length - 1].equals(TerminalSet.epsString) ) {
-			/* Empty set matches EPS */
-			
+//		if ( nrn == 1 && rhs[rhs.length - 1].equals(TerminalSet.epsString) ) {
+//			/* Empty set matches EPS */
+//			
+//			Node n = new Node(sumString, rhs);
+//			
+//			if ( nnht == 0 )
+//				/* Add a terminal, empty-set (EPS) node */
+//				maxGeomScore[0] = 1.0f;
+//			else
+//				/* The only non-head node is an EPS, but there is still some token(s) left */				
+//				maxGeomScore[0] = 0.0f;
+//			
+//			createHeadChild(n);
+//				
+//			return n;
+//		}
+						
+		if ( (nrn > nnht) || 
+		     (nrn == 0 && nnht > 0) ) {
+			maxGeomScore[0] = 0.0f;
 			Node n = new Node(sumString, rhs);
 			
-			if ( nnht == 0 )
-				/* Add a terminal, empty-set (EPS) node */
-				maxGeomScore[0] = 1.0f;
-			else
-				/* The only non-head node is an EPS, but there is still some token(s) left */				
-				maxGeomScore[0] = 0.0f;
-				
-			return n;
-		}
-						
-		if ( nrn > nnht ) {
-			maxGeomScore[0] = 0.0f;
-			Node n = new Node(sumString, rhs);		
+			createHeadChild(n);
+			
 			return n;
 		}		
 
@@ -1039,7 +1064,7 @@ public class GraphicalProduction {
 	    if ( labels.length > 1 )
 	    	System.out.println("labels.length = " + labels.length); 	//DEBUG
 	    
-	    for (int i = 0; i < labels.length; ++i) {
+	    for (int i = 0; i < labels.length; ++i) {		/* Iterate through all partitions */
 	    	a_rems[i] = new CWrittenTokenSetNoStroke[nrn];
 	    	boolean [] remsFilled = new boolean[nrn];
 	    	
@@ -1051,16 +1076,19 @@ public class GraphicalProduction {
     			int inode = labels[i][k];
     			int irt = inht.get(k);
     			
-    			a_rems[i][inode].setTokenNames(tokenSet.getTokenNames());
-    			a_rems[i][inode].addToken(tokenSet.getTokenBounds(irt), 
-    					                  tokenSet.recogWinners.get(irt), 
-    					                  tokenSet.recogPs.get(irt), 
-    					                  false);
+//    			a_rems[i][inode].setTokenNames(tokenSet.getTokenNames());
+//    			a_rems[i][inode].addToken(tokenSet.getTokenBounds(irt), 
+//    					                  tokenSet.recogWinners.get(irt), 
+//    					                  tokenSet.recogPs.get(irt), 
+//    					                  false);    			
     			/* The last input argument sets bCheck to false for speed */
     			/* Is this a dangerous action? */
+    			a_rems[i][inode].addToken(tokenSet.tokens.get(irt));
     			
     			remsFilled[inode] = true;
     		}
+    		
+    		
     		
     		/* If there is any unfilled remaining token set, skip */
     		boolean bAllFilled = true;
@@ -1136,7 +1164,11 @@ public class GraphicalProduction {
 //	    if ( remainingSets.length != AL_remainingSets.size() ) //DEBUG PerfTweak
 //	    	remainingSets = remainingSets;
 	    
-	    return new Node(sumString, rhs);
+	    Node n = new Node(sumString, rhs);
+	    
+	    createHeadChild(n);
+	    
+	    return n;
 	}
 	
 	
@@ -1185,10 +1217,10 @@ public class GraphicalProduction {
 					}
 				}
 				else {
-					if ( line.trim().equals(TerminalSet.epsString) )
-						t_rhs[k] = TerminalSet.epsString;
-					else
-						throw new Exception("Encountered a non-head node with no geometric relations specified");
+//					if ( line.trim().equals(TerminalSet.epsString) )
+//						t_rhs[k] = TerminalSet.epsString;
+//					else
+					throw new Exception("Encountered a non-head node with no geometric relations specified");
 				}
 			}
 			

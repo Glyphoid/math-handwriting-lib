@@ -68,7 +68,7 @@ public class MathHelper {
 	/* Find the index to the largest element of an array of float */
 	public static int indexMax(float [] xs) {
 		if ( xs == null || xs.length == 0 ) 
-			throw new IllegalArgumentException("Input to mean() is an empty array");
+			throw new IllegalArgumentException("Input to indexMax() is an empty array");
 		
 		float max = xs[0];
 		int idxMax = 0;

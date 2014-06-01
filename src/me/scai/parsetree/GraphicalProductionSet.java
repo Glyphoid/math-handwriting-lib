@@ -9,13 +9,14 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 
-import me.scai.handwriting.CAbstractWrittenTokenSet;
+//import me.scai.handwriting.CAbstractWrittenTokenSet;
+import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 public class GraphicalProductionSet {
 	private static final String commentString = "#";
 	private static final String separatorString = "---";
 	
-	protected ArrayList<GraphicalProduction> prods
+	public ArrayList<GraphicalProduction> prods
 		= new ArrayList<GraphicalProduction>(); /* List of productions */
 	
 	protected ArrayList<String []> terminalTypes = new ArrayList<String []>();
@@ -91,7 +92,8 @@ public class GraphicalProductionSet {
 	 *         Side effect input argument:
 	 *             idxPossibleHead: has the same length as the return value.
 	 *             Contain indices to the possible heads. */
-	public int [] getIdxValidProds(CAbstractWrittenTokenSet tokenSet, 
+	public int [] getIdxValidProds(//CAbstractWrittenTokenSet tokenSet, 
+			                       CWrittenTokenSetNoStroke tokenSet,
 			                       TerminalSet termSet, 	
 			                       String lhs,
 			                       ArrayList<int [][]> idxPossibleHead, 
@@ -119,7 +121,8 @@ public class GraphicalProductionSet {
 			List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
 			
 			for (int k = 0; k < tokenSet.nTokens(); ++k) {
-				String tokenType = termSet.getTypeOfToken(tokenSet.recogWinners.get(k));
+//				String tokenType = termSet.getTypeOfToken(tokenSet.recogWinners.get(k));
+				String tokenType = termSet.getTypeOfToken(tokenSet.tokens.get(k).getRecogWinner());
 				if ( !possibleTermTypesList.contains(tokenType) ) {
 					bExclude = true;
 					break;
@@ -159,8 +162,10 @@ public class GraphicalProductionSet {
 	 * of all tokens that can potentially be the head.
 	 *  */
 	public int [][] evalWrittenTokenSet(int prodIdx, 
-										CAbstractWrittenTokenSet wts, 
+										//CAbstractWrittenTokenSet wts, 
+										CWrittenTokenSetNoStroke wts,
 			                            TerminalSet termSet) {
+		/* TODO: Deal with a production in which none of the rhs items are terminal */
 		/* Can use MathHelper.getFullDiscreteSpace() */
 		GraphicalProduction t_prod = prods.get(prodIdx);
 		
@@ -172,7 +177,8 @@ public class GraphicalProductionSet {
 			 * is just a single token in the token set.
 			 */
 			for (int i = 0; i < wts.nTokens(); ++i) {
-				String tTokenName = wts.recogWinners.get(i);
+//				String tTokenName = wts.recogWinners.get(i);
+				String tTokenName = wts.tokens.get(i).getRecogWinner();
 				String tTokenType = termSet.getTypeOfToken(tTokenName);
 				if ( tTokenType.equals(headNodeType) ) {
 					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
@@ -274,41 +280,21 @@ public class GraphicalProductionSet {
 	 * TODO: j should be an array, to allow the head node to 
 	 *       be made of more than one tokens
 	 */
-	public Node attempt(int i, 
-						CAbstractWrittenTokenSet tokenSet, 
-						int [] idxHead,
-						//ArrayList<CAbstractWrittenTokenSet> AL_remainingSets, //PerfTweak old
-						CAbstractWrittenTokenSet [] remainingSets, 		//PerfTweak new
-						float [] maxGeomScore) {
-		/* TODO: Eliminate this stage and let caller call GraphicalProduction.attempt() directly, for performance. */
-		if ( idxHead.length == 0 ) 
-			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
-		
-//		Node n = prods.get(i).attempt(tokenSet, idxHead, AL_remainingSets, remainingSets, maxGeomScore); //PerfTweak old
-		Node n = prods.get(i).attempt(tokenSet, idxHead, remainingSets, maxGeomScore); //PerfTweak old
-		
-		/* Create head child node */
-		if ( n != null && 
-	         prods.get(i).rhs.length > 0 ) {
-			/* TODO: hc should contain information about the 
-			 * tokens that make up of the head child for further 
-			 * parsing.
-			 * hc also needs to be expanded if it is an NT. 
-			 */
-			
-			Node hc = new Node(prods.get(i).rhs[0], prods.get(i).rhs[0]);
-			n.addChild(hc);
-			
-			if ( prods.get(i).rhs.length == 2 && 
-				 prods.get(i).rhs[1].equals(TerminalSet.epsString) ) {
-				/* Append EPS */
-				n.addChild(new Node(TerminalSet.epsString, TerminalSet.epsString));
-			}
-		}
-		
-		return n;
-
-	}	
+//	public Node attempt(int i, 
+//						//CAbstractWrittenTokenSet tokenSet, 
+//			            CWrittenTokenSetNoStroke tokenSet,
+//						int [] idxHead,
+//						//ArrayList<CAbstractWrittenTokenSet> AL_remainingSets, //PerfTweak old
+//						//CAbstractWrittenTokenSet [] remainingSets, 		//PerfTweak new
+//						CWrittenTokenSetNoStroke [] remainingSets, 		//PerfTweak new
+//						float [] maxGeomScore) {
+//		/* TODO: Eliminate this stage and let caller call GraphicalProduction.attempt() directly, for performance. */
+//		
+////		Node n = prods.get(i).attempt(tokenSet, idxHead, AL_remainingSets, remainingSets, maxGeomScore); //PerfTweak old
+//		Node n = prods.get(i).attempt(tokenSet, idxHead, remainingSets, maxGeomScore); //PerfTweak old
+//		
+//		return n;
+//	}
 	
 	/* Factory method */
 	public static GraphicalProductionSet createFromFile(String prodListFileName, TerminalSet termSet)
@@ -394,8 +380,8 @@ public class GraphicalProductionSet {
 		
 		for (int i = 0; i < gp.rhs.length; ++i) {
 			if ( termSet.isTypeTerminal(gp.rhs[i]) ) {
-				if ( !gp.rhs[i].equals(TerminalSet.epsString) )
-					termTypesList.add(gp.rhs[i]);
+//				if ( !gp.rhs[i].equals(TerminalSet.epsString) )
+				termTypesList.add(gp.rhs[i]);
 			}
 			else {
 //				if ( ntTerminalTypes.keySet().contains(gp.rhs[i]) ) {

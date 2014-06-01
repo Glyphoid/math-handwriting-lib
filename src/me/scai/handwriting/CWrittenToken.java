@@ -12,6 +12,7 @@ import me.scai.handwriting.CHandWritingTokenImageData;
 
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
 public class CWrittenToken {
+	/* Member variables */
 	private LinkedList<CStroke> strokes = new LinkedList<CStroke>();
 	public boolean bNormalized = false;
 	private float min_x = Float.MAX_VALUE, max_x = Float.MIN_VALUE;
@@ -19,11 +20,26 @@ public class CWrittenToken {
 	public float width = 0f;
 	public float height = 0f;
 	
-	String recogWinner;
-	double [] recogPs;
+	private String recogWinner;
+	private double [] recogPs;
+	
+	/* ~Member variables */
 	
 	/* Constructor */
 	public CWrittenToken() {};
+	
+	public CWrittenToken(float [] t_bnds, String t_recogWinner, double [] t_recogPs) {
+		min_x = t_bnds[0];
+		min_y = t_bnds[1];
+		max_x = t_bnds[2];
+		max_y = t_bnds[3];
+		
+		recogWinner = t_recogWinner;
+		recogPs = t_recogPs;
+		
+		width = max_x - min_x;
+		height = max_y - min_y;
+	}
 	
 	/* Clear */
 	public void clear() {
@@ -395,4 +411,23 @@ public class CWrittenToken {
 		
 		return im;
 	}
+	
+	public void setRecogWinner(String rw) {
+		recogWinner = rw;
+	}
+	
+	public String getRecogWinner() {
+		return recogWinner;
+	}
+	
+	public void setRecogPs(double [] ps) {
+		recogPs = ps;
+	}
+	
+	public double [] getRecogPs() {
+		return recogPs;
+	}
+	
+	
+	
 }

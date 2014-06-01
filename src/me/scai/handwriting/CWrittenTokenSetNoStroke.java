@@ -11,69 +11,87 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 
 public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
-	public ArrayList<float []> tokenBounds = new ArrayList<float []>();
+	/* Member variables */
+	public ArrayList<CWrittenToken> tokens = new ArrayList<CWrittenToken>();
+	/* ~Member variables */
+	
+//	public ArrayList<float []> tokenBounds = new ArrayList<float []>();
 	
 	/* ************ Methods ************ */
 	/* Default constructor */
-	public CWrittenTokenSetNoStroke() {}
+	public CWrittenTokenSetNoStroke() { }
 	
 	/* Constructor: taking a CAbstarctWrittenTokenSet, extract a subset of the
 	 * tokens and used them to form a new CWrittenTokenSetNoStroke. 
 	 * Information about strokes is discarded in this construction process.
 	 */
-	public CWrittenTokenSetNoStroke(CAbstractWrittenTokenSet owts, int [] indices) {
+	public CWrittenTokenSetNoStroke(CWrittenTokenSetNoStroke owts, int [] indices) {
 		setTokenNames(owts.tokenNames);
 		
-		for ( int i = 0; i < indices.length; ++i ) {
-			float [] t_bnds = owts.getTokenBounds(indices[i]);
-			addToken(t_bnds, owts.recogWinners.get(indices[i]), owts.recogPs.get(indices[i]));
-		}
+		for ( int i = 0; i < indices.length; ++i )
+			addToken(owts.tokens.get(indices[i]));
 		
 		calcBounds();
 	}
-
-	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP) {
-		addToken(bounds, t_recogWinner, t_recogP, true);
-	}
 	
-	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP, boolean bCheck) {
-		/* Input sanity checks */
-		if ( bounds.length != 4 ) {
-			System.err.println("Input bounds is not a length-4 float array");
-			return;
-		}
-		
-		if ( bCheck ) {
-			if ( tokenNames.length != t_recogP.length ) {
-				System.err.println("Input t_recogP doesn't have the same length as tokenNames");
-				return;
-			}
-			
-			/* Make sure that t_recogWinner belongs to the set tokenNames */
-			if ( !Arrays.asList(tokenNames).contains(t_recogWinner) ) {
-				System.err.println("Value of t_recogWinner (" + t_recogWinner + ") does not belong to tokenNames");
-				return;
-			}
-		}
-		
-		tokenBounds.add(bounds);
-		
-		if ( t_recogWinner != null )
-			recogWinners.add(t_recogWinner);
-		
-		if ( t_recogP != null )
-			recogPs.add(t_recogP);
-
-		addOneToken(); /* Takes care of things including incrementing nt */
+//	public CWrittenTokenSetNoStroke(CAbstractWrittenTokenSet owts, int [] indices) {
+//		setTokenNames(owts.tokenNames);
+//		
+//		for ( int i = 0; i < indices.length; ++i ) {
+//			float [] t_bnds = owts.getTokenBounds(indices[i]);
+//			addToken(t_bnds, owts.recogWinners.get(indices[i]), owts.recogPs.get(indices[i]));
+//		}
+//		
+//		calcBounds();
+//	}
+	
+	public void addToken(CWrittenToken wt) {
+		tokens.add(wt);
+		addOneToken();
 	}
+
+//	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP) {
+//		addToken(bounds, t_recogWinner, t_recogP, true);
+//	}
+	
+//	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP, boolean bCheck) {
+//		/* Input sanity checks */
+//		if ( bounds.length != 4 ) {
+//			System.err.println("Input bounds is not a length-4 float array");
+//			return;
+//		}
+//		
+//		if ( bCheck ) {
+//			if ( tokenNames.length != t_recogP.length ) {
+//				System.err.println("Input t_recogP doesn't have the same length as tokenNames");
+//				return;
+//			}
+//			
+//			/* Make sure that t_recogWinner belongs to the set tokenNames */
+//			if ( !Arrays.asList(tokenNames).contains(t_recogWinner) ) {
+//				System.err.println("Value of t_recogWinner (" + t_recogWinner + ") does not belong to tokenNames");
+//				return;
+//			}
+//		}
+//		
+//		tokenBounds.add(bounds);
+//		
+//		if ( t_recogWinner != null )
+//			recogWinners.add(t_recogWinner);
+//		
+//		if ( t_recogP != null )
+//			recogPs.add(t_recogP);
+//
+//		addOneToken(); /* Takes care of things including incrementing nt */
+//	}
 		
 	@Override
 	public void calcBounds() {
 		min_x = min_y = Float.MAX_VALUE;
 		max_x = max_y = Float.MIN_VALUE;
 		
-		for (int i = 0; i < tokenBounds.size(); ++i) {
-			float [] bounds = tokenBounds.get(i);
+		for (int i = 0; i < tokens.size(); ++i) {
+			float [] bounds = tokens.get(i).getBounds();
 			if ( min_x > bounds[0] )
 				min_x = bounds[0];
 			if ( min_y > bounds[1] ) 
@@ -88,12 +106,12 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	@Override
 	public String getStringBrief() {
 		/* Check if tokeNames has been configured */
-		if ( tokenBounds == null )
-			throw new IllegalStateException("tokenNames have not been configured yet");
-	
-		if ( tokenBounds.size() != recogWinners.size() || 
-		     tokenBounds.size() != recogPs.size() )
-			throw new IllegalStateException("Difference in sizes of tokens and recognition results");
+//		if ( tokenBounds == null )
+//			throw new IllegalStateException("tokenNames have not been configured yet");
+//	
+//		if ( tokenBounds.size() != recogWinners.size() || 
+//		     tokenBounds.size() != recogPs.size() )
+//			throw new IllegalStateException("Difference in sizes of tokens and recognition results");
 		
 		String str = "";
 		
@@ -111,7 +129,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		for (int k = 0; k < nt; ++k) {
 			/* Bound */
 			str += "bounds = [";			
-			float [] bnds = tokenBounds.get(k);
+//			float [] bnds = tokenBounds.get(k);
+			float [] bnds = tokens.get(k).getBounds();
 			str += bnds[0] + ", ";
 			str += bnds[1] + ", ";
 			str += bnds[2] + ", ";
@@ -119,13 +138,19 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			str += "]\n";
 						
 			/* Recognition winner */
-			str += "recogWinner = " + recogWinners.get(k) + "\n";
+//			str += "recogWinner = " + recogWinners.get(k) + "\n";
+			str += "recogWinner = " + tokens.get(k).getRecogWinner() + "\n";
 			
 			/* Recognition Ps */
 			str += "recogPs = [";
-			for (int n = 0; n < recogPs.get(k).length; ++n) {
-				str += recogPs.get(k)[n];
-				if ( n < recogPs.get(k).length - 1 )
+//			for (int n = 0; n < recogPs.get(k).length; ++n) {
+//				str += recogPs.get(k)[n];
+//				if ( n < recogPs.get(k).length - 1 )
+//					str += ", ";
+//			}
+			for (int n = 0; n < tokens.get(k).getRecogPs().length; ++n) {
+				str += tokens.get(k).getRecogPs()[n];
+				if ( n < tokens.get(k).getRecogPs().length - 1 )
 					str += ", ";
 			}
 			str += "]\n";
@@ -148,9 +173,10 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			return;
 		}
 		
-		tokenBounds.remove(i);
-		recogWinners.remove(i);
-		recogPs.remove(i);
+		tokens.remove(i);
+//		tokenBounds.remove(i);
+//		recogWinners.remove(i);
+//		recogPs.remove(i);
 		
 		calcBounds();
 		
@@ -234,8 +260,11 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 					t_recogPs[i] = Double.parseDouble(psStr[i]);
 				
 				line = in.readLine();
-				
-				addToken(bnds, t_recogWinner, t_recogPs);
+							
+//				addToken(bnds, t_recogWinner, t_recogPs);
+				CWrittenToken wt = new CWrittenToken(bnds, t_recogWinner, t_recogPs);
+				wt.bNormalized = true;
+				addToken(wt);
 			}
 			
 		}
@@ -273,10 +302,11 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	
 	@Override
 	public void clear() {
-		tokenBounds.clear();
+//		tokenBounds.clear();
 		
-		recogWinners.clear();
-		recogPs.clear();
+//		recogWinners.clear();
+//		recogPs.clear();
+		tokens.clear();
 		
 		min_x = min_y = Float.MAX_VALUE;
 		max_x = max_y = Float.MIN_VALUE;
@@ -286,7 +316,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 
 	@Override
 	public float[] getTokenBounds(int i) {
-		return tokenBounds.get(i);
+//		return tokenBounds.get(i);
+		return tokens.get(i).getBounds();
 	}
 	
 	@Override 
@@ -310,6 +341,35 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		}
 		
 		return bnds;
+	}
+
+	@Override
+	public String toString() {
+		String s = "Token [";
+		
+//		for (int i = 0; i < recogWinners.size(); ++i) {
+//			s += recogWinners.get(i);
+//			s += "-(" + String.format("%.1f",  min_x) + ", "
+//			          + String.format("%.1f",  min_y) + ", "
+//					  + String.format("%.1f",  max_x) + ", "
+//			          + String.format("%.1f",  max_y) + ")";
+//			
+//			if ( i < recogWinners.size() - 1 )
+//				s += ", ";
+//		}
+		for (int i = 0; i < tokens.size(); ++i) {
+			s += tokens.get(i).getRecogWinner();
+			s += "-(" + String.format("%.1f",  min_x) + ", "
+			          + String.format("%.1f",  min_y) + ", "
+					  + String.format("%.1f",  max_x) + ", "
+			          + String.format("%.1f",  max_y) + ")";
+			
+			if ( i < tokens.size() - 1 )
+				s += ", ";
+		}
+		s += "]";
+		
+		return s;
 	}
 	
 }

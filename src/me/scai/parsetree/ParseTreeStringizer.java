@@ -13,7 +13,8 @@ public class ParseTreeStringizer {
 		
 		if ( n.prodSumString.equals("DIGIT_STRING --> DIGIT DIGIT_STRING") )
 			s = n.ch[0].termName + stringize(n.ch[1]);
-		else if ( n.prodSumString.equals("DIGIT_STRING --> DIGIT EPS") )
+		else if ( n.prodSumString.equals("DIGIT_STRING --> DIGIT EPS") || 
+				  n.prodSumString.equals("DIGIT_STRING --> DIGIT") )
 			s = n.ch[0].termName;
 		else if ( n.prodSumString.equals("DECIMAL_NUMBER --> POINT DIGIT_STRING DIGIT_STRING") )
 			s = stringize(n.ch[1]) + n.ch[0].termName + stringize(n.ch[2]);
