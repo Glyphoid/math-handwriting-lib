@@ -964,7 +964,8 @@ public class GraphicalProduction {
 			 */
 			
 			Node hc = new Node(rhs[0], rhs[0]);
-			n.addChild(hc);
+			n.setChild(0, hc);
+//			n.addChild(hc);
 		}
 	}
 	
@@ -978,10 +979,8 @@ public class GraphicalProduction {
 	 *         remaainingSets: token sets after the head node is 
 	 *         parsed out. null if parsing is unsuccessful. 
 	 */
-	public Node attempt(//CAbstractWrittenTokenSet tokenSet,
-						CWrittenTokenSetNoStroke tokenSet, 
+	public Node attempt(CWrittenTokenSetNoStroke tokenSet, 
 			            int [] iHead,
-			            //ArrayList<CAbstractWrittenTokenSet> AL_remainingSets, //PerfTweak old
 			            CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
 			            float [] maxGeomScore) {
 		if ( iHead.length == 0 )
@@ -990,32 +989,8 @@ public class GraphicalProduction {
 		/* Configuration constants */
 		final boolean bUseShortcut = true; /* TODO: Get rid of this constant when the method proves to be reliable */
 		
-//		final float verifyThresh = 0.50f; /* TODO: make less ad hoc */
 		int nnht = tokenSet.nTokens() - iHead.length; /* Number of non-head tokens */
 		int nrn = nrhs - 1; /* Number of remaining nodes to match */
-		
-		/* TODO: check that remainingSets is empty */
-//		if ( AL_remainingSets.size() != 0 ) { 	//PerfTweak old 
-//			System.err.println("WARNING: remainingSets input to attempt() is not empty");
-//			AL_remainingSets.clear();
-//		} //~PerfTweak old 
-		
-//		if ( nrn == 1 && rhs[rhs.length - 1].equals(TerminalSet.epsString) ) {
-//			/* Empty set matches EPS */
-//			
-//			Node n = new Node(sumString, rhs);
-//			
-//			if ( nnht == 0 )
-//				/* Add a terminal, empty-set (EPS) node */
-//				maxGeomScore[0] = 1.0f;
-//			else
-//				/* The only non-head node is an EPS, but there is still some token(s) left */				
-//				maxGeomScore[0] = 0.0f;
-//			
-//			createHeadChild(n);
-//				
-//			return n;
-//		}
 						
 		if ( (nrn > nnht) || 
 		     (nrn == 0 && nnht > 0) ) {
@@ -1076,18 +1051,12 @@ public class GraphicalProduction {
     			int inode = labels[i][k];
     			int irt = inht.get(k);
     			
-//    			a_rems[i][inode].setTokenNames(tokenSet.getTokenNames());
-//    			a_rems[i][inode].addToken(tokenSet.getTokenBounds(irt), 
-//    					                  tokenSet.recogWinners.get(irt), 
-//    					                  tokenSet.recogPs.get(irt), 
-//    					                  false);    			
     			/* The last input argument sets bCheck to false for speed */
     			/* Is this a dangerous action? */
     			a_rems[i][inode].addToken(tokenSet.tokens.get(irt));
     			
     			remsFilled[inode] = true;
     		}
-    		
     		
     		
     		/* If there is any unfilled remaining token set, skip */
@@ -1156,13 +1125,18 @@ public class GraphicalProduction {
 	    /* Find the partition that leads to the maximum geometric score */
 	    int idxMax = MathHelper.indexMax(geomScores);
 	    maxGeomScore[0] = geomScores[idxMax];
-	    for (int i = 0; i < a_rems[idxMax].length; ++i) {
-//	    	AL_remainingSets.add(a_rems[idxMax][i]); 	//PerfTweak old
-	    	remainingSets[i] = a_rems[idxMax][i];		//PerfTweak new
-	    }
 	    
-//	    if ( remainingSets.length != AL_remainingSets.size() ) //DEBUG PerfTweak
-//	    	remainingSets = remainingSets;
+	    /* For head */
+	    /* TODO */
+	    CWrittenTokenSetNoStroke headTokenSet = new CWrittenTokenSetNoStroke();
+	    for (int i = 0; i < iHead.length; ++i)
+	    	headTokenSet.addToken(tokenSet.tokens.get(iHead[i]));
+	    remainingSets[0] = headTokenSet;
+	    
+	    /* For non-head */
+	    for (int i = 0; i < a_rems[idxMax].length; ++i) {
+	    	remainingSets[i + 1] = a_rems[idxMax][i];		//PerfTweak new
+	    }
 	    
 	    Node n = new Node(sumString, rhs);
 	    

@@ -49,8 +49,9 @@ public class Node {
 		prodSumString = t_prodSumString;
 		rhsTypes = t_rhsTypes;
 		p = null;
-		nc = 0;
-		ch = null;		
+//		nc = 0;
+		nc = t_rhsTypes.length;
+		ch = new Node[t_rhsTypes.length];
 	}
 	
 	/* Terminal (T) node with production summary string specified */
@@ -60,7 +61,7 @@ public class Node {
 		termName = t_termName;
 		p = null;
 		nc = 0;
-		ch = null;		
+		ch = null;
 	}
 	
 	/* Non-terminal (NT) node with production summary string and children specified */
@@ -83,21 +84,26 @@ public class Node {
 		return nc;
 	}
 	
-	public void addChild(Node newChild) {
-		if ( isTerminal )
-			isTerminal = false;
-		
-		Node [] chOld = ch;
-		if ( chOld == null )
-			ch = new Node[1];
-		else			
-			ch = new Node[chOld.length + 1];
-		for (int i = 0; i < ch.length - 1; ++i)
-			ch[i] = chOld[i];
-		ch[ch.length - 1] = newChild;
-		
-		nc++;
+	public void setChild(int ic, Node child) {
+		ch[ic] = child;
 	}
+	
+//	public void addChild(Node newChild) {
+//		if ( isTerminal )
+//			isTerminal = false;
+//		
+//		Node [] chOld = ch;
+//		if ( chOld == null )
+//			ch = new Node[1];
+//		else
+//			ch = new Node[chOld.length + 1];
+//		
+//		for (int i = 0; i < ch.length - 1; ++i)
+//			ch[i] = chOld[i];
+//		ch[ch.length - 1] = newChild;
+//		
+//		nc++;
+//	}
 
 	public void setRHSTypes(String [] t_rhsTypes) {
 		rhsTypes = t_rhsTypes;

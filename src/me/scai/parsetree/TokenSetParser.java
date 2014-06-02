@@ -89,14 +89,12 @@ public class TokenSetParser implements ITokenSetParser {
 		return parse(tokenSet, "ROOT");
 	}
 	
-	private float evalGeometry(//CAbstractWrittenTokenSet tokenSet, 
-							   CWrittenTokenSetNoStroke tokenSet,
+	private float evalGeometry(CWrittenTokenSetNoStroke tokenSet,
 			                   int [] idxValidProds, 
 			                   ArrayList<int [][]> idxPossibleHead, 
 			                   Node [][] nodes, 
 			                   float [][] maxGeomScores, 
 			                   CWrittenTokenSetNoStroke [][][] aRemainingSets)
-//			                   int [] idxMax) 
 	{
 		final boolean bDebug = false;
 		
@@ -141,9 +139,11 @@ public class TokenSetParser implements ITokenSetParser {
 			for (int j = 0; j < idxPossibleHead.get(i).length; ++j) {
 				int [] idxHead = idxPossibleHead.get(i)[j];
 				
-				//ArrayList<CAbstractWrittenTokenSet> AL_remainingSets = new ArrayList<CAbstractWrittenTokenSet>(); //PerfTweak old
-//				CAbstractWrittenTokenSet [] remainingSets = new CAbstractWrittenTokenSet[nrhs - 1];
-				CWrittenTokenSetNoStroke [] remainingSets = new CWrittenTokenSetNoStroke[nrhs - 1];
+				/* Does not include the head */
+//				CWrittenTokenSetNoStroke [] remainingSets = new CWrittenTokenSetNoStroke[nrhs - 1];
+				
+				/* Includes the head */
+				CWrittenTokenSetNoStroke [] remainingSets = new CWrittenTokenSetNoStroke[nrhs];
 				
 				float [] maxGeomScore = new float[1];
 				
@@ -154,16 +154,10 @@ public class TokenSetParser implements ITokenSetParser {
 					maxGeomScores[i][j] = 0.0f;
 				}
 				else {
-//					Node n = gpSet.attempt(idxValidProds[i], tokenSet, idxHead, AL_remainingSets, remainingSets, maxGeomScore);		//PerfTweak old
-					Node n = gpSet.prods.get(idxValidProds[i]).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);		//PerfTweak old
-					
-					if ( remainingSets.length == 1 && remainingSets[0] == null )
-//						remainingSets = new CAbstractWrittenTokenSet[0];	/* TODO: Get rid of this illogical-looking statement */
-						remainingSets = new CWrittenTokenSetNoStroke[0];	/* TODO: Get rid of this illogical-looking statement */
+					Node n = gpSet.prods.get(idxValidProds[i]).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
 					
 					/* If the head child is a terminal, replace tokenName with the actual name of the token */
 					if ( n != null && termSet.isTypeTerminal(n.ch[0].termName) )
-						//n.ch[0].termName = tokenSet.recogWinners.get(idxPossibleHead.get(i)[j][0]);
 						n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogWinner();
 					
 					if ( currDrillDepth < drillDepthLimit 
@@ -181,11 +175,11 @@ public class TokenSetParser implements ITokenSetParser {
 													
 							if ( termSet.isTypeTerminal(d_lhs) ) {
 								int nTokens;
-								if ( k == 0 )
-									nTokens = idxHead.length;
-								else
-									//nTokens = remainingSets.get(k - 1).nTokens(); //PerfTweak old
-									nTokens = remainingSets[k - 1].nTokens();
+//								if ( k == 0 )		// Assumes the remainingSets does not include the head
+//									nTokens = idxHead.length;
+//								else
+//									nTokens = remainingSets[k - 1].nTokens();
+								nTokens = remainingSets[k].nTokens();	// Assumes that remainingSets includes the head
 								
 								if ( nTokens == 1 )
 									d_scores[k] = 1.0f; 
@@ -205,13 +199,6 @@ public class TokenSetParser implements ITokenSetParser {
 					    		for (int m = 0; m < idxHead.length; ++m) { 	/* TODO: Wrap in a new constructor */
 					    			int irt = idxHead[m];
 					    			
-//					    			d_tokenSetNoStroke.addToken(tokenSet.getTokenBounds(irt), 
-//					    					            		tokenSet.recogWinners.get(irt), 
-//					    					            		tokenSet.recogPs.get(irt), 
-//					    					            		false);
-					    			/* The last input argument sets bCheck to false for speed */
-					    			/* Is this a dangerous action? */
-					    			
 					    			d_tokenSetNoStroke.addToken(tokenSet.tokens.get(irt));
 					    		}
 					    		
@@ -219,8 +206,8 @@ public class TokenSetParser implements ITokenSetParser {
 							}
 							else {
 								/* Non-head */
-								//d_tokenSet = remainingSets.get(k - 1);	//PerfTweak old;
-								d_tokenSet = remainingSets[k - 1];
+//								d_tokenSet = remainingSets[k - 1];	// Assume that remainingSets does not include the head
+								d_tokenSet = remainingSets[k];		// Assume that remainingSets includes the head
 							}
 							
 							if ( bDebug )
@@ -262,6 +249,7 @@ public class TokenSetParser implements ITokenSetParser {
 //							int [] d_t_idxMax2 = new int[2];
 
 							currDrillDepth++; /* To check: thread-safe? */
+							/* Recursive call */
 							float d_maxGeomScore = evalGeometry(d_tokenSet, d_idxValidProds, d_idxPossibleHead, 
 																d_nodes, d_c_maxGeomScores, d_aRemainingSets);
 							currDrillDepth--;
@@ -276,8 +264,6 @@ public class TokenSetParser implements ITokenSetParser {
 					nodes[i][j] = n;
 					maxGeomScores[i][j] = maxGeomScore[0];
 	
-//					aRemainingSets[i][j] = new CAbstractWrittenTokenSet[AL_remainingSets.size()]; 	//PerfTweak old key
-//					AL_remainingSets.toArray(aRemainingSets[i][j]);		//PerfTweak old key
 					aRemainingSets[i][j] = remainingSets;	//PerfTweak new key
 				}
 				
@@ -324,11 +310,6 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 			else {
 				c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead, this.bDebug);
-				
-				//DEBUG
-//				System.out.println("Found " + c_idxValidProds.length + " valid productions and " 
-//						           + c_idxPossibleHead.size() + " valid possible heads");
-				//~DEBUG
 			}
 			
 			if ( c_idxValidProds == null || c_idxValidProds.length == 0 ) {
@@ -339,27 +320,17 @@ public class TokenSetParser implements ITokenSetParser {
 				float [][] c_maxGeomScores = new float[c_idxValidProds.length][];
 				CWrittenTokenSetNoStroke [][][] c_aRemainingSets = new CWrittenTokenSetNoStroke[c_idxValidProds.length][][];
 				
-				/* Recursive call */				
-//				int [] c_idxMax2 = new int[2];
+				/* Recursive call */
 				float c_maxScore = evalGeometry(tokenSet, c_idxValidProds, c_idxPossibleHead, 
 					                            c_nodes, c_maxGeomScores, c_aRemainingSets);
 								
 				maxGeomScores[i][j] = c_maxScore;
-				
-//				GraphicalProduction gp = gpSet.prods.get(i);
 			}
 			
 			/* Re-calculate the maximum */
 			idxMax2 = MathHelper.indexMax2D(maxGeomScores);
 			maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
 		}
-		
-		/* This solution may not be 100% bullet proof. TODO */
-//		if ( idxMax.length != 2 )
-//			throw new RuntimeException("idxMax does not have a length of 2");
-		
-//		idxMax[0] = idxMax2[0];
-//		idxMax[1] = idxMax2[1];
 		
 		/* Optional: store result in hash map */
 		if ( this.bUseHashMaps ) {
@@ -373,30 +344,16 @@ public class TokenSetParser implements ITokenSetParser {
 			evalGeom2ScoresMap.put(tHashKey, maxGeomScores);
 			evalGeom2RemSetsMap.put(tHashKey, aRemainingSets);
 			
-			//DEBUG
-//			System.out.println("Storing token set into hash map 2: " + tHashKey);
-			
-//			int [] d_idxMax2 = MathHelper.indexMax2D(maxGeomScores); /* Look for ties */
-//			float d_maxScore = maxGeomScores[d_idxMax2[0]][d_idxMax2[1]];
-//			int [][] idxTieMax = MathHelper.findTies2D(maxGeomScores, d_maxScore); // DEBUG
-//			if ( idxTieMax.length != 1 )
-//				System.err.println("Foo!!! + " + idxTieMax.length);
-			
-//			evalGeom2IdxMaxMap.put(tHashKey, idxMax);
 		}
 		
 		return maxScore;
 	}
 	
 	/* This implements a recursive descend parser */
-	private Node parse(//CAbstractWrittenTokenSet tokenSet, 
-			           CWrittenTokenSetNoStroke tokenSet,
-			           String lhs) {
+	private Node parse(CWrittenTokenSetNoStroke tokenSet, String lhs) {
 		/* Input sanity check */		
 		if ( tokenSet == null )
 			System.err.println("Parsing null token set!");
-		
-		final boolean bTentative = true; // DEBUG
 		
 		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
 		/* Determine the name of the lhs */
@@ -433,7 +390,6 @@ public class TokenSetParser implements ITokenSetParser {
 		float [][] maxGeomScores = new float[idxValidProds.length][];
 		CWrittenTokenSetNoStroke [][][] aRemainingSets = new CWrittenTokenSetNoStroke[idxValidProds.length][][];
 		
-//		int [] t_idxMax2 = new int[2];
 		currDrillDepth = 0;
 		nCallEvalGeometry++;
 		evalGeometry(tokenSet, idxValidProds, idxPossibleHead, 
@@ -445,87 +401,90 @@ public class TokenSetParser implements ITokenSetParser {
 		/* Select the maximum geometric score */		
 		int [] idxMax2 = MathHelper.indexMax2D(maxGeomScores);
 		
+		/* *********************************************************** */
 		/* New approach: After evalGeometry has been called once, all the 
 		 * information should be there, utilize that information.  
 		 */
-		//String maxHashKey = tokenSet.toString() + "@" + MathHelper.intArray2String(idxValidProds);
-		LinkedList<Node> nStack = new LinkedList<Node>();
-		LinkedList<CWrittenTokenSetNoStroke> rsStack = new LinkedList<CWrittenTokenSetNoStroke>();
-		
-		Node t_node = nodes[idxMax2[0]][idxMax2[1]];
-		CWrittenTokenSetNoStroke [] t_remSets = aRemainingSets[idxMax2[0]][idxMax2[1]];
-		
-		nStack.push(t_node);
-		
-		if ( !termSet.isTypeTerminal(nStack.getLast().rhsTypes[0]) ) {
-			/* The head child is NT */
+		final boolean bNewApproach = false;
+		if ( bNewApproach ) {
+			//String maxHashKey = tokenSet.toString() + "@" + MathHelper.intArray2String(idxValidProds);
+			LinkedList<Node> nStack = new LinkedList<Node>();
+			LinkedList<CWrittenTokenSetNoStroke> rsStack = new LinkedList<CWrittenTokenSetNoStroke>();
 			
-			/* Get the head indices */
-			/* Need to find the parent in the stack */
-			String tHashKey1 = tokenSet.toString() + "@" + nStack.getLast().prodSumString.split(" --> ")[0];
-			tHashKey1 = tHashKey1;						
-			tokenSetLHS2IdxPossibleHeadsMap.get(tHashKey1);
-		}
-		
-		/* Determine how many nodes (including the head), still need to be parsed */
-		int nToParse = 0;
-		if ( !termSet.isTypeTerminal(nStack.getLast().rhsTypes[0]) ) { /* Head node is NT */			
-			if ( nStack.getLast().ch[0].ch == null )
-				nToParse++;
-		}
-		else {	/* Head node should already be here */
+			Node t_node = nodes[idxMax2[0]][idxMax2[1]];
+			CWrittenTokenSetNoStroke [] t_remSets = aRemainingSets[idxMax2[0]][idxMax2[1]];
 			
-		}
-		
-		nToParse += t_remSets.length;
-		for (int k = 0; k < t_remSets.length; ++k) {
-			rsStack.push(t_remSets[k]);
-		}
-		
-		for (int k = 0; k < t_remSets.length; ++k) {
-			CWrittenTokenSetNoStroke t_remSet = t_remSets[k];
+			nStack.push(t_node);
 			
-			String tHashKey1 = t_remSet.toString() + "@" + t_node.rhsTypes[k + 1];
-//			System.out.print("tHashkey1 = " + tHashKey1); //DEBUG
-			
-			int [] t_idxValidProds = null;
-			if ( tokenSetLHS2IdxValidProdsMap.containsKey(tHashKey1) ) {
-				t_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(tHashKey1);				
+			if ( !termSet.isTypeTerminal(nStack.getLast().rhsTypes[0]) ) {
+				/* The head child is NT */
 				
-				String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
-				System.out.println("tHashkey2 = " + tHashKey2); //DEBUG
+				/* Get the head indices */
+				/* Need to find the parent in the stack */
+				String tHashKey1 = tokenSet.toString() + "@" + nStack.getLast().prodSumString.split(" --> ")[0];
+				tHashKey1 = tHashKey1;						
+				tokenSetLHS2IdxPossibleHeadsMap.get(tHashKey1);
+			}
+			
+			/* Determine how many nodes (including the head), still need to be parsed */
+			int nToParse = 0;
+			if ( !termSet.isTypeTerminal(nStack.getLast().rhsTypes[0]) ) { /* Head node is NT */			
+				if ( nStack.getLast().ch[0].ch == null )
+					nToParse++;
+			}
+			else {	/* Head node should already be here */
 				
-				if ( evalGeom2ScoresMap.containsKey(tHashKey2) ) {
-					float [][] t_c_scores = this.evalGeom2ScoresMap.get(tHashKey2);	/* TODO: Why can't we store the best Node? */
-					Node [][] t_c_nodes = this.evalGeom2NodesMap.get(tHashKey2);
+			}
+			
+			nToParse += t_remSets.length;
+			for (int k = 0; k < t_remSets.length; ++k) {
+				rsStack.push(t_remSets[k]);
+			}
+			
+			for (int k = 0; k < t_remSets.length; ++k) {
+				CWrittenTokenSetNoStroke t_remSet = t_remSets[k];
+				
+				String tHashKey1 = t_remSet.toString() + "@" + t_node.rhsTypes[k + 1];
+	//			System.out.print("tHashkey1 = " + tHashKey1); //DEBUG
+				
+				int [] t_idxValidProds = null;
+				if ( tokenSetLHS2IdxValidProdsMap.containsKey(tHashKey1) ) {
+					t_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(tHashKey1);				
 					
-					int [] t_c_idxMax2 = MathHelper.indexMax2D(t_c_scores);
-					Node t_c_node = t_c_nodes[t_c_idxMax2[0]][t_c_idxMax2[1]];
+					String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
+					System.out.println("tHashkey2 = " + tHashKey2); //DEBUG
+					
+					if ( evalGeom2ScoresMap.containsKey(tHashKey2) ) {
+						float [][] t_c_scores = this.evalGeom2ScoresMap.get(tHashKey2);	/* TODO: Why can't we store the best Node? */
+						Node [][] t_c_nodes = this.evalGeom2NodesMap.get(tHashKey2);
+						
+						int [] t_c_idxMax2 = MathHelper.indexMax2D(t_c_scores);
+						Node t_c_node = t_c_nodes[t_c_idxMax2[0]][t_c_idxMax2[1]];
+					}
+					else {
+						System.err.println("WARNING: Missing hash key from hash map 2: " + tHashKey2);
+						
+	//					String [] keys = new String[evalGeom2ScoresMap.keySet().size()]; 
+	//					evalGeom2ScoresMap.keySet().toArray(keys);
+	//					for (int j = 0; j < keys.length; ++j) {
+	//						System.err.println("keySet #" + j + ": " + keys[j]);
+	//					}
+					}
+					
+					
 				}
 				else {
-					System.err.println("WARNING: Missing hash key from hash map 2: " + tHashKey2);
-					
-//					String [] keys = new String[evalGeom2ScoresMap.keySet().size()]; 
-//					evalGeom2ScoresMap.keySet().toArray(keys);
-//					for (int j = 0; j < keys.length; ++j) {
-//						System.err.println("keySet #" + j + ": " + keys[j]);
-//					}
+					/* This happens only (?) on single digits */
+					System.err.println("WARNING: Missing hash key from hash map 1: " + tHashKey1);
 				}
 				
+	//			int iBestProd = tokenSetLHS2IdxBestProdMap.get(tHashKey1);	// No use. TODO: Eliminate this and related lines.
 				
+	//			Node t_child_node = this.evalGeom2NodesMap.get(tHashKey2);
 			}
-			else {
-				/* This happens only (?) on single digits */
-				System.err.println("WARNING: Missing hash key from hash map 1: " + tHashKey1);
-			}
-			
-//			int iBestProd = tokenSetLHS2IdxBestProdMap.get(tHashKey1);	// No use. TODO: Eliminate this and related lines.
-			
-//			Node t_child_node = this.evalGeom2NodesMap.get(tHashKey2);
 		}
 		/* ~New approach */
-		
-		//n.setGeometricScore(maxGeomScores[idxMax2[0]][idxMax2[1]]);
+		/* *********************************************************** */
 		
 		/* Search for ties */
 		float maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
@@ -533,24 +492,16 @@ public class TokenSetParser implements ITokenSetParser {
 			return null;
 		
 		int [][] idxTieMax = MathHelper.findTies2D(maxGeomScores, maxScore);
-//		float [] childGeometricScores = new float[idxTieMax.length]; // Previous
 		
 		/* Iterate through all members of the tie and find the best one */
 		Node n;
-//		CAbstractWrittenTokenSet [] remSets;
 		CWrittenTokenSetNoStroke [] remSets;
 		
 		if ( idxTieMax.length > 1 )
-			System.out.println("WARNING: Length of idxTieMax = " + idxTieMax.length + " (> 1)");
+			System.err.println("WARNING: Length of idxTieMax = " + idxTieMax.length + " (> 1)");
 		
-//		if ( this.bUseHashMaps2 )	// DEBUG
-//			System.out.println("Before tie breaking: Hash map size = " 
-//		                       + this.evalGeom2RemSetsMap.size());
-		
-//		for (int i = 0; i < idxTieMax.length; ++i) { // Previous, more cautious, perhaps unnecessarily cautious
-		int i = 0;
-		int idx0 = idxTieMax[i][0];
-		int idx1 = idxTieMax[i][1];
+		int idx0 = idxTieMax[0][0];
+		int idx1 = idxTieMax[0][1];
 		
 		n = nodes[idx0][idx1];
 		remSets = aRemainingSets[idx0][idx1];
@@ -564,81 +515,47 @@ public class TokenSetParser implements ITokenSetParser {
 			nValidRemSets++;
 		}
 		
-		if ( n.isTerminal() ) {
-//			childGeometricScores[i] = 1.0f; // Previous
-			//return n; /* Bottom-out condition for recursion */
-		}
-		else {
-//			ArrayList<Float>  t_childGeometricScores = new ArrayList<Float>(); // Previous
-			/* Call recursively */
-			
+		if ( !n.isTerminal() ) {
 			/* In case the head child of n is a non-terminal (NT), it needs 
 			 * to be parsed.
 			 */
 			/* Determine if the head child is an NT */
-			String headChildType = gpSet.getRHS(idxValidProds[idx0])[0];
-			boolean bHeadChildNT = !termSet.isTypeTerminal(headChildType); 
-			if ( bHeadChildNT ) {
-				int [] headChildTokenIdx = idxPossibleHead.get(idx0)[idx1];
-//					CAbstractWrittenTokenSet headChildTokenSet = new CWrittenTokenSetNoStroke(tokenSet, headChildTokenIdx);
-				CWrittenTokenSetNoStroke headChildTokenSet = new CWrittenTokenSetNoStroke(tokenSet, headChildTokenIdx);
-				
-				/* Recursive call */
-				n.ch[0] = parse(headChildTokenSet, headChildType); 
-				
-//				if ( n.ch[0] != null )		// Previous
-//					t_childGeometricScores.add(n.getGeometricScore());						
-//				else
-//					t_childGeometricScores.add(0.0f);
-			}
+			String headChildType = n.getRHSTypes()[0];			
+			boolean bHeadChildNT = !termSet.isTypeTerminal(headChildType);
 			
-			int nValidChildren = 0;
-			for (int k = 0; k < nValidRemSets; ++k) { //PerfTweak old
-				String requiredType = n.getRHSTypes()[n.ch.length];
+//			if ( bHeadChildNT ) {
+//				int [] headChildTokenIdx = idxPossibleHead.get(idx0)[idx1];
+//				
+//				CWrittenTokenSetNoStroke headChildTokenSet = new CWrittenTokenSetNoStroke(tokenSet, headChildTokenIdx);
+//				
+//				/* Recursive call */
+//				n.ch[0] = parse(headChildTokenSet, headChildType);
+//			}
+			
+			/* Deal with the non-head child(ren) */
+//			for (int k = 0; k < nValidRemSets; ++k) { // Assume that remSets does not include the head
+			for (int k = 0; k < remSets.length; ++k) { // Assume that the remSet includes the head
+//				String requiredType = n.getRHSTypes()[k + 1]; 	// Assume that remSets does not include the head
+				String requiredType = n.getRHSTypes()[k];		// Assume that the remSet includes the head
 				
 				/* Recursive call */
-				Node cn = parse(remSets[k], requiredType);
-				if ( cn != null ) {
-					nValidChildren++;
-					
-					String actualType = cn.prodSumString.split(" ")[0];
-					if ( requiredType.equals(actualType) ) {
-						n.addChild(cn);
+				if ( k > 0 || (k == 0 && bHeadChildNT) ) {
+					Node cn = parse(remSets[k], requiredType);
+				
+					if ( cn != null ) {
+						String actualType = cn.prodSumString.split(" ")[0];
+						if ( requiredType.equals(actualType) ) {
+	//						n.setChild(k + 1, cn);		// Assume that remSets does not include the head
+							n.ch[k] = cn;			// Assume that the remSet includes the head
+						}
 					}
 				}
-					
+
 			}
 			
-			if ( nValidChildren == remSets.length ) {
-				for (int h = 0; h < n.ch.length; ++h) {
-//					if ( !bTentative ) {		// Previous
-//						t_childGeometricScores.add(n.ch[h].getGeometricScore());
-//					}
-//					else {
-//						if ( h < n.ch.length && n.ch[h] != null ) {
-//							if ( n.ch[h].isTerminal )
-//								t_childGeometricScores.add(1.0f);
-//							else
-//								t_childGeometricScores.add(n.ch[h].getGeometricScore()); // Why is it zero? DEBUG
-//						}
-//						else {
-//							t_childGeometricScores.add(0.0f);
-//						}
-//					}
-				}
-				
-//				childGeometricScores[i] = MathHelper.arrayMean(t_childGeometricScores);
-			}
-			else {
-//					return null;
-//				childGeometricScores[i] = 0.0f;
-			}
 		}
-			
-//		} // Previous, more cautious, perhaps unnecessarily cautious
 		
 //		/* What if there is still a tie? TODO */
-//		int idxBreakTie = MathHelper.indexMax(childGeometricScores);
 		
 //		if ( bTentative ) {
 //			float maxChildGeometricScore = childGeometricScores[idxBreakTie];
@@ -647,13 +564,7 @@ public class TokenSetParser implements ITokenSetParser {
 //			}
 //		}
 		
-//		int idx0 = idxTieMax[idxBreakTie][0];
-//		int idx1 = idxTieMax[idxBreakTie][1];
-
-		int idx_0 = idxTieMax[0][0];
-		int idx_1 = idxTieMax[0][1];
-		
-		n = nodes[idx_0][idx_1];
+		n = nodes[idx0][idx1];
 		n.setGeometricScore(maxGeomScores[idx0][idx1]);
 		
 		return n;
@@ -703,8 +614,8 @@ public class TokenSetParser implements ITokenSetParser {
 										 errStr, errStr};
 
 		/* Single out for debugging */
-//		Integer [] singleOutIdx = {};
-		Integer [] singleOutIdx = {1};
+		Integer [] singleOutIdx = {};
+//		Integer [] singleOutIdx = {1};
 
 		String tokenSetSuffix = ".wts";
 		String tokenSetPrefix = null;
@@ -733,11 +644,6 @@ public class TokenSetParser implements ITokenSetParser {
 		CWrittenTokenSetNoStroke wts = new CWrittenTokenSetNoStroke();
 		
 		TokenSetParser tokenSetParser = new TokenSetParser(termSetFN, prodSetFN);
-		
-//		if ( singleOutIdx.length == 1 )
-//			tokenSetParser.setDebug(false);
-//		else
-//			tokenSetParser.setDebug(false);
 		
 		/* Create token set parser */
 		int nPass = 0;

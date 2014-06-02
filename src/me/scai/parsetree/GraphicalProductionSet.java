@@ -265,37 +265,6 @@ public class GraphicalProductionSet {
 		return prods.get(i).getNumNonHeadTokens();
 	}
 	
-	/* Try to parse the token set using the i-th production, 
-	 * given that the j-th token in the token set is used as
-	 * the head. 
-	 * 
-	 * Return value:
-	 * 	    A node with the production, geometric and other
-	 *      information. null if not successful. 
-	 * 
-	 * Side effect input argument:
-	 *     remainingSets: the remaining, node head 
-	 *     token sets. null if parsing is unsuccessful.
-	 *     
-	 * TODO: j should be an array, to allow the head node to 
-	 *       be made of more than one tokens
-	 */
-//	public Node attempt(int i, 
-//						//CAbstractWrittenTokenSet tokenSet, 
-//			            CWrittenTokenSetNoStroke tokenSet,
-//						int [] idxHead,
-//						//ArrayList<CAbstractWrittenTokenSet> AL_remainingSets, //PerfTweak old
-//						//CAbstractWrittenTokenSet [] remainingSets, 		//PerfTweak new
-//						CWrittenTokenSetNoStroke [] remainingSets, 		//PerfTweak new
-//						float [] maxGeomScore) {
-//		/* TODO: Eliminate this stage and let caller call GraphicalProduction.attempt() directly, for performance. */
-//		
-////		Node n = prods.get(i).attempt(tokenSet, idxHead, AL_remainingSets, remainingSets, maxGeomScore); //PerfTweak old
-//		Node n = prods.get(i).attempt(tokenSet, idxHead, remainingSets, maxGeomScore); //PerfTweak old
-//		
-//		return n;
-//	}
-	
 	/* Factory method */
 	public static GraphicalProductionSet createFromFile(String prodListFileName, TerminalSet termSet)
 		throws FileNotFoundException, IOException {
