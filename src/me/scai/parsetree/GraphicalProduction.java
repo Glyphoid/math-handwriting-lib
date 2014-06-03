@@ -1057,7 +1057,7 @@ public class GraphicalProduction {
     		}
     		
     		for (int j = 0; j < nrn; ++j) {
-    			assert( a_rems[i][j].tokens.size() == a_rems[i][j].tokenIDs.size() ); // DEBUG
+//    			assert( a_rems[i][j].tokens.size() == a_rems[i][j].tokenIDs.size() ); // DEBUG
     			a_rems[i][j].calcBounds();
     		}
     		

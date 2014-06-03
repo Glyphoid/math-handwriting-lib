@@ -170,10 +170,7 @@ public class TokenSetParser implements ITokenSetParser {
 													
 							if ( termSet.isTypeTerminal(d_lhs) ) {
 								int nTokens;
-//								if ( k == 0 )		// Assumes the remainingSets does not include the head
-//									nTokens = idxHead.length;
-//								else
-//									nTokens = remainingSets[k - 1].nTokens();
+
 								nTokens = remainingSets[k].nTokens();	// Assumes that remainingSets includes the head
 								
 								if ( nTokens == 1 )
@@ -192,7 +189,6 @@ public class TokenSetParser implements ITokenSetParser {
 							}
 							else {
 								/* Non-head */
-//								d_tokenSet = remainingSets[k - 1];	// Assume that remainingSets does not include the head
 								d_tokenSet = remainingSets[k];		// Assume that remainingSets includes the head
 							}
 							
@@ -445,14 +441,12 @@ public class TokenSetParser implements ITokenSetParser {
 						return null;
 					
 					String tHashKey1 = t_remSet.toString() + "@" + nStackTop.rhsTypes[k];
-//						System.out.print("tHashkey1 = " + tHashKey1 + "; "); //DEBUG
 					
 					int [] t_idxValidProds = null;
 					t_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(tHashKey1);
 						
 					String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
-//						System.out.println("tHashkey2 = " + tHashKey2); //DEBUG
-						
+					
 					float [][] t_c_scores = this.evalGeom2ScoresMap.get(tHashKey2);	/* TODO: Why can't we store the best Node? */
 					Node [][] t_c_nodes = this.evalGeom2NodesMap.get(tHashKey2);
 					

@@ -196,8 +196,6 @@ public class MathHelper {
 				s += ",";
 		}
 		
-//		s += "]";
-		
 		return s;
 	}
 }

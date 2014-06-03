@@ -31,7 +31,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			tokenIDs.add(owts.tokenIDs.get(indices[i]));
 		}
 		
-		assert( tokens.size() == tokenIDs.size() );	// DEBUG
+//		assert( tokens.size() == tokenIDs.size() );	// DEBUG
 		
 		calcBounds();
 	}
@@ -238,7 +238,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			in.close();
 		}
 		
-		assert( tokens.size() == tokenIDs.size() );	// DEBUG
+//		assert( tokens.size() == tokenIDs.size() );	// DEBUG
 		
 		calcBounds();
 	}
