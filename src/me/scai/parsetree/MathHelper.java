@@ -193,7 +193,7 @@ public class MathHelper {
 			s += xs[i];
 			
 			if ( i < xs.length - 1 )
-				s += ", ";
+				s += ",";
 		}
 		
 		s += "]";

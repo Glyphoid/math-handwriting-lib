@@ -345,7 +345,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 
 	@Override
 	public String toString() {
-		String s = "Token [";
+		String s = "[";
 		
 //		for (int i = 0; i < recogWinners.size(); ++i) {
 //			s += recogWinners.get(i);
@@ -359,13 +359,13 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 //		}
 		for (int i = 0; i < tokens.size(); ++i) {
 			s += tokens.get(i).getRecogWinner();
-			s += "-(" + String.format("%.1f",  min_x) + ", "
-			          + String.format("%.1f",  min_y) + ", "
-					  + String.format("%.1f",  max_x) + ", "
-			          + String.format("%.1f",  max_y) + ")";
+			s += "_" + String.format("%.0f",  min_x) + ","
+			          + String.format("%.0f",  min_y) + ","
+					  + String.format("%.0f",  max_x) + ","
+			          + String.format("%.0f",  max_y);
 			
 			if ( i < tokens.size() - 1 )
-				s += ", ";
+				s += ";";
 		}
 		s += "]";
 		

@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -201,6 +202,7 @@ public class TokenSetParser implements ITokenSetParser {
 					    			
 					    			d_tokenSetNoStroke.addToken(tokenSet.tokens.get(irt));
 					    		}
+					    		d_tokenSetNoStroke.calcBounds();  /* TODO: replace with a constructor call */
 					    		
 								d_tokenSet = d_tokenSetNoStroke; /* Automatic upcast */
 							}
@@ -343,7 +345,7 @@ public class TokenSetParser implements ITokenSetParser {
 			evalGeom2NodesMap.put(tHashKey, nodes);
 			evalGeom2ScoresMap.put(tHashKey, maxGeomScores);
 			evalGeom2RemSetsMap.put(tHashKey, aRemainingSets);
-			
+
 		}
 		
 		return maxScore;
@@ -353,7 +355,7 @@ public class TokenSetParser implements ITokenSetParser {
 	private Node parse(CWrittenTokenSetNoStroke tokenSet, String lhs) {
 		/* Input sanity check */		
 		if ( tokenSet == null )
-			System.err.println("Parsing null token set!");
+			System.err.println("Parsing null token set!");		
 		
 		ArrayList<int [][]> idxPossibleHead = new ArrayList<int [][]>();
 		/* Determine the name of the lhs */
@@ -405,103 +407,162 @@ public class TokenSetParser implements ITokenSetParser {
 		/* New approach: After evalGeometry has been called once, all the 
 		 * information should be there, utilize that information.  
 		 */
-		final boolean bNewApproach = false;
+		final boolean bNewApproach = true;
 		if ( bNewApproach ) {
-			//String maxHashKey = tokenSet.toString() + "@" + MathHelper.intArray2String(idxValidProds);
 			LinkedList<Node> nStack = new LinkedList<Node>();
-			LinkedList<CWrittenTokenSetNoStroke> rsStack = new LinkedList<CWrittenTokenSetNoStroke>();
+			LinkedList<Boolean> bParsedStack = new LinkedList<Boolean>();
+			LinkedList<CWrittenTokenSetNoStroke []> rsStack = new LinkedList<CWrittenTokenSetNoStroke []>();
+			LinkedList<Integer> levelStack = new LinkedList<Integer>();
 			
-			Node t_node = nodes[idxMax2[0]][idxMax2[1]];
-			CWrittenTokenSetNoStroke [] t_remSets = aRemainingSets[idxMax2[0]][idxMax2[1]];
-			
+			Node t_node = nodes[idxMax2[0]][idxMax2[1]];			
+			CWrittenTokenSetNoStroke [] t_remSets = aRemainingSets[idxMax2[0]][idxMax2[1]]; 	/* Includes the head */
+
+			rsStack.push(t_remSets);
 			nStack.push(t_node);
+			bParsedStack.push(false);
+			levelStack.push(0);
 			
-			if ( !termSet.isTypeTerminal(nStack.getLast().rhsTypes[0]) ) {
-				/* The head child is NT */
+			while ( nStack.size() != 0 ) {	/* To possible actions in each iteration: push or set child / pop */
+				CWrittenTokenSetNoStroke [] rsStackTop = rsStack.getFirst();
+				Node nStackTop = nStack.getFirst();
+				boolean bParsedStackTop = bParsedStack.getFirst();
+				int topLevel = levelStack.getFirst();
+								
+				boolean bHeadIsTerminal;
+				if ( nStackTop.rhsTypes == null )
+					bHeadIsTerminal = true;
+				else
+					bHeadIsTerminal = termSet.isTypeTerminal(nStackTop.rhsTypes[0]);
 				
-				/* Get the head indices */
-				/* Need to find the parent in the stack */
-				String tHashKey1 = tokenSet.toString() + "@" + nStack.getLast().prodSumString.split(" --> ")[0];
-				tHashKey1 = tHashKey1;						
-				tokenSetLHS2IdxPossibleHeadsMap.get(tHashKey1);
-			}
-			
-			/* Determine how many nodes (including the head), still need to be parsed */
-			int nToParse = 0;
-			if ( !termSet.isTypeTerminal(nStack.getLast().rhsTypes[0]) ) { /* Head node is NT */			
-				if ( nStack.getLast().ch[0].ch == null )
-					nToParse++;
-			}
-			else {	/* Head node should already be here */
-				
-			}
-			
-			nToParse += t_remSets.length;
-			for (int k = 0; k < t_remSets.length; ++k) {
-				rsStack.push(t_remSets[k]);
-			}
-			
-			for (int k = 0; k < t_remSets.length; ++k) {
-				CWrittenTokenSetNoStroke t_remSet = t_remSets[k];
-				
-				String tHashKey1 = t_remSet.toString() + "@" + t_node.rhsTypes[k + 1];
-	//			System.out.print("tHashkey1 = " + tHashKey1); //DEBUG
-				
-				int [] t_idxValidProds = null;
-				if ( tokenSetLHS2IdxValidProdsMap.containsKey(tHashKey1) ) {
-					t_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(tHashKey1);				
+				/* Is this a terminal? */
+				if ( bParsedStackTop ) { /* Action: set child and pop */
+					ListIterator<Boolean> parent = bParsedStack.listIterator();
+					ListIterator<Integer> parentLevel = levelStack.listIterator();
+					int n = 0;
+					boolean isParsed = true;
+					while (parent.hasNext()) {
+						isParsed = parent.next();
+						boolean levelMatch = (parentLevel.next() == topLevel - 1);
+						n++;
+						if ( (!isParsed) && levelMatch )
+							break;
+					}
 					
-					String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
-					System.out.println("tHashkey2 = " + tHashKey2); //DEBUG
+					if ( isParsed ) {	/* Broke out due to stack exhaustion */
+						return nStack.pop();
+					}
 					
-					if ( evalGeom2ScoresMap.containsKey(tHashKey2) ) {
+					int idxChild = n - 2;
+					Node ch = nStack.pop();
+					nStack.get(n - 2).setChild(idxChild, ch);
+					if ( idxChild == 0 )
+						bParsedStack.set(n - 1, true);
+					
+					bParsedStack.pop();
+					rsStack.pop();
+					levelStack.pop();
+				}
+				else {	/* Action: push */
+					/* Determine how many nodes (including the head) still need to be parsed */
+//					int nToParse = 0;
+					
+					CWrittenTokenSetNoStroke [] remSets = rsStackTop;
+//					nToParse += remSets.length;
+		//			for (int k = 0; k < t_remSets.length; ++k) {
+		//				rsStack.push(t_remSets[k]);
+		//			}
+					
+					for (int k = 0; k < remSets.length; ++k) {
+						if ( k == 0 && bHeadIsTerminal ) { /* Head is terminal */
+							rsStack.push(null);	/* No need to parse */
+							nStack.push(nStackTop.ch[0]);
+							bParsedStack.push(true);
+							levelStack.push(topLevel + 1);
+							
+							continue;
+						}
+						
+						CWrittenTokenSetNoStroke t_remSet = remSets[k];
+						
+						if ( t_remSet == null )
+							return null;
+						
+						String tHashKey1 = t_remSet.toString() + "@" + nStackTop.rhsTypes[k];
+//						System.out.print("tHashkey1 = " + tHashKey1 + "; "); //DEBUG
+						
+						int [] t_idxValidProds = null;
+//						if ( tokenSetLHS2IdxValidProdsMap.containsKey(tHashKey1) ) {
+						t_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(tHashKey1);
+							
+						String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
+//						System.out.println("tHashkey2 = " + tHashKey2); //DEBUG
+							
+//						if ( evalGeom2ScoresMap.containsKey(tHashKey2) ) {
 						float [][] t_c_scores = this.evalGeom2ScoresMap.get(tHashKey2);	/* TODO: Why can't we store the best Node? */
 						Node [][] t_c_nodes = this.evalGeom2NodesMap.get(tHashKey2);
 						
 						int [] t_c_idxMax2 = MathHelper.indexMax2D(t_c_scores);
 						Node t_c_node = t_c_nodes[t_c_idxMax2[0]][t_c_idxMax2[1]];
+						CWrittenTokenSetNoStroke [] t_c_remSets = this.evalGeom2RemSetsMap.get(tHashKey2)[t_c_idxMax2[0]][t_c_idxMax2[1]];
+								
+						/* Push onto stack */
+						nStack.push(t_c_node);
+						rsStack.push(t_c_remSets);
+						bParsedStack.push(t_c_node.isTerminal());
+						levelStack.push(topLevel + 1);
+//							}
+//							else {
+//								System.err.println("WARNING: Missing hash key from hash map 2: " + tHashKey2);
+//								
+//			//					String [] keys = new String[evalGeom2ScoresMap.keySet().size()]; 
+//			//					evalGeom2ScoresMap.keySet().toArray(keys);
+//			//					for (int j = 0; j < keys.length; ++j) {
+//			//						System.err.println("keySet #" + j + ": " + keys[j]);
+//			//					}
+//							}
+//							
+//							
+//						}
+//						else {
+//							/* This happens only (?) on single digits */
+//							System.err.println("WARNING: Missing hash key from hash map 1: " + tHashKey1);
+//							
+//							String [] keys = new String[tokenSetLHS2IdxValidProdsMap.keySet().size()]; 
+//							tokenSetLHS2IdxValidProdsMap.keySet().toArray(keys);
+//							for (int j = 0; j < keys.length; ++j) {
+//								System.err.println("keySet #" + j + ": " + keys[j]);
+//							}
+//						}
 					}
-					else {
-						System.err.println("WARNING: Missing hash key from hash map 2: " + tHashKey2);
-						
-	//					String [] keys = new String[evalGeom2ScoresMap.keySet().size()]; 
-	//					evalGeom2ScoresMap.keySet().toArray(keys);
-	//					for (int j = 0; j < keys.length; ++j) {
-	//						System.err.println("keySet #" + j + ": " + keys[j]);
-	//					}
-					}
-					
-					
 				}
-				else {
-					/* This happens only (?) on single digits */
-					System.err.println("WARNING: Missing hash key from hash map 1: " + tHashKey1);
-				}
-				
-	//			int iBestProd = tokenSetLHS2IdxBestProdMap.get(tHashKey1);	// No use. TODO: Eliminate this and related lines.
-				
-	//			Node t_child_node = this.evalGeom2NodesMap.get(tHashKey2);
 			}
 		}
+		
+		if ( bNewApproach )
+			System.err.println("You are in the wrong place. The stack approach did not work."); // DEBUG
 		/* ~New approach */
 		/* *********************************************************** */
+		
+		
 		
 		/* Search for ties */
 		float maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
 		if ( maxScore == 0.0 )
 			return null;
 		
-		int [][] idxTieMax = MathHelper.findTies2D(maxGeomScores, maxScore);
+//		int [][] idxTieMax = MathHelper.findTies2D(maxGeomScores, maxScore);
 		
 		/* Iterate through all members of the tie and find the best one */
 		Node n;
 		CWrittenTokenSetNoStroke [] remSets;
 		
-		if ( idxTieMax.length > 1 )
-			System.err.println("WARNING: Length of idxTieMax = " + idxTieMax.length + " (> 1)");
+//		if ( idxTieMax.length > 1 )
+//			System.err.println("WARNING: Length of idxTieMax = " + idxTieMax.length + " (> 1)");
 		
-		int idx0 = idxTieMax[0][0];
-		int idx1 = idxTieMax[0][1];
+//		int idx0 = idxTieMax[0][0];
+//		int idx1 = idxTieMax[0][1];
+		int idx0 = idxMax2[0];
+		int idx1 = idxMax2[1];
 		
 		n = nodes[idx0][idx1];
 		remSets = aRemainingSets[idx0][idx1];
@@ -523,29 +584,16 @@ public class TokenSetParser implements ITokenSetParser {
 			String headChildType = n.getRHSTypes()[0];			
 			boolean bHeadChildNT = !termSet.isTypeTerminal(headChildType);
 			
-//			if ( bHeadChildNT ) {
-//				int [] headChildTokenIdx = idxPossibleHead.get(idx0)[idx1];
-//				
-//				CWrittenTokenSetNoStroke headChildTokenSet = new CWrittenTokenSetNoStroke(tokenSet, headChildTokenIdx);
-//				
-//				/* Recursive call */
-//				n.ch[0] = parse(headChildTokenSet, headChildType);
-//			}
-			
 			/* Deal with the non-head child(ren) */
-//			for (int k = 0; k < nValidRemSets; ++k) { // Assume that remSets does not include the head
 			for (int k = 0; k < remSets.length; ++k) { // Assume that the remSet includes the head
-//				String requiredType = n.getRHSTypes()[k + 1]; 	// Assume that remSets does not include the head
 				String requiredType = n.getRHSTypes()[k];		// Assume that the remSet includes the head
 				
-				/* Recursive call */
 				if ( k > 0 || (k == 0 && bHeadChildNT) ) {
-					Node cn = parse(remSets[k], requiredType);
+					Node cn = parse(remSets[k], requiredType); /* Recursive call */
 				
 					if ( cn != null ) {
 						String actualType = cn.prodSumString.split(" ")[0];
 						if ( requiredType.equals(actualType) ) {
-	//						n.setChild(k + 1, cn);		// Assume that remSets does not include the head
 							n.ch[k] = cn;			// Assume that the remSet includes the head
 						}
 					}
@@ -554,15 +602,6 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 			
 		}
-		
-//		/* What if there is still a tie? TODO */
-		
-//		if ( bTentative ) {
-//			float maxChildGeometricScore = childGeometricScores[idxBreakTie];
-//			if ( maxChildGeometricScore == 0.0f ) {				
-//				return null;
-//			}
-//		}
 		
 		n = nodes[idx0][idx1];
 		n.setGeometricScore(maxGeomScores[idx0][idx1]);
@@ -615,7 +654,8 @@ public class TokenSetParser implements ITokenSetParser {
 
 		/* Single out for debugging */
 		Integer [] singleOutIdx = {};
-//		Integer [] singleOutIdx = {1};
+//		Integer [] singleOutIdx = {98, 99};
+
 
 		String tokenSetSuffix = ".wts";
 		String tokenSetPrefix = null;

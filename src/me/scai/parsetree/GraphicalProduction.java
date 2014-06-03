@@ -1058,6 +1058,8 @@ public class GraphicalProduction {
     			remsFilled[inode] = true;
     		}
     		
+    		for (int j = 0; j < nrn; ++j)
+    			a_rems[i][j].calcBounds();
     		
     		/* If there is any unfilled remaining token set, skip */
     		boolean bAllFilled = true;
@@ -1131,6 +1133,7 @@ public class GraphicalProduction {
 	    CWrittenTokenSetNoStroke headTokenSet = new CWrittenTokenSetNoStroke();
 	    for (int i = 0; i < iHead.length; ++i)
 	    	headTokenSet.addToken(tokenSet.tokens.get(iHead[i]));
+	    headTokenSet.calcBounds();
 	    remainingSets[0] = headTokenSet;
 	    
 	    /* For non-head */
