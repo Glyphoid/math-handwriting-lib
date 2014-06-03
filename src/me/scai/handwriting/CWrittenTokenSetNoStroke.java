@@ -1,7 +1,6 @@
 package me.scai.handwriting;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,13 +12,12 @@ import java.io.InputStreamReader;
 public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	/* Member variables */
 	public ArrayList<CWrittenToken> tokens = new ArrayList<CWrittenToken>();
+	public ArrayList<Integer> tokenIDs = new ArrayList<Integer>();
 	/* ~Member variables */
-	
-//	public ArrayList<float []> tokenBounds = new ArrayList<float []>();
 	
 	/* ************ Methods ************ */
 	/* Default constructor */
-	public CWrittenTokenSetNoStroke() { }
+	public CWrittenTokenSetNoStroke() { }		
 	
 	/* Constructor: taking a CAbstarctWrittenTokenSet, extract a subset of the
 	 * tokens and used them to form a new CWrittenTokenSetNoStroke. 
@@ -28,62 +26,21 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	public CWrittenTokenSetNoStroke(CWrittenTokenSetNoStroke owts, int [] indices) {
 		setTokenNames(owts.tokenNames);
 		
-		for ( int i = 0; i < indices.length; ++i )
+		for ( int i = 0; i < indices.length; ++i ) {
 			addToken(owts.tokens.get(indices[i]));
+			tokenIDs.add(owts.tokenIDs.get(indices[i]));
+		}
+		
+		assert( tokens.size() == tokenIDs.size() );	// DEBUG
 		
 		calcBounds();
 	}
-	
-//	public CWrittenTokenSetNoStroke(CAbstractWrittenTokenSet owts, int [] indices) {
-//		setTokenNames(owts.tokenNames);
-//		
-//		for ( int i = 0; i < indices.length; ++i ) {
-//			float [] t_bnds = owts.getTokenBounds(indices[i]);
-//			addToken(t_bnds, owts.recogWinners.get(indices[i]), owts.recogPs.get(indices[i]));
-//		}
-//		
-//		calcBounds();
-//	}
 	
 	public void addToken(CWrittenToken wt) {
 		tokens.add(wt);
 		addOneToken();
 	}
 
-//	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP) {
-//		addToken(bounds, t_recogWinner, t_recogP, true);
-//	}
-	
-//	public void addToken(float [] bounds, String t_recogWinner, double [] t_recogP, boolean bCheck) {
-//		/* Input sanity checks */
-//		if ( bounds.length != 4 ) {
-//			System.err.println("Input bounds is not a length-4 float array");
-//			return;
-//		}
-//		
-//		if ( bCheck ) {
-//			if ( tokenNames.length != t_recogP.length ) {
-//				System.err.println("Input t_recogP doesn't have the same length as tokenNames");
-//				return;
-//			}
-//			
-//			/* Make sure that t_recogWinner belongs to the set tokenNames */
-//			if ( !Arrays.asList(tokenNames).contains(t_recogWinner) ) {
-//				System.err.println("Value of t_recogWinner (" + t_recogWinner + ") does not belong to tokenNames");
-//				return;
-//			}
-//		}
-//		
-//		tokenBounds.add(bounds);
-//		
-//		if ( t_recogWinner != null )
-//			recogWinners.add(t_recogWinner);
-//		
-//		if ( t_recogP != null )
-//			recogPs.add(t_recogP);
-//
-//		addOneToken(); /* Takes care of things including incrementing nt */
-//	}
 		
 	@Override
 	public void calcBounds() {
@@ -193,7 +150,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		
 		FileInputStream fin = null;
 		BufferedReader in = null;
-		try {			
+		try {
 			fin = new FileInputStream(wtsFile);
 			in = new BufferedReader(new InputStreamReader(fin));
 		}
@@ -218,6 +175,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			in.readLine();
 			
 			/* Read tokens with no strokes, one by one */
+			int k = 0;
 			while ( true ) {
 				line = in.readLine();
 				
@@ -264,7 +222,9 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 //				addToken(bnds, t_recogWinner, t_recogPs);
 				CWrittenToken wt = new CWrittenToken(bnds, t_recogWinner, t_recogPs);
 				wt.bNormalized = true;
+				
 				addToken(wt);
+				tokenIDs.add(k++);
 			}
 			
 		}
@@ -277,6 +237,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		finally {
 			in.close();
 		}
+		
+		assert( tokens.size() == tokenIDs.size() );	// DEBUG
 		
 		calcBounds();
 	}
@@ -307,6 +269,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 //		recogWinners.clear();
 //		recogPs.clear();
 		tokens.clear();
+		tokenIDs.clear();
 		
 		min_x = min_y = Float.MAX_VALUE;
 		max_x = max_y = Float.MIN_VALUE;
@@ -343,29 +306,36 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		return bnds;
 	}
 
-	@Override
+//	@Override
+//	public String toString() {
+//		String s = "[";
+//		
+//		for (int i = 0; i < tokens.size(); ++i) {
+//			s += tokens.get(i).getRecogWinner();
+//			s += "_" + String.format("%.0f",  min_x) + ","
+//			          + String.format("%.0f",  min_y) + ","
+//					  + String.format("%.0f",  max_x) + ","
+//			          + String.format("%.0f",  max_y);
+//			if ( i < tokens.size() - 1 )
+//				s += ";";
+//			
+////			s += tokenIDs.get(i);
+////			if ( i < tokens.size() - 1 )
+////				s += ",";
+//		}
+//		s += "]";
+//		
+//		return s;
+//	}
+	
 	public String toString() {
 		String s = "[";
 		
-//		for (int i = 0; i < recogWinners.size(); ++i) {
-//			s += recogWinners.get(i);
-//			s += "-(" + String.format("%.1f",  min_x) + ", "
-//			          + String.format("%.1f",  min_y) + ", "
-//					  + String.format("%.1f",  max_x) + ", "
-//			          + String.format("%.1f",  max_y) + ")";
-//			
-//			if ( i < recogWinners.size() - 1 )
-//				s += ", ";
-//		}
 		for (int i = 0; i < tokens.size(); ++i) {
-			s += tokens.get(i).getRecogWinner();
-			s += "_" + String.format("%.0f",  min_x) + ","
-			          + String.format("%.0f",  min_y) + ","
-					  + String.format("%.0f",  max_x) + ","
-			          + String.format("%.0f",  max_y);
+			s += tokenIDs.get(i);
 			
 			if ( i < tokens.size() - 1 )
-				s += ";";
+				s += ",";
 		}
 		s += "]";
 		

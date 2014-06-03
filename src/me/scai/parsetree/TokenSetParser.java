@@ -37,9 +37,6 @@ public class TokenSetParser implements ITokenSetParser {
 	private HashMap<String, Node [][]> evalGeom2NodesMap;
 	private HashMap<String, float [][]> evalGeom2ScoresMap;
 	private HashMap<String, CWrittenTokenSetNoStroke [][][]> evalGeom2RemSetsMap;
-//	private HashMap<String, int []> evalGeom2IdxMaxMap;
-	
-	/* DEBUG variables */
 	
 	/* Methods */
 	
@@ -77,14 +74,22 @@ public class TokenSetParser implements ITokenSetParser {
 		evalGeom2NodesMap = new HashMap<String, Node [][]>();
 		evalGeom2ScoresMap = new HashMap<String, float [][]>();
 		evalGeom2RemSetsMap = new HashMap<String, CWrittenTokenSetNoStroke [][][]>();
-//		evalGeom2IdxMaxMap = new HashMap<String, int []>();
+		
+		tokenSetLHS2IdxValidProdsMap.clear();
+		tokenSetLHS2IdxPossibleHeadsMap.clear();
+		tokenSetLHS2IdxBestProdMap.clear();
+		
+		evalGeom2MaxScoreMap.clear();
+		evalGeom2NodesMap.clear();
+		evalGeom2ScoresMap.clear();
+		evalGeom2RemSetsMap.clear();
 	}
 	
 	@Override
 	public Node parse(CWrittenTokenSetNoStroke tokenSet) {
 		init();
 		
-		return parse(tokenSet, "ROOT");
+		return parse(tokenSet, "ROOT");		
 	}
 	
 	private float evalGeometry(CWrittenTokenSetNoStroke tokenSet,
@@ -98,6 +103,10 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		String hashKey1 = null;
 		String tHashKey = tokenSet.toString() + "@" + MathHelper.intArray2String(idxValidProds);
+//		String tHashKey = tokenSet.toStringNew() + "@" + MathHelper.intArray2String(idxValidProds);
+		
+//		System.out.println(tHashKey); //DEBUG
+//		System.out.println(tHashKey + " - " + tHashKeyNew); //DEBUG
 		
 		if ( this.bUseHashMaps2 && evalGeom2MaxScoreMap.containsKey(tHashKey) ) {
 			if ( this.bDebug2 )
@@ -539,9 +548,8 @@ public class TokenSetParser implements ITokenSetParser {
 
 		/* Single out for debugging */
 		Integer [] singleOutIdx = {};
-//		Integer [] singleOutIdx = {98, 99};
-
-
+//		Integer [] singleOutIdx = {1, 10};
+		
 		String tokenSetSuffix = ".wts";
 		String tokenSetPrefix = null;
 		String prodSetFN = null;

@@ -1,6 +1,6 @@
 package me.scai.parsetree;
 
-import me.scai.handwriting.CAbstractWrittenTokenSet;
+//import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 public interface ITokenSetParser {

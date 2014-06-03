@@ -1036,9 +1036,6 @@ public class GraphicalProduction {
 	    CWrittenTokenSetNoStroke [][] a_rems = new CWrittenTokenSetNoStroke[labels.length][];
 	    float [] geomScores = new float[labels.length];
 	    
-//	    if ( labels.length > 1 )
-//	    	System.out.println("labels.length = " + labels.length); 	//DEBUG
-	    
 	    for (int i = 0; i < labels.length; ++i) {		/* Iterate through all partitions */
 	    	a_rems[i] = new CWrittenTokenSetNoStroke[nrn];
 	    	boolean [] remsFilled = new boolean[nrn];
@@ -1054,12 +1051,15 @@ public class GraphicalProduction {
     			/* The last input argument sets bCheck to false for speed */
     			/* Is this a dangerous action? */
     			a_rems[i][inode].addToken(tokenSet.tokens.get(irt));
+    			a_rems[i][inode].tokenIDs.add(tokenSet.tokenIDs.get(irt));
     			
     			remsFilled[inode] = true;
     		}
     		
-    		for (int j = 0; j < nrn; ++j)
+    		for (int j = 0; j < nrn; ++j) {
+    			assert( a_rems[i][j].tokens.size() == a_rems[i][j].tokenIDs.size() ); // DEBUG
     			a_rems[i][j].calcBounds();
+    		}
     		
     		/* If there is any unfilled remaining token set, skip */
     		boolean bAllFilled = true;
@@ -1129,11 +1129,9 @@ public class GraphicalProduction {
 	    maxGeomScore[0] = geomScores[idxMax];
 	    
 	    /* For head */
-	    /* TODO */
-	    CWrittenTokenSetNoStroke headTokenSet = new CWrittenTokenSetNoStroke();
-	    for (int i = 0; i < iHead.length; ++i)
-	    	headTokenSet.addToken(tokenSet.tokens.get(iHead[i]));
-	    headTokenSet.calcBounds();
+	    /* TODO: Replace with constructor */
+	    CWrittenTokenSetNoStroke headTokenSet = new CWrittenTokenSetNoStroke(tokenSet, iHead);
+	    
 	    remainingSets[0] = headTokenSet;
 	    
 	    /* For non-head */

@@ -3,7 +3,6 @@ package me.scai.handwriting;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 
 public abstract class CAbstractWrittenTokenSet {
 	protected int nt = 0; /* Number of tokens */

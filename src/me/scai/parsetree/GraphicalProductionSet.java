@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 
-//import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 public class GraphicalProductionSet {
@@ -92,8 +91,7 @@ public class GraphicalProductionSet {
 	 *         Side effect input argument:
 	 *             idxPossibleHead: has the same length as the return value.
 	 *             Contain indices to the possible heads. */
-	public int [] getIdxValidProds(//CAbstractWrittenTokenSet tokenSet, 
-			                       CWrittenTokenSetNoStroke tokenSet,
+	public int [] getIdxValidProds(CWrittenTokenSetNoStroke tokenSet,
 			                       TerminalSet termSet, 	
 			                       String lhs,
 			                       ArrayList<int [][]> idxPossibleHead, 
@@ -161,8 +159,7 @@ public class GraphicalProductionSet {
 	 * Return value: boolean: will contain all indices (within the token set)
 	 * of all tokens that can potentially be the head.
 	 *  */
-	public int [][] evalWrittenTokenSet(int prodIdx, 
-										//CAbstractWrittenTokenSet wts, 
+	public int [][] evalWrittenTokenSet(int prodIdx,  
 										CWrittenTokenSetNoStroke wts,
 			                            TerminalSet termSet) {
 		/* TODO: Deal with a production in which none of the rhs items are terminal */
