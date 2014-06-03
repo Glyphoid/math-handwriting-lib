@@ -329,7 +329,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 //	}
 	
 	public String toString() {
-		String s = "[";
+		String s = "";
 		
 		for (int i = 0; i < tokens.size(); ++i) {
 			s += tokenIDs.get(i);
@@ -337,7 +337,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			if ( i < tokens.size() - 1 )
 				s += ",";
 		}
-		s += "]";
+//		s += "";
 		
 		return s;
 	}

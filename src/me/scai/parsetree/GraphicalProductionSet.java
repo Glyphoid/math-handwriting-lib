@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -18,11 +17,12 @@ public class GraphicalProductionSet {
 	public ArrayList<GraphicalProduction> prods
 		= new ArrayList<GraphicalProduction>(); /* List of productions */
 	
-	protected ArrayList<String []> terminalTypes = new ArrayList<String []>();
+//	protected ArrayList<String []> terminalTypes = new ArrayList<String []>();
+	protected String [][] terminalTypes;
 	/* The array of possible terminal type for each production. 
 	 * Calculated by the private method: calcTermTypes() */
 	
-	private HashMap<String, ArrayList<String> > ntTerminalTypes = new HashMap<String, ArrayList<String> >();			
+//	private HashMap<String, ArrayList<String> > ntTerminalTypes = new HashMap<String, ArrayList<String> >();			
 	/* Used during calcTermTypes(int i) */
 	
 	/* Methods */
@@ -114,8 +114,8 @@ public class GraphicalProductionSet {
 			
 			boolean bExclude = false;
 			
-			/* Flags for exclusion due to extra terminal nodes */			
-			String [] possibleTermTypes = terminalTypes.get(i);
+			/* Flags for exclusion due to extra terminal nodes */
+			String [] possibleTermTypes = terminalTypes[i];
 			List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
 			
 			for (int k = 0; k < tokenSet.nTokens(); ++k) {
@@ -308,11 +308,13 @@ public class GraphicalProductionSet {
 	 */
 	
 	private void calcTermTypes(TerminalSet termSet) {
-		terminalTypes.clear();
-		ntTerminalTypes.clear();		
+//		terminalTypes.clear();
+//		ntTerminalTypes.clear();
+		terminalTypes = new String[prods.size()][];
 		
-		for (int i = 0; i < prods.size(); ++i)
-			terminalTypes.add(calcTermTypes(i, termSet, null));
+		for (int i = 0; i < prods.size(); ++i) 
+//			terminalTypes.add(calcTermTypes(i, termSet, null));
+			terminalTypes[i] = calcTermTypes(i, termSet, null);
 	}
 
 	/* Get the list of all possible heads contained within a valid 

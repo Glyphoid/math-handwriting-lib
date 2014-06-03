@@ -10,8 +10,6 @@ import java.util.ListIterator;
 import java.util.Arrays;
 import java.util.HashMap;
 
-
-//import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 public class TokenSetParser implements ITokenSetParser {
@@ -25,8 +23,6 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	private boolean bDebug = false;
 	private boolean bDebug2 = false;
-	private final boolean bUseHashMaps = true;		/* For getIdxValidProds() */
-	private final boolean bUseHashMaps2 = true;		/* For evalGeometry() */
 	
 	/* Temporary variables for parsing */
 	private HashMap<String, int []> tokenSetLHS2IdxValidProdsMap;
@@ -103,12 +99,8 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		String hashKey1 = null;
 		String tHashKey = tokenSet.toString() + "@" + MathHelper.intArray2String(idxValidProds);
-//		String tHashKey = tokenSet.toStringNew() + "@" + MathHelper.intArray2String(idxValidProds);
 		
-//		System.out.println(tHashKey); //DEBUG
-//		System.out.println(tHashKey + " - " + tHashKeyNew); //DEBUG
-		
-		if ( this.bUseHashMaps2 && evalGeom2MaxScoreMap.containsKey(tHashKey) ) {
+		if ( evalGeom2MaxScoreMap.containsKey(tHashKey) ) {
 			if ( this.bDebug2 )
 				System.out.println("Hash map contains key: " + tHashKey);
 			
@@ -123,10 +115,6 @@ public class TokenSetParser implements ITokenSetParser {
 			CWrittenTokenSetNoStroke [][][] r_aRemainingSets = evalGeom2RemSetsMap.get(tHashKey);
 			for (int i = 0; i < r_aRemainingSets.length; ++i)
 				aRemainingSets[i] = r_aRemainingSets[i];
-			
-//			int [] r_idxMax = evalGeom2IdxMaxMap.get(tHashKey);
-//			for (int i = 0; i < r_idxMax.length; ++i)
-//				idxMax[i] = r_idxMax[i];
 			
 			return evalGeom2MaxScoreMap.get(tHashKey);
 		}
@@ -215,26 +203,23 @@ public class TokenSetParser implements ITokenSetParser {
 									               " --> " + d_lhs);
 						
 							int [] d_idxValidProds = null;
-							if ( bUseHashMaps ) {
-								hashKey1 = d_tokenSet.toString() + "@" + d_lhs;
-								if ( !tokenSetLHS2IdxValidProdsMap.containsKey(hashKey1) ) {								
-									d_idxValidProds = gpSet.getIdxValidProds(d_tokenSet, termSet, d_lhs, d_idxPossibleHead, this.bDebug);
-									
-									/* Store results in hash maps */
-									tokenSetLHS2IdxValidProdsMap.put(hashKey1, d_idxValidProds);
-									tokenSetLHS2IdxPossibleHeadsMap.put(hashKey1, d_idxPossibleHead);
-								}
-								else {
-									if ( this.bDebug ) 
-										System.out.println("Hash map getting: " + hashKey1);
-									/* Retrieve results from hash maps */
-									d_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey1);
-									d_idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey1);
-								}
+
+							hashKey1 = d_tokenSet.toString() + "@" + d_lhs;
+							if ( !tokenSetLHS2IdxValidProdsMap.containsKey(hashKey1) ) {								
+								d_idxValidProds = gpSet.getIdxValidProds(d_tokenSet, termSet, d_lhs, d_idxPossibleHead, this.bDebug);
+								
+								/* Store results in hash maps */
+								tokenSetLHS2IdxValidProdsMap.put(hashKey1, d_idxValidProds);
+								tokenSetLHS2IdxPossibleHeadsMap.put(hashKey1, d_idxPossibleHead);
 							}
 							else {
-								d_idxValidProds = gpSet.getIdxValidProds(d_tokenSet, termSet, d_lhs, d_idxPossibleHead, this.bDebug);
+								if ( this.bDebug ) 
+									System.out.println("Hash map getting: " + hashKey1);
+								/* Retrieve results from hash maps */
+								d_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey1);
+								d_idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey1);
 							}
+
 							
 							if ( d_idxValidProds.length == 0 ) {
 								d_scores[k] = 0.0f;
@@ -288,27 +273,24 @@ public class TokenSetParser implements ITokenSetParser {
 			ArrayList<int [][]> c_idxPossibleHead = new ArrayList<int [][]>();
 			
 			int [] c_idxValidProds = null;
-			if ( bUseHashMaps ) {
-				String hashKey = tokenSet.toString() + "@" + c_lhs;
-				if ( !tokenSetLHS2IdxValidProdsMap.containsKey(tokenSet.toString()) ) {
-					c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead, this.bDebug);
-					                  
-					/* Store results in hash maps */
-					tokenSetLHS2IdxValidProdsMap.put(hashKey, c_idxValidProds);
-					tokenSetLHS2IdxPossibleHeadsMap.put(hashKey, c_idxPossibleHead);
-				}
-				else {
-					if ( this.bDebug )
-						System.out.println("Hash map getting: " + hashKey);
-					
-					/* Retrieve results from hash maps */
-					c_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey);
-					c_idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey);
-				}
+			
+			String hashKey = tokenSet.toString() + "@" + c_lhs;
+			if ( !tokenSetLHS2IdxValidProdsMap.containsKey(tokenSet.toString()) ) {
+				c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead, this.bDebug);
+				                  
+				/* Store results in hash maps */
+				tokenSetLHS2IdxValidProdsMap.put(hashKey, c_idxValidProds);
+				tokenSetLHS2IdxPossibleHeadsMap.put(hashKey, c_idxPossibleHead);
 			}
 			else {
-				c_idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, c_lhs, c_idxPossibleHead, this.bDebug);
+				if ( this.bDebug )
+					System.out.println("Hash map getting: " + hashKey);
+				
+				/* Retrieve results from hash maps */
+				c_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey);
+				c_idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey);
 			}
+			
 			
 			if ( c_idxValidProds == null || c_idxValidProds.length == 0 ) {
 				maxGeomScores[i][j] = 0.0f; /* Necessary? */
@@ -330,19 +312,14 @@ public class TokenSetParser implements ITokenSetParser {
 			maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
 		}
 		
-		/* Optional: store result in hash map */
-		if ( this.bUseHashMaps ) {
-			int idxBestProd = idxValidProds[idxMax2[0]];
-			tokenSetLHS2IdxBestProdMap.put(hashKey1, idxBestProd);
-		}
+		/* Optional: store result in hash map */		
+		int idxBestProd = idxValidProds[idxMax2[0]];
+		tokenSetLHS2IdxBestProdMap.put(hashKey1, idxBestProd);
 		
-		if ( this.bUseHashMaps2 ) {
-			evalGeom2MaxScoreMap.put(tHashKey, maxScore);
-			evalGeom2NodesMap.put(tHashKey, nodes);
-			evalGeom2ScoresMap.put(tHashKey, maxGeomScores);
-			evalGeom2RemSetsMap.put(tHashKey, aRemainingSets);
-
-		}
+		evalGeom2MaxScoreMap.put(tHashKey, maxScore);
+		evalGeom2NodesMap.put(tHashKey, nodes);
+		evalGeom2ScoresMap.put(tHashKey, maxGeomScores);
+		evalGeom2RemSetsMap.put(tHashKey, aRemainingSets);
 		
 		return maxScore;
 	}
@@ -357,26 +334,22 @@ public class TokenSetParser implements ITokenSetParser {
 		/* Determine the name of the lhs */
 		
 		int [] idxValidProds = null;
-		if ( bUseHashMaps ) {
-			String hashKey = tokenSet.toString() + "@" + lhs;
-			if ( !tokenSetLHS2IdxValidProdsMap.containsKey(hashKey) ) {
-				idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead, this.bDebug);
-				
-				/* Store results in hash maps */
-				tokenSetLHS2IdxValidProdsMap.put(hashKey, idxValidProds);
-				tokenSetLHS2IdxPossibleHeadsMap.put(hashKey, idxPossibleHead);
-			}
-			else {
-				if ( this.bDebug )
-					System.out.println("Hash map getting: " + hashKey);
-				
-				/* Retrieve results from hash maps */
-				idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey);
-				idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey);
-			}
+
+		String hashKey = tokenSet.toString() + "@" + lhs;
+		if ( !tokenSetLHS2IdxValidProdsMap.containsKey(hashKey) ) {
+			idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead, this.bDebug);
+			
+			/* Store results in hash maps */
+			tokenSetLHS2IdxValidProdsMap.put(hashKey, idxValidProds);
+			tokenSetLHS2IdxPossibleHeadsMap.put(hashKey, idxPossibleHead);
 		}
 		else {
-			idxValidProds = gpSet.getIdxValidProds(tokenSet, termSet, lhs, idxPossibleHead, this.bDebug);
+			if ( this.bDebug )
+				System.out.println("Hash map getting: " + hashKey);
+			
+			/* Retrieve results from hash maps */
+			idxValidProds = tokenSetLHS2IdxValidProdsMap.get(hashKey);
+			idxPossibleHead = tokenSetLHS2IdxPossibleHeadsMap.get(hashKey);
 		}
 		
 		if ( idxValidProds.length == 0 ) {
