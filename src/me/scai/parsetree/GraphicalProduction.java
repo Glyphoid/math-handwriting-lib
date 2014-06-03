@@ -1036,8 +1036,8 @@ public class GraphicalProduction {
 	    CWrittenTokenSetNoStroke [][] a_rems = new CWrittenTokenSetNoStroke[labels.length][];
 	    float [] geomScores = new float[labels.length];
 	    
-	    if ( labels.length > 1 )
-	    	System.out.println("labels.length = " + labels.length); 	//DEBUG
+//	    if ( labels.length > 1 )
+//	    	System.out.println("labels.length = " + labels.length); 	//DEBUG
 	    
 	    for (int i = 0; i < labels.length; ++i) {		/* Iterate through all partitions */
 	    	a_rems[i] = new CWrittenTokenSetNoStroke[nrn];
