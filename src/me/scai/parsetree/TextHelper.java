@@ -65,4 +65,41 @@ public class TextHelper {
 		
 		return newLines;
 	}
+	
+	public static int [] findAll(final String s, final String subs) {
+		if ( s.length() == 0 || subs.length() == 0 )
+			return null;
+		
+		ArrayList<Integer> indices = new ArrayList<Integer>();
+		int i = 0;
+		int len = subs.length();
+		
+		while ( s.indexOf(subs, i) != -1 ) {
+			indices.add(s.indexOf(subs, i) + i);
+			i += s.indexOf(subs, i) + len; 
+		}
+		
+		int [] r = new int[indices.size()];  
+		for (int n = 0; i < indices.size(); ++i)
+			r[n] = indices.get(n);
+		
+		return r;
+	}
+	
+	public static int numInstances(final String s, final String subs) {
+		if ( s.length() == 0 || subs.length() == 0 )
+			return 0;
+		
+		int nInstances = 0;
+		int i = 0;
+		int len = subs.length();
+		
+		while ( s.indexOf(subs, i) != -1 ) {
+			nInstances++;
+			i += s.indexOf(subs, i) + len; 
+		}
+		
+		return nInstances;
+		
+	}
 }

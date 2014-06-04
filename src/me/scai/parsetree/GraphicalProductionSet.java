@@ -44,7 +44,8 @@ public class GraphicalProductionSet {
 	
 	/* Read productions from production list */
 	public void readProductionsFromFile(String prodListFileName, TerminalSet termSet)
-		throws FileNotFoundException, IOException {
+		throws FileNotFoundException, IOException 
+	{
 		String [] lines;
 		try {
 			lines = TextHelper.readLinesTrimmedNoComment(prodListFileName, commentString);

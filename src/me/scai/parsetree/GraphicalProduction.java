@@ -6,7 +6,7 @@ import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 import me.scai.handwriting.Rectangle;
 
-abstract class GeometricRelation {
+abstract class GeometricRelation {	
 	protected int [] idxTested;      /* Indices to the tested tokens */ 
 	protected int [] idxInRel;	 /* Indices to the in-relation-to tokens */
 	/* Note that we use arrays to represent both the tested and the in-relation-to
@@ -879,6 +879,22 @@ class GeometricShortcut {
  * collection. 
  */
 public class GraphicalProduction {
+	/* Tree bias for dealing with structures such as additions and substractions in a row 
+	 * This could probably be taken care of by grammar. But currently we deal with it by 
+	 * using this bias.
+	 */
+	public enum BiasType {	
+		NoBias,
+		BiasLeft, 
+//		BiasRight
+	};
+	
+	/* Member variables */
+	/* Constants */
+	final static String strinigzationTag = "_STRINGIZE_";
+	final static String evalTag = "_EVAL_";
+	/* ~Constants */
+	
 	private final static String tokenRelSeparator = ":";
 	private final static String relSeparator = ",";
 	private final static String sumStringArrow = "-->";
@@ -904,12 +920,11 @@ public class GraphicalProduction {
 	GeometricRelation [][] geomRels;
 	GeometricShortcut geomShortcut;
 	
-	//int headNode;	/* Index to the "head node" */
-	/* Leaving this out for now, since the first rhs will always be the 
-	 * head node, at least in simple productions.
-	 */
+	BiasType biasType = BiasType.NoBias;
+	String [] stringizeInstr;		/* Instruction for stringization */
+	String [] evalInstr;				/* Instruction for evaluation */
 	
-//	private TerminalSet terminalSet = null; /* TODO */
+	/* ~Member variables */
 
 	/* Methods */
 	/* Constructors */
@@ -917,7 +932,10 @@ public class GraphicalProduction {
 			                   String [] t_rhs, 
 			                   boolean [] t_bt, 
 			                   TerminalSet termSet, 		/* For determine if the rhs are terminals */
-			                   GeometricRelation [][] t_geomRels) {
+			                   GeometricRelation [][] t_geomRels, 
+			                   BiasType t_biasType, 
+			                   String [] t_stringizeInstr, 
+			                   String [] t_evalInstr) {
 		lhs = t_lhs;
 		rhs = t_rhs;
 		bt = t_bt;
@@ -941,7 +959,10 @@ public class GraphicalProduction {
 		/* Generate geometric shortcut, if any. 
 		 * If there is no shortcut, shortcutType will be noShortcut. */
 		geomShortcut = new GeometricShortcut(this);
-
+		
+		biasType = t_biasType;
+		stringizeInstr = t_stringizeInstr;
+		evalInstr = t_evalInstr;
 	}
 	
 	private void genSumString() {
@@ -1148,22 +1169,60 @@ public class GraphicalProduction {
 	
 	
 	public static GraphicalProduction genFromStrings(ArrayList<String> strs, TerminalSet termSet)
-		throws Exception {
-		String t_lhs = strs.get(0);
+		throws Exception 
+	{
+		if ( strs.size() < 4 )
+			throw new Exception("Two few (" + strs.size() 
+					            + ") lines for creating new graphical production");
 		
-		int t_nrhs = strs.size() - 1;
+		String t_lhs;
+		BiasType t_biasType = BiasType.NoBias;
+		String headLine = strs.get(0).trim();
+		
+		if ( headLine.contains(tokenRelSeparator) ) 
+			throw new Exception("Head node unexpectedly contains geometric relation(s)");
+		
+		int nLBs = TextHelper.numInstances(headLine, "(");
+		int nRBs = TextHelper.numInstances(headLine, ")");
+		
+		if ( nLBs == 1 && nRBs == 1 ) {	/* Bias is included */
+			int iLB = headLine.indexOf("(");
+			int iRB = headLine.indexOf(")");
+			if ( iLB > iRB )
+				throw new Exception("Syntax error in line: \"" + headLine + "\"");
+			
+			String biasStr = headLine.substring(iLB + 1, iRB).trim();			
+			if ( biasStr.equals("BIAS_LEFT") )
+				t_biasType = BiasType.BiasLeft;
+			else
+				throw new Exception("Unrecognized bias type: " + biasStr);
+			
+			t_lhs = headLine.substring(0, iLB).trim();
+		}
+		else {
+			if ( !( nLBs == 0 && nRBs == 0 ) )
+				throw new Exception("Syntax error in line: \"" + headLine + "\"");
+			
+			t_lhs = headLine;
+		}
+		
+		int t_nrhs = strs.size() - 3;
 		String [] t_rhs = new String[t_nrhs];
 		boolean [] t_bt = new boolean[t_nrhs];
 		GeometricRelation [][] t_geomRels = new GeometricRelation[t_nrhs][];
+		
+		
+		String [] t_stringizeInstr = null;
+		String [] t_evalInstr = null;
 		
 		for (int k = 0; k < t_nrhs; ++k) {
 			String line = strs.get(k + 1);
 			
 			if ( k == 0 ) {
-				/* This is the head node, no geometrical relation is expected */				
-				if ( line.contains(tokenRelSeparator) ) 
-					throw new Exception("Head node unexpectedly contains geometric relation(s)");
-				t_rhs[k] = line.trim();				
+				/* This is the head node, no geometrical relation is expected */	
+				/* We also need to extract the BiasType, if it exists */ 
+				
+				t_rhs[k] = line.trim();
 			}
 			else {
 				if ( line.contains(tokenRelSeparator) ) {
@@ -1204,7 +1263,54 @@ public class GraphicalProduction {
 			
 		}
 		
-		return new GraphicalProduction(t_lhs, t_rhs, t_bt, termSet, t_geomRels);
+		/* Parse stringizeInst: stringization instructions */
+		String tline = strs.get(strs.size() - 2).trim();
+		if ( !tline.startsWith(strinigzationTag) )
+			throw new Exception("Cannot find stringization tag in line: \"" + tline + "\"");
+		tline = tline.replace("\t", " ");
+		ArrayList<String> listItems = new ArrayList<String>();
+		String [] t_items = tline.split(" ");
+		
+		for (int n = 1; n < t_items.length; ++n)
+			if ( t_items[n].length() > 0 )
+				listItems.add(t_items[n]);
+		
+		t_stringizeInstr = new String[listItems.size()];
+		listItems.toArray(t_stringizeInstr);
+		
+		/* Parse evalInstr: evaluation instructions */
+		tline = strs.get(strs.size() - 1).trim();
+		if ( !tline.startsWith(evalTag) )
+			throw new Exception("Cannot find evaluation tag in line: \"" + tline + "\"");
+		
+		String evalStr = tline.replace(evalTag, "").trim();
+		nLBs = TextHelper.numInstances(evalStr, "(");
+		nRBs = TextHelper.numInstances(evalStr, ")");
+		
+		ArrayList<String> evalItems = new ArrayList<String>();
+		if ( nLBs == 0 && nRBs == 0 ) {
+			evalItems.add("PASS");
+			if ( evalStr.contains(" ")  || evalStr.contains("\t") )
+				throw new Exception("Syntax error in evaluation instruction: \"" + evalStr + "\"");
+			evalItems.add(evalStr);
+		}
+		else if ( nLBs == 1 && nRBs == 1 ) {
+			String funcName = evalStr.substring(0, evalStr.indexOf("("));
+			evalItems.add(funcName);
+			
+			String argsStr = evalStr.substring(evalStr.indexOf("(") + 1, evalStr.indexOf(")")).trim();
+			argsStr = argsStr.replace("\t", " ").replace(",", " ");
+			String [] argsItems = argsStr.split(" ");
+			for (int m = 0; m < argsItems.length; ++m)
+				if ( argsItems[m].length() > 0 )
+					evalItems.add(argsItems[m]);
+		}
+		
+		t_evalInstr = new String[evalItems.size()];
+		evalItems.toArray(t_evalInstr);
+		
+		return new GraphicalProduction(t_lhs, t_rhs, t_bt, termSet, t_geomRels, 
+									   t_biasType, t_stringizeInstr, t_evalInstr);
 	}
 	
 	public int getNumNonHeadTokens() {

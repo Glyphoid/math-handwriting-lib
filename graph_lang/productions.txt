@@ -1,101 +1,134 @@
 ---
-DIGIT_STRING		# LHS
-# The first after LHS is always the head
-DIGIT 
-# The second and following ones are the non-heads
-#DIGIT_STRING : {AlignMiddle(0), PositionEast(0), HeightRelationEqual(0)}	# HeightRelationEqual is not really necessary. Adding it increases the likelihood of errors.
-DIGIT_STRING : {AlignMiddle(0), PositionEast(0)}
-# The number in the brackets are the index to the parameter
+DIGIT_STRING 		# LHS
+DIGIT  				# The first after LHS is always the head
+DIGIT_STRING : {AlignMiddle(0), PositionEast(0)}	# The second and following ones are the non-heads # The number in the brackets are the index to the parameter
+_STRINGIZE_ 	n0 n1	# Stringization scheme. Node numbers are preceded by "n". Terminal nodes have their termName printed, whereas non terminals are subject to further stringization.
+_EVAL_      	DIGIT_CONCAT(n0, n1)	# Calculation scheme: DIGIT_CONCAT is a special scheme that needs to be implemented by the evaluation routine. 
 
 ---
-DIGIT_STRING
+DIGIT_STRING	
 DIGIT
-# EPS		# EPS is the empty set. Naturally, it does not require geometric relations. # We have eliminated the need for EPS in this graphical parsing.
+_STRINGIZE_ 	n0
+_EVAL_ 			STRING2INT(n1) # STRING2INT needs to be implemented by the evaluation routine
 
 ---
 DECIMAL_NUMBER
 POINT
 DIGIT_STRING : {AlignBottom(0), PositionGenWest(0), HeightRelationGreater(0)} # Left digit string
 DIGIT_STRING : {AlignBottom(0), PositionGenEast(0), HeightRelationGreater(0), HeightRelationEqual(1)} # Right digit string
+_STRINGIZE_		n1 n0 n2
+_EVAL_ 			DECIMAL_BY_PARTS(n1, n2)	
 
 ---
 DECIMAL_NUMBER
 DIGIT_STRING		# Degenerative case, NT head.
+_STRINGIZE_		n0
+_EVAL_			n0
 
 --- 
 DECIMAL_NUMBER		# Negative sign
 MINUS_OP
 DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)}
+_STRINGIZE_		n0 _SPACE_ n1	# _SPACE_ is a single space
+_EVAL_ 			NEGATIVE(n1)
 
 ---
-EXPONENTIATION		# Base ^ Exponent. TODO: Replace DECIMAL_NUMBER with more general NTs
-#DECIMAL_NUMBER		# The head is the base.
-#DECIMAL_NUMBER : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
-EXPR_LV2		# The head is the base.
+EXPONENTIATION		# Base ^ Exponent.
+EXPR_LV2			# The head is the base.
 EXPR_LV2 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
+_STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )
+_EVAL_			EXPONENTIATION(n0, n1)
 
 ---
 EXPR_LV1
 DECIMAL_NUMBER
+_STRINGIZE_		n0
+_EVAL_			n0
 
 ---
 EXPR_LV1
 EXPONENTIATION
+_STRINGIZE_		n0
+_EVAL_			n0
 
 ---
 MULTIPLICATION
 MULT_OP
 EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number.
 EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+_STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
+_EVAL_			MULTIPLY(n1, n2)
 
 ---
-ADDITION
+ADDITION	(BIAS_LEFT)
 PLUS_OP
 EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number.
 EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+_STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
+_EVAL_			ADD(n1, n2)
 
 ---
-SUBTRACTION
+SUBTRACTION	(BIAS_LEFT)
 MINUS_OP
-EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number.
+EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number
 EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+_STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
+_EVAL_			SUBTRACT(n1, n2)
 
 ---
 EXPR_LV1
 ADDITION
+_STRINGIZE_		n0
+_EVAL_			n0
 
 ---
 EXPR_LV1
 SUBTRACTION
+_STRINGIZE_		n0
+_EVAL_			n0
 
 ---
 EXPR_LV1
 MULTIPLICATION
+_STRINGIZE_		n0
+_EVAL_			n0
 
 ---
 EXPR_LV2
 EXPR_LV1
+_STRINGIZE_		n0
+_EVAL_			n0
 
 ---
 EXPR_LV2	# Negative
 MINUS_OP
 EXPR_LV2 : {AlignMiddle(0), PositionWest(0)}
+_STRINGIZE_		n0 _SPACE_ n1	# _SPACE_ is a single space
+_EVAL_ 			NEGATIVE(n1)
 
 --- 
 EXPR_LV2	# Superfluous positive sign
 PLUS_OP
 EXPR_LV2 : {AlignMiddle(0), PositionEast(0)}
+_STRINGIZE_		n0 _SPACE_ n1
+_EVAL_ 			n1
 
 ---
 EXPR_LV2
 FRACTION
+_STRINGIZE_		n0
+_EVAL_ 			n0
 
 ---
 FRACTION
 MINUS_OP
 EXPR_LV2 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator.
 EXPR_LV2 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
+_STRINGIZE_		( n2 _SPACE_ / _SPACE_ n1 )
+_EVAL_			DIVIDE(n2, n1)
 
 ---
 ROOT
 EXPR_LV2
+_STRINGIZE_		n0
+_EVAL_			n0
