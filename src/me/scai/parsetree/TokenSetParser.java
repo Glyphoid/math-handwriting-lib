@@ -15,6 +15,7 @@ import me.scai.handwriting.CWrittenTokenSetNoStroke;
 public class TokenSetParser implements ITokenSetParser {
 	protected TerminalSet termSet = null;
 	protected GraphicalProductionSet gpSet = null;
+	protected ParseTreeStringizer stringizer = null;
 	
 	/* Properties */
 	private int drillDepthLimit = Integer.MAX_VALUE; 	/* No limit on levels of recursive drill */
@@ -55,6 +56,8 @@ public class TokenSetParser implements ITokenSetParser {
 		catch ( IOException e ) {
 			System.err.println(e.getMessage());
 		}
+		
+		stringizer = new ParseTreeStringizer(gpSet);
 	}
 	
 	public void setDebug(boolean t_bDebug) {
@@ -472,12 +475,6 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* Testing routine */
 	public static void main(String [] args) {
-		/* TS_3: 34- (Grammatical error) TODO */
-		/* TS_7: 345 (Geometric error: height difference too big) */
-		/* TS_8: 69 (Geometric error: height difference too big) */
-		/* TS_9: .28 (Geometric error: vertical alignment) */
-		/* TS_5: 23 (Geometric error) */
-		
 		final String errStr = ParseTreeStringizer.parsingErrString;
 		
 		int [] tokenSetNums           = {1, 2, 4, 6, 9, 10, 
@@ -543,7 +540,7 @@ public class TokenSetParser implements ITokenSetParser {
 		/* Create written token set */
 		CWrittenTokenSetNoStroke wts = new CWrittenTokenSetNoStroke();
 		
-		TokenSetParser tokenSetParser = new TokenSetParser(termSetFN, prodSetFN);
+		TokenSetParser tokenSetParser = new TokenSetParser(termSetFN, prodSetFN);		
 		
 		/* Create token set parser */
 		int nPass = 0;
@@ -573,15 +570,15 @@ public class TokenSetParser implements ITokenSetParser {
 			/* Parse graphically */
 			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
 			long millis_0 = System.currentTimeMillis();
-						
+
 			Node parseRoot = tokenSetParser.parse(wts);	/* Parsing action */
 			
 			long millis_1 = System.currentTimeMillis();
 			
 			long parsingTime = millis_1 - millis_0;
-			totalParsingTime_ms += parsingTime; 
+			totalParsingTime_ms += parsingTime;
 			
-			String stringized = ParseTreeStringizer.stringize(parseRoot);
+			String stringized = tokenSetParser.stringizer.stringize(parseRoot);
 			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
 			String checkResultStr = checkResult ? "PASS" : "FAIL";
 			nPass += checkResult ? 1 : 0; 

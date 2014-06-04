@@ -1,60 +1,76 @@
 package me.scai.parsetree;
 
+import java.util.HashMap;
+
 public class ParseTreeStringizer {
+	/* Member variables */
+	/* Constants */
 	public final static String parsingErrString = "[Parsing failed: Syntax error]";
+	
+	private HashMap<String, String []> sumString2InstrMap = new HashMap<String, String []>();
+	private HashMap<String, String> specialStringMap = new HashMap<String, String>();
+	/* A map that maps production summary string to stringization instruction */
+	
+	/* ~Member variables */
+	
+	/* Methods */
+	
+	/* Constructor */
+	public ParseTreeStringizer(final GraphicalProductionSet gpSet) {
+		sumString2InstrMap.clear();
+		specialStringMap.clear();
+		
+		/* Create map of special strings */
+		specialStringMap.put("_SPACE_", " ");
+		
+		for (int i = 0; i < gpSet.prods.size(); ++i) {
+			GraphicalProduction gp = gpSet.prods.get(i);
+			
+			String t_sumString = gp.sumString;
+			String [] t_instr = gp.stringizeInstr;
+			
+			sumString2InstrMap.put(t_sumString, t_instr);
+		}
+	}
 	
 	/* Input: n: root of the parse tree */
 	/* Currently based on recursion. */
-	public static String stringize(Node n) {
+	public String stringize(Node n) {
 		if ( n == null )
 			return parsingErrString;
 					
-			String s = null;
+		String s = "";
 			
-		if ( n.prodSumString.equals("DIGIT_STRING --> DIGIT DIGIT_STRING") )
-			s = n.ch[0].termName + stringize(n.ch[1]);
-		else if ( n.prodSumString.equals("DIGIT_STRING --> DIGIT") )
-			s = n.ch[0].termName;
-		else if ( n.prodSumString.equals("DECIMAL_NUMBER --> POINT DIGIT_STRING DIGIT_STRING") )
-			s = stringize(n.ch[1]) + n.ch[0].termName + stringize(n.ch[2]);
-		else if ( n.prodSumString.equals("DECIMAL_NUMBER --> MINUS_OP DECIMAL_NUMBER") )
-			s = "-" +  stringize(n.ch[1]);
-		else if ( n.prodSumString.equals("EXPR_LV1 --> EXPONENTIATION") ) 
-			s = stringize(n.ch[0]);
-		else if ( n.prodSumString.equals("EXPONENTIATION --> EXPR_LV2 EXPR_LV2") )
-			s = "(" + stringize(n.ch[0]) + " ^ " + stringize(n.ch[1]) + ")";
-		else if ( n.prodSumString.equals("EXPR_LV1 --> DECIMAL_NUMBER") )
-			s = stringize(n.ch[0]);
-		else if ( n.prodSumString.equals("EXPR_LV1 --> ADDITION") )
-			s = stringize(n.ch[0]);
-		else if ( n.prodSumString.equals("EXPR_LV1 --> SUBTRACTION") )
-			s = stringize(n.ch[0]);
-		else if ( n.prodSumString.equals("EXPR_LV1 --> MULTIPLICATION") )
-			s = stringize(n.ch[0]);
-		else if ( n.prodSumString.equals("ADDITION --> PLUS_OP EXPR_LV2 EXPR_LV2") )
-			s = "(" + stringize(n.ch[1]) + " + " + stringize(n.ch[2]) + ")"; /* Order??? */
-		else if ( n.prodSumString.equals("SUBTRACTION --> MINUS_OP EXPR_LV2 EXPR_LV2") )
-			s = "(" + stringize(n.ch[1]) + " - " + stringize(n.ch[2]) + ")"; /* Order??? */
-		else if ( n.prodSumString.equals("MULTIPLICATION --> MULT_OP EXPR_LV2 EXPR_LV2") )
-			s = "(" + stringize(n.ch[1]) + " * " + stringize(n.ch[2]) + ")"; /* Order??? */
-		else if ( n.prodSumString.equals("DECIMAL_NUMBER --> DIGIT_STRING") )
-			s = stringize(n.ch[0]);			
-		else if ( n.prodSumString.equals("EXPR_LV2 --> EXPR_LV1") )		/* ? */
-			s = stringize(n.ch[0]);
-		else if ( n.prodSumString.equals("EXPR_LV2 --> MINUS_OP EXPR_LV2") )
-			s = "-" + stringize(n.ch[1]);
-		else if ( n.prodSumString.equals("EXPR_LV2 --> PLUS_OP EXPR_LV2") )
-			s = "+" + stringize(n.ch[1]);
-		else if ( n.prodSumString.equals("EXPR_LV2 --> FRACTION") )
-			s = stringize(n.ch[0]);
-		else if ( n.prodSumString.equals("FRACTION --> MINUS_OP EXPR_LV2 EXPR_LV2") )
-			s = "(" + stringize(n.ch[1]) + " / " + stringize(n.ch[2]) + ")"; /* Order??? */
-		else if ( n.prodSumString.equals("ROOT --> EXPR_LV2") )
-			s = stringize(n.ch[0]);
-		else
-			throw new RuntimeException("stringize(): unrecognized production summary string: " + n.prodSumString);
+		String prodSumString = n.prodSumString;
+		String [] instr = sumString2InstrMap.get(prodSumString);
+		if ( instr == null )
+			throw new RuntimeException("Cannot find the stringization instruction for: " 
+		                               + n.prodSumString);
+		
+		
+		for (int i = 0; i < instr.length; ++i) {
+			if ( specialStringMap.containsKey(instr[i]) ) { /* Special string */
+				s += specialStringMap.get(instr[i]);
+			}
+			else if ( instr[i].startsWith("n") ) { /* String content from the children nodes */
+				int iNode = Integer.parseInt( instr[i].substring(1, instr[i].length()) );
+				if ( iNode < 0 || iNode >= n.nc )
+					throw new RuntimeException("Node index (" + iNode 
+							                   + ") exceeds number of children (" 
+							                   + n.nc + ")");
+				if ( n.ch[iNode].isTerminal )
+					s += n.ch[iNode].termName;
+				else
+					s += stringize(n.ch[iNode]);
+			}
+			else {	/* Hard-coded string content */
+				s += instr[i];
+			}
+				
+		}
 		
 		return s;
 	}
 	
+	/* ~Methods */
 }

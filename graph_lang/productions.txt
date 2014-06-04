@@ -29,14 +29,14 @@ _EVAL_			n0
 DECIMAL_NUMBER		# Negative sign
 MINUS_OP
 DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)}
-_STRINGIZE_		n0 _SPACE_ n1	# _SPACE_ is a single space
+_STRINGIZE_		n0 n1
 _EVAL_ 			NEGATIVE(n1)
 
 ---
 EXPONENTIATION		# Base ^ Exponent.
 EXPR_LV2			# The head is the base.
 EXPR_LV2 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
-_STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )
+_STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
 _EVAL_			EXPONENTIATION(n0, n1)
 
 ---
@@ -103,14 +103,14 @@ _EVAL_			n0
 EXPR_LV2	# Negative
 MINUS_OP
 EXPR_LV2 : {AlignMiddle(0), PositionWest(0)}
-_STRINGIZE_		n0 _SPACE_ n1	# _SPACE_ is a single space
+_STRINGIZE_		n0 n1
 _EVAL_ 			NEGATIVE(n1)
 
 --- 
 EXPR_LV2	# Superfluous positive sign
 PLUS_OP
 EXPR_LV2 : {AlignMiddle(0), PositionEast(0)}
-_STRINGIZE_		n0 _SPACE_ n1
+_STRINGIZE_		n0 n1
 _EVAL_ 			n1
 
 ---
@@ -124,7 +124,7 @@ FRACTION
 MINUS_OP
 EXPR_LV2 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator.
 EXPR_LV2 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
-_STRINGIZE_		( n2 _SPACE_ / _SPACE_ n1 )
+_STRINGIZE_		( n1 _SPACE_ / _SPACE_ n2 )
 _EVAL_			DIVIDE(n2, n1)
 
 ---
