@@ -9,7 +9,7 @@ _EVAL_      	DIGIT_CONCAT(n0, n1)	# Calculation scheme: DIGIT_CONCAT is a specia
 DIGIT_STRING	
 DIGIT
 _STRINGIZE_ 	n0
-_EVAL_ 			STRING2INT(n1) # STRING2INT needs to be implemented by the evaluation routine
+_EVAL_ 			STRING(n0) # needs to be implemented by the evaluation routine
 
 ---
 DECIMAL_NUMBER

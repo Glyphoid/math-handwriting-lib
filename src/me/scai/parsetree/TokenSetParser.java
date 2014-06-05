@@ -13,9 +13,13 @@ import java.util.HashMap;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 public class TokenSetParser implements ITokenSetParser {
+	protected static final String errStr = ParseTreeStringizer.parsingErrString;
+	
 	protected TerminalSet termSet = null;
 	protected GraphicalProductionSet gpSet = null;
 	protected ParseTreeStringizer stringizer = null;
+	protected ParseTreeEvaluator evaluator = null;
+	/* TODO: Separate the stringize and evaluator from the parser */
 	
 	/* Properties */
 	private int drillDepthLimit = Integer.MAX_VALUE; 	/* No limit on levels of recursive drill */
@@ -58,6 +62,7 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 		
 		stringizer = new ParseTreeStringizer(gpSet);
+		evaluator = new ParseTreeEvaluator(gpSet);
 	}
 	
 	public void setDebug(boolean t_bDebug) {
@@ -475,7 +480,7 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* Testing routine */
 	public static void main(String [] args) {
-		final String errStr = ParseTreeStringizer.parsingErrString;
+		
 		
 		int [] tokenSetNums           = {1, 2, 4, 6, 9, 10, 
 									     11, 12, 13, 14, 
@@ -579,6 +584,13 @@ public class TokenSetParser implements ITokenSetParser {
 			totalParsingTime_ms += parsingTime;
 			
 			String stringized = tokenSetParser.stringizer.stringize(parseRoot);
+			Object evalRes = null;
+			if ( !stringized.contains(errStr) ) {
+				evalRes = tokenSetParser.evaluator.eval(parseRoot);
+				if ( !evalRes.getClass().equals(Double.class) )
+					throw new RuntimeException("Unexpected return type from evaluator");
+			}
+			
 			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
 			String checkResultStr = checkResult ? "PASS" : "FAIL";
 			nPass += checkResult ? 1 : 0; 
@@ -589,6 +601,8 @@ public class TokenSetParser implements ITokenSetParser {
 					          + "\"" + stringized + "\"";
 			if ( !checkResult )
 				strPrint += " <> " + " \"" + tokenSetTrueStrings[i] + "\"";
+						
+			strPrint += " {Value = " + evalRes + "}";
 			
 			if ( checkResult ) {
 				System.out.println(strPrint);
