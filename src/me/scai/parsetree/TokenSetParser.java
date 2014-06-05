@@ -16,9 +16,9 @@ public class TokenSetParser implements ITokenSetParser {
 	protected static final String errStr = ParseTreeStringizer.parsingErrString;
 	
 	protected TerminalSet termSet = null;
-	protected GraphicalProductionSet gpSet = null;
-	protected ParseTreeStringizer stringizer = null;
-	protected ParseTreeEvaluator evaluator = null;
+	public GraphicalProductionSet gpSet = null;
+	//protected ParseTreeStringizer stringizer = null;
+	//protected ParseTreeEvaluator evaluator = null;
 	/* TODO: Separate the stringize and evaluator from the parser */
 	
 	/* Properties */
@@ -38,6 +38,8 @@ public class TokenSetParser implements ITokenSetParser {
 	private HashMap<String, Node [][]> evalGeom2NodesMap;
 	private HashMap<String, float [][]> evalGeom2ScoresMap;
 	private HashMap<String, CWrittenTokenSetNoStroke [][][]> evalGeom2RemSetsMap;
+	
+	protected ParseTreeBiaser biaser;
 	
 	/* Methods */
 	
@@ -61,8 +63,7 @@ public class TokenSetParser implements ITokenSetParser {
 			System.err.println(e.getMessage());
 		}
 		
-		stringizer = new ParseTreeStringizer(gpSet);
-		evaluator = new ParseTreeEvaluator(gpSet);
+		biaser = new ParseTreeBiaser(gpSet);
 	}
 	
 	public void setDebug(boolean t_bDebug) {
@@ -93,7 +94,10 @@ public class TokenSetParser implements ITokenSetParser {
 	public Node parse(CWrittenTokenSetNoStroke tokenSet) {
 		init();
 		
-		return parse(tokenSet, "ROOT");		
+		Node n = parse(tokenSet, "ROOT");
+		biaser.process(n);
+		
+		return n;
 	}
 	
 	private float evalGeometry(CWrittenTokenSetNoStroke tokenSet,
@@ -480,8 +484,6 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* Testing routine */
 	public static void main(String [] args) {
-		
-		
 		int [] tokenSetNums           = {1, 2, 4, 6, 9, 10, 
 									     11, 12, 13, 14, 
 				                         15, 18, 21, 22, 
@@ -516,13 +518,15 @@ public class TokenSetParser implements ITokenSetParser {
 										 errStr, errStr};
 
 		/* Single out for debugging */
-		Integer [] singleOutIdx = {};
+		Integer [] singleOutIdx = {91};
 //		Integer [] singleOutIdx = {1, 10};
 		
 		String tokenSetSuffix = ".wts";
 		String tokenSetPrefix = null;
 		String prodSetFN = null;
 		String termSetFN = null;
+		
+		
 		
 		String hostName;
 		try {
@@ -546,6 +550,8 @@ public class TokenSetParser implements ITokenSetParser {
 		CWrittenTokenSetNoStroke wts = new CWrittenTokenSetNoStroke();
 		
 		TokenSetParser tokenSetParser = new TokenSetParser(termSetFN, prodSetFN);		
+		ParseTreeStringizer stringizer = tokenSetParser.gpSet.genStringizer();
+		ParseTreeEvaluator evaluator = tokenSetParser.gpSet.genEvaluator();
 		
 		/* Create token set parser */
 		int nPass = 0;
@@ -576,17 +582,17 @@ public class TokenSetParser implements ITokenSetParser {
 			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
 			long millis_0 = System.currentTimeMillis();
 
-			Node parseRoot = tokenSetParser.parse(wts);	/* Parsing action */
+			Node parseRoot = tokenSetParser.parse(wts);	/* Parsing action */			
 			
 			long millis_1 = System.currentTimeMillis();
 			
 			long parsingTime = millis_1 - millis_0;
 			totalParsingTime_ms += parsingTime;
 			
-			String stringized = tokenSetParser.stringizer.stringize(parseRoot);
+			String stringized = stringizer.stringize(parseRoot);
 			Object evalRes = null;
 			if ( !stringized.contains(errStr) ) {
-				evalRes = tokenSetParser.evaluator.eval(parseRoot);
+				evalRes = evaluator.eval(parseRoot);
 				if ( !evalRes.getClass().equals(Double.class) )
 					throw new RuntimeException("Unexpected return type from evaluator");
 			}

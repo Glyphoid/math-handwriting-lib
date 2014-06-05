@@ -897,7 +897,7 @@ public class GraphicalProduction {
 	
 	private final static String tokenRelSeparator = ":";
 	private final static String relSeparator = ",";
-	private final static String sumStringArrow = "-->";
+	private final static String sumStringArrow = "->";
 	
 	public final static float flagNTNeedsParsing = 111f;
 	
@@ -966,7 +966,7 @@ public class GraphicalProduction {
 	}
 	
 	private void genSumString() {
-		sumString = lhs + " " + sumStringArrow + " ";
+		sumString = lhs + sumStringArrow;
 		for (int i = 0; i < rhs.length; ++i) {
 			sumString += rhs[i];
 			if ( i < rhs.length - 1 )
@@ -1319,7 +1319,7 @@ public class GraphicalProduction {
 	
 	@Override
 	public String toString() {
-		String s = "GrraphicalProduction: ";
+		String s = "GP: ";
 		if ( sumString != null )
 			s += sumString;
 		return s;

@@ -9,8 +9,6 @@ public class ParseTreeStringizer {
 	
 	private HashMap<String, String []> sumString2InstrMap = new HashMap<String, String []>();
 	private HashMap<String, String> specialStringMap = new HashMap<String, String>();
-	/* A map that maps production summary string to stringization instruction */
-	
 	/* ~Member variables */
 	
 	/* Methods */
@@ -47,7 +45,6 @@ public class ParseTreeStringizer {
 			throw new RuntimeException("Cannot find the stringization instruction for: " 
 		                               + n.prodSumString);
 		
-		
 		for (int i = 0; i < instr.length; ++i) {
 			if ( specialStringMap.containsKey(instr[i]) ) { /* Special string */
 				s += specialStringMap.get(instr[i]);
@@ -58,7 +55,7 @@ public class ParseTreeStringizer {
 					throw new RuntimeException("Node index (" + iNode 
 							                   + ") exceeds number of children (" 
 							                   + n.nc + ")");
-				if ( n.ch[iNode].isTerminal )
+				if ( n.ch[iNode].isTerminal() )
 					s += n.ch[iNode].termName;
 				else
 					s += stringize(n.ch[iNode]);

@@ -3,7 +3,7 @@ package me.scai.parsetree;
 public class Node {
 //	private float x_min = 0.0f, y_min = 0.0f, x_max = 0.0f, y_max = 0.0f; /* Location information */
 	
-	boolean isTerminal = true;
+	private boolean isTerminal = true;
 	public String prodSumString = null;	/* Production summary string. See GraphicalProduction.sumString */
 	public String termName = null; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
 	String [] rhsTypes = null;		/* Child types: applies only to non-terminal nodes */

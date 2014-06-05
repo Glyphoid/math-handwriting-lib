@@ -387,5 +387,11 @@ public class GraphicalProductionSet {
 		return prods.get(i).rhs;
 	}
 	
+	public ParseTreeStringizer genStringizer() {
+		return new ParseTreeStringizer(this);
+	}
 	
+	public ParseTreeEvaluator genEvaluator() {
+		return new ParseTreeEvaluator(this);
+	}
 }
