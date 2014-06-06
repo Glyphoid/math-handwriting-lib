@@ -115,7 +115,7 @@ public class TokenSetParser implements ITokenSetParser {
 		if ( evalGeom2MaxScoreMap.containsKey(tHashKey) ) {
 			if ( this.bDebug2 )
 				System.out.println("Hash map contains key: " + tHashKey);
-			
+
 			Node [][] r_nodes = evalGeom2NodesMap.get(tHashKey);
 			for (int i = 0; i < r_nodes.length; ++i)
 				nodes[i] = r_nodes[i];
@@ -518,8 +518,8 @@ public class TokenSetParser implements ITokenSetParser {
 										 errStr, errStr};
 
 		/* Single out for debugging */
-		Integer [] singleOutIdx = {91};
-//		Integer [] singleOutIdx = {1, 10};
+		Integer [] singleOutIdx = {};
+//		Integer [] singleOutIdx = {91};
 		
 		String tokenSetSuffix = ".wts";
 		String tokenSetPrefix = null;

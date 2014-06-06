@@ -897,7 +897,7 @@ public class GraphicalProduction {
 	
 	private final static String tokenRelSeparator = ":";
 	private final static String relSeparator = ",";
-	private final static String sumStringArrow = "->";
+	public final static String sumStringArrow = "->";
 	
 	public final static float flagNTNeedsParsing = 111f;
 	
@@ -1192,8 +1192,10 @@ public class GraphicalProduction {
 				throw new Exception("Syntax error in line: \"" + headLine + "\"");
 			
 			String biasStr = headLine.substring(iLB + 1, iRB).trim();			
-			if ( biasStr.equals("BIAS_LEFT") )
+			if ( biasStr.equals("BIAS_LEFT") ) {
 				t_biasType = BiasType.BiasLeft;
+				/* TODO: Check identity of the two children */
+			}
 			else
 				throw new Exception("Unrecognized bias type: " + biasStr);
 			
