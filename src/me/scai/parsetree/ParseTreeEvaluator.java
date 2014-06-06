@@ -13,10 +13,18 @@ public class ParseTreeEvaluator {
 	/* ~Member variables */
 	
 	/* Error classes */
-	public class UnexpectedTypeException extends Exception {};
-	public class MathException extends Exception {};
-	public class DivisionByZeroException extends MathException {};
-	public class ZeroToZerothPowerException extends MathException {};
+	public class UnexpectedTypeException extends Exception {
+		private static final long serialVersionUID = 1L;
+	};
+	public class MathException extends Exception {
+		private static final long serialVersionUID = 1L;
+	};
+	public class DivisionByZeroException extends MathException {
+		private static final long serialVersionUID = 1L;
+	};
+	public class ZeroToZerothPowerException extends MathException {
+		private static final long serialVersionUID = 1L;
+	};
 	
 	/* Methods */
 	
@@ -61,6 +69,7 @@ public class ParseTreeEvaluator {
 		if ( funcName == null || argIndices == null )
 			throw new RuntimeException("Cannot find evaluation instruction for production: " + sumString);
 		
+		@SuppressWarnings("rawtypes")
 		Class [] argTypes = new Class[nArgs];
 		for (int i = 0; i < nArgs; ++i)
 			argTypes[i] = Object.class;
@@ -165,6 +174,7 @@ public class ParseTreeEvaluator {
 	}
 	
 	public String string(Object s) {
+		@SuppressWarnings("rawtypes")
 		Class sClass = s.getClass();
 		if ( !sClass.equals(String.class) ) 
 			throw new RuntimeException("Input argument to string() is not a String type");

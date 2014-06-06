@@ -92,11 +92,12 @@ public class GraphicalProductionSet {
 	 *         Side effect input argument:
 	 *             idxPossibleHead: has the same length as the return value.
 	 *             Contain indices to the possible heads. */
-	public int [] getIdxValidProds(CWrittenTokenSetNoStroke tokenSet,
-			                       TerminalSet termSet, 	
-			                       String lhs,
-			                       ArrayList<int [][]> idxPossibleHead, 
-			                       boolean bDebug) {
+	public int [][] getIdxValidProds(CWrittenTokenSetNoStroke tokenSet,
+			                         int [] searchSubsetIdx, 
+			                         TerminalSet termSet, 	
+			                         String lhs,
+			                         ArrayList<int [][]> idxPossibleHead, 
+			                         boolean bDebug) {
 		/* TODO: Make use of geomShortcuts */
 		
 		if ( bDebug )
@@ -106,17 +107,39 @@ public class GraphicalProductionSet {
 			System.err.println("WARNING: Input ArrayList of int [], idxPossibleHead, is not empty.");
 			idxPossibleHead.clear();
 		}
-		
+	
+		ArrayList<Integer> idxValidProdsList_woExclude = new ArrayList<Integer>();
 		ArrayList<Integer> idxValidProdsList = new ArrayList<Integer>(); 
-		for (int i = 0; i < prods.size(); ++i) {
-			int [][] t_iph = evalWrittenTokenSet(i, tokenSet, termSet);
+		
+		final boolean bFast = false;		//DEBUG
+		int [] searchIdx = null;		
+		if ( searchSubsetIdx == null || !bFast ) { //DEBUG
+			searchIdx = new int[prods.size()];
+			for ( int i = 0; i < searchIdx.length; ++i)
+				searchIdx[i] = i;
+		}
+		else {
+			searchIdx = searchSubsetIdx;
+		}
+		
+//		for (int i = 0; i < prods.size(); ++i) {
+		for (int i = 0; i < searchIdx.length; ++i) {
+			int prodIdx = searchIdx[i];
+			
+			int [][] t_iph = evalWrittenTokenSet(prodIdx, tokenSet, termSet);
 			if ( t_iph == null || t_iph.length == 0 )
 				continue;
+			
+			/* Flags for exclusion due to lhs mismatch */
+			if ( lhs != null && !prods.get(prodIdx).lhs.equals(lhs) )
+				continue;
+			
+			idxValidProdsList_woExclude.add(prodIdx);
 			
 			boolean bExclude = false;
 			
 			/* Flags for exclusion due to extra terminal nodes */
-			String [] possibleTermTypes = terminalTypes[i];
+			String [] possibleTermTypes = terminalTypes[prodIdx];
 			List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
 			
 			for (int k = 0; k < tokenSet.nTokens(); ++k) {
@@ -128,24 +151,31 @@ public class GraphicalProductionSet {
 				}
 			}
 			
-			/* Flags for exclusion due to lhs mismatch */
-			if ( lhs != null )
-				if ( !prods.get(i).lhs.equals(lhs) )
-					bExclude = true;
-
 			if ( bExclude )
 				continue;
 
-			idxValidProdsList.add(i);
+			idxValidProdsList.add(prodIdx);
 			idxPossibleHead.add(t_iph);
 		}
 		
-		int [] idxValidProds = new int[idxValidProdsList.size()];
-		for (int i = 0; i < idxValidProdsList.size(); ++i) {
-			idxValidProds[i] = idxValidProdsList.get(i);
-		}
+		int [][] indices2 = new int[2][];
+		indices2[0] = new int[idxValidProdsList.size()];
+		indices2[1] = new int[idxValidProdsList_woExclude.size()];
 		
-		return idxValidProds;
+//		int [] idxValidProds = new int[idxValidProdsList.size()];
+		for (int i = 0; i < idxValidProdsList.size(); ++i)
+//			idxValidProds[i] = idxValidProdsList.get(i);
+			indices2[0][i] = idxValidProdsList.get(i);
+		
+		for (int i = 0; i < idxValidProdsList_woExclude.size(); ++i) 
+			indices2[1][i] = idxValidProdsList_woExclude.get(i);
+		
+//		if ( idxValidProdsList_woExclude.size() > idxValidProdsList.size() )	//DEBUG
+//			System.out.println("Without exclusion: " + idxValidProdsList_woExclude.size() + 
+//					           "; with exclusion: " + idxValidProdsList.size());
+		
+//		return idxValidProds;
+		return indices2;
 	}
 	
 	

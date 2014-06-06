@@ -90,7 +90,6 @@ public class ParseTreeBiaser {
 				int nInter = 0;
 				int endLv = lv;
 				int k;
-//				String thisRHS = nTop.prodSumString.split(GraphicalProduction.sumStringArrow)[0];
 				String thisRHS = nTop.lhs;
 				for (k = 1; k < nStack.size(); ++k) {
 					if ( nStack.get(k).prodSumString.equals(pString) ) {
@@ -105,7 +104,6 @@ public class ParseTreeBiaser {
 						
 						passageEnd = nStack.get(k);
 						endLv = lvStack.get(k);
-//						thisRHS = nStack.get(k).prodSumString.split(GraphicalProduction.sumStringArrow)[0];
 						thisRHS = nStack.get(k).lhs;
 						
 					}
@@ -122,7 +120,6 @@ public class ParseTreeBiaser {
 					
 					Node A = nStack.get(k);
 					Node B = nStack.get(0);
-//					String A_LHS = A.prodSumString.split(GraphicalProduction.sumStringArrow)[0];
 					String A_LHS = A.lhs;
 					
 					/* Find the parent of A */
@@ -145,7 +142,6 @@ public class ParseTreeBiaser {
 					if ( !bFoundACh )
 						throw new RuntimeException("");
 				
-//					passageBegin.ch[0] = 
 					
 					Node tmpNode = B.ch[1];
 					passageBegin.ch[0] = A;
@@ -171,7 +167,6 @@ public class ParseTreeBiaser {
 							else {
 								String [] rhsTypes = nStack.get(m + 1).rhsTypes;
 								
-//								String thisNodeType = nStack.get(m).prodSumString.split(GraphicalProduction.sumStringArrow)[0];
 								String thisNodeType = nStack.get(m).lhs;
 								
 								boolean bMatch = false;
