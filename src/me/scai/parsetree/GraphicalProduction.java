@@ -984,7 +984,7 @@ public class GraphicalProduction {
 			 * hc also needs to be expanded if it is an NT. 
 			 */
 			
-			Node hc = new Node(rhs[0], rhs[0]);
+			Node hc = new Node(lhs, rhs[0], rhs[0]); /* TODO: Second input argument is erroneous? */
 			n.setChild(0, hc);
 //			n.addChild(hc);
 		}
@@ -1016,7 +1016,7 @@ public class GraphicalProduction {
 		if ( (nrn > nnht) || 
 		     (nrn == 0 && nnht > 0) ) {
 			maxGeomScore[0] = 0.0f;
-			Node n = new Node(sumString, rhs);
+			Node n = new Node(lhs, sumString, rhs);
 			
 			createHeadChild(n);
 			
@@ -1160,7 +1160,7 @@ public class GraphicalProduction {
 	    	remainingSets[i + 1] = a_rems[idxMax][i];		//PerfTweak new
 	    }
 	    
-	    Node n = new Node(sumString, rhs);
+	    Node n = new Node(lhs, sumString, rhs);
 	    
 	    createHeadChild(n);
 	    

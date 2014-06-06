@@ -90,7 +90,8 @@ public class ParseTreeBiaser {
 				int nInter = 0;
 				int endLv = lv;
 				int k;
-				String thisRHS = nTop.prodSumString.split(GraphicalProduction.sumStringArrow)[0];
+//				String thisRHS = nTop.prodSumString.split(GraphicalProduction.sumStringArrow)[0];
+				String thisRHS = nTop.lhs;
 				for (k = 1; k < nStack.size(); ++k) {
 					if ( nStack.get(k).prodSumString.equals(pString) ) {
 						bMatchFound = true;
@@ -104,7 +105,9 @@ public class ParseTreeBiaser {
 						
 						passageEnd = nStack.get(k);
 						endLv = lvStack.get(k);
-						thisRHS = nStack.get(k).prodSumString.split(GraphicalProduction.sumStringArrow)[0];
+//						thisRHS = nStack.get(k).prodSumString.split(GraphicalProduction.sumStringArrow)[0];
+						thisRHS = nStack.get(k).lhs;
+						
 					}
 					else if ( endLv == lvStack.get(k) ) {
 						nInter++;
@@ -119,7 +122,8 @@ public class ParseTreeBiaser {
 					
 					Node A = nStack.get(k);
 					Node B = nStack.get(0);
-					String A_LHS = A.prodSumString.split(GraphicalProduction.sumStringArrow)[0];
+//					String A_LHS = A.prodSumString.split(GraphicalProduction.sumStringArrow)[0];
+					String A_LHS = A.lhs;
 					
 					/* Find the parent of A */
 					int ALevel = lvStack.get(k);
@@ -152,47 +156,43 @@ public class ParseTreeBiaser {
 					AParent.ch[AParentChIdx] = B; 
 					
 					/* Swap items in nStack */
-//					swapStackItems(nStack, k - 2, k);
-//					swapStackItems(rStack, k - 2, k);	/* TODO: Set the top item in rStack to true (?) */
-//					
-//					/* Recalculate the values in lvStack */
-//					for (int m = lvStack.size() - 1; m >= 0; --m) {
-//						if ( m == lvStack.size() - 1 ) {
-//							lvStack.set(m, 0);
-//						}
-//						else {
-//							if ( nStack.get(m + 1).isTerminal() ) {
-//								lvStack.set(m, lvStack.get(m + 1));
-//							}
-//							else {
-//								String [] rhsTypes = nStack.get(m + 1).rhsTypes;
-//								
-//								String thisNodeType = nStack.get(m).prodSumString.split(GraphicalProduction.sumStringArrow)[0];
-//								
-//								boolean bMatch = false;
-//								for (int p = 0; p < rhsTypes.length; ++p) {
-//									if ( rhsTypes[p].equals(thisNodeType) ) {
-//										bMatch = true; 
-//										break;
-//									}
-//								}
-//								
-//								if ( bMatch )
-//									lvStack.set(m, lvStack.get(m + 1) + 1);
-//								else
-//									lvStack.set(m, lvStack.get(m + 1));
-//							}		
-//						}
-//					}
+					swapStackItems(nStack, k - 2, k);
+					swapStackItems(rStack, k - 2, k);	/* TODO: Set the top item in rStack to true (?) */
 					
-					lvStack = lvStack; //DEBUG
-					return;
+					/* Recalculate the values in lvStack */
+					for (int m = lvStack.size() - 1; m >= 0; --m) {
+						if ( m == lvStack.size() - 1 ) {
+							lvStack.set(m, 0);
+						}
+						else {
+							if ( nStack.get(m + 1).isTerminal() ) {
+								lvStack.set(m, lvStack.get(m + 1));
+							}
+							else {
+								String [] rhsTypes = nStack.get(m + 1).rhsTypes;
+								
+//								String thisNodeType = nStack.get(m).prodSumString.split(GraphicalProduction.sumStringArrow)[0];
+								String thisNodeType = nStack.get(m).lhs;
+								
+								boolean bMatch = false;
+								for (int p = 0; p < rhsTypes.length; ++p) {
+									if ( rhsTypes[p].equals(thisNodeType) ) {
+										bMatch = true; 
+										break;
+									}
+								}
+								
+								if ( bMatch )
+									lvStack.set(m, lvStack.get(m + 1) + 1);
+								else
+									lvStack.set(m, lvStack.get(m + 1));
+							}		
+						}
+					}
+					
 				}
-				
-//				if ( nStack.size() > 1 
-//			         && nStack.get(1).prodSumString.equals(nTop.prodSumString) ) {
-//					System.out.println("Encountered bias"); //DEBUG
-//				}
+			
+
 			}
 				
 			

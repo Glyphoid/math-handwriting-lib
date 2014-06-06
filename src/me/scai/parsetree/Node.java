@@ -4,7 +4,8 @@ public class Node {
 //	private float x_min = 0.0f, y_min = 0.0f, x_max = 0.0f, y_max = 0.0f; /* Location information */
 	
 	private boolean isTerminal = true;
-	public String prodSumString = null;	/* Production summary string. See GraphicalProduction.sumString */
+	public String lhs;
+	public String prodSumString;	/* Production summary string. See GraphicalProduction.sumString */
 	public String termName = null; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
 	String [] rhsTypes = null;		/* Child types: applies only to non-terminal nodes */
 	
@@ -33,9 +34,10 @@ public class Node {
 //	}
 	
 	/* Non-terminal (NT) node with production summary string, parent and children specified */
-	public Node(String t_prodSumString, Node t_p, Node [] t_ch) {
+	public Node(String t_lhs, String t_prodSumString, Node t_p, Node [] t_ch) {
 		assert(t_prodSumString.length() >= 0);
 		
+		lhs = t_lhs;
 		isTerminal = false;
 		prodSumString = t_prodSumString;
 		p = t_p;
@@ -44,7 +46,8 @@ public class Node {
 	}
 	
 	/* Non-Terminal (NT) node with production summary string specified */
-	public Node(String t_prodSumString, String [] t_rhsTypes) {
+	public Node(String t_lhs, String t_prodSumString, String [] t_rhsTypes) {
+		lhs = t_lhs;
 		isTerminal = false;
 		prodSumString = t_prodSumString;
 		rhsTypes = t_rhsTypes;
@@ -55,7 +58,8 @@ public class Node {
 	}
 	
 	/* Terminal (T) node with production summary string specified */
-	public Node(String t_prodSumString, String t_termName) {
+	public Node(String t_lhs, String t_prodSumString, String t_termName) {
+		lhs = t_lhs;
 		isTerminal = true; /* Will be set to false when addChild() is called */
 		prodSumString = t_prodSumString;
 		termName = t_termName;
@@ -65,9 +69,10 @@ public class Node {
 	}
 	
 	/* Non-terminal (NT) node with production summary string and children specified */
-	public Node(String t_prodSumString, Node [] t_ch) {
+	public Node(String t_lhs, String t_prodSumString, Node [] t_ch) {
 		assert(t_prodSumString.length() >= 0);
 		
+		lhs = t_lhs;
 		isTerminal = false;
 		prodSumString = t_prodSumString;
 		p = null;
