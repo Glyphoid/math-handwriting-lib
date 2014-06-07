@@ -14,9 +14,9 @@ import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 public class TokenSetParser implements ITokenSetParser {
 	protected static final String errStr = ParseTreeStringizer.parsingErrString;
-	
-	protected TerminalSet termSet = null;
-	public GraphicalProductionSet gpSet = null;
+		
+	private TerminalSet termSet = null;
+	private GraphicalProductionSet gpSet = null;
 	//protected ParseTreeStringizer stringizer = null;
 	//protected ParseTreeEvaluator evaluator = null;
 	/* TODO: Separate the stringize and evaluator from the parser */
@@ -41,29 +41,13 @@ public class TokenSetParser implements ITokenSetParser {
 	private HashMap<String, CWrittenTokenSetNoStroke [][][]> evalGeom2RemSetsMap;
 	
 	protected ParseTreeBiaser biaser;
-	
 	/* Methods */
 	
-	/* Constructors */
-	public TokenSetParser(String terminalSetFN, 
-			              String graphicalProductionSetFN) {
-		try {
-			termSet = TerminalSet.createFromFile(terminalSetFN);
-		}
-		catch ( Exception e ) {
-			System.err.println(e.getMessage());
-		}
-		
-		try {
-			gpSet = GraphicalProductionSet.createFromFile(graphicalProductionSetFN, termSet);
-		}
-		catch ( FileNotFoundException fnfe ) {
-			System.err.println(fnfe.getMessage());
-		}
-		catch ( IOException e ) {
-			System.err.println(e.getMessage());
-		}
-		
+	/* Constructor */
+	public TokenSetParser(TerminalSet t_termSet, 
+			              GraphicalProductionSet t_gpSet) {
+		termSet = t_termSet;
+		gpSet = t_gpSet;		
 		biaser = new ParseTreeBiaser(gpSet);
 	}
 	
@@ -139,7 +123,7 @@ public class TokenSetParser implements ITokenSetParser {
 			System.out.println("evalGeometry: " + tHashKey);
 		
 		for (int i = 0; i < idxValidProds.length; ++i) {
-			int nrhs =  gpSet.prods.get(idxValidProds[i]).rhs.length;
+			int nrhs = gpSet.prods.get(idxValidProds[i]).rhs.length;
 			/* Number of right-hand size elements, including the head */
 					
 			nodes[i] = new Node[idxPossibleHead.get(i).length];
@@ -554,8 +538,6 @@ public class TokenSetParser implements ITokenSetParser {
 		String prodSetFN = null;
 		String termSetFN = null;
 		
-		
-		
 		String hostName;
 		try {
 			hostName = InetAddress.getLocalHost().getHostName();
@@ -577,9 +559,28 @@ public class TokenSetParser implements ITokenSetParser {
 		/* Create written token set */
 		CWrittenTokenSetNoStroke wts = new CWrittenTokenSetNoStroke();
 		
-		TokenSetParser tokenSetParser = new TokenSetParser(termSetFN, prodSetFN);		
-		ParseTreeStringizer stringizer = tokenSetParser.gpSet.genStringizer();
-		ParseTreeEvaluator evaluator = tokenSetParser.gpSet.genEvaluator();
+		TerminalSet termSet = null;
+		try {
+			termSet = TerminalSet.createFromFile(termSetFN);
+		}
+		catch ( Exception e ) {
+			System.err.println(e.getMessage());
+		}
+		
+		GraphicalProductionSet gpSet = null;
+		try {
+			gpSet = GraphicalProductionSet.createFromFile(prodSetFN, termSet);
+		}
+		catch ( FileNotFoundException fnfe ) {
+			System.err.println(fnfe.getMessage());
+		}
+		catch ( IOException e ) {
+			System.err.println(e.getMessage());
+		}
+		
+		TokenSetParser tokenSetParser = new TokenSetParser(termSet, gpSet);		
+		ParseTreeStringizer stringizer = gpSet.genStringizer();
+		ParseTreeEvaluator evaluator = gpSet.genEvaluator();
 		
 		/* Create token set parser */
 		int nPass = 0;
