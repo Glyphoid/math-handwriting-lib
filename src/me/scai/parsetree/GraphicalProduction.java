@@ -1194,7 +1194,7 @@ public class GraphicalProduction {
 			String biasStr = headLine.substring(iLB + 1, iRB).trim();			
 			if ( biasStr.equals("BIAS_LEFT") ) {
 				t_biasType = BiasType.BiasLeft;
-				/* TODO: Check identity of the two children */
+				
 			}
 			else
 				throw new Exception("Unrecognized bias type: " + biasStr);
@@ -1310,6 +1310,14 @@ public class GraphicalProduction {
 		
 		t_evalInstr = new String[evalItems.size()];
 		evalItems.toArray(t_evalInstr);
+		
+		/* Sanity check for bias types */
+		if ( t_biasType == BiasType.BiasLeft ) { 
+			if ( t_rhs.length != 3 )
+				throw new RuntimeException("Under the current bias type, the number of rhs is incorrect.");
+			if ( !t_rhs[1].equals(t_rhs[2]) )
+				throw new RuntimeException("Under the current bias type, it is unacceptable that the 2nd and 3rd RHS items are different");
+		}
 		
 		return new GraphicalProduction(t_lhs, t_rhs, t_bt, termSet, t_geomRels, 
 									   t_biasType, t_stringizeInstr, t_evalInstr);
