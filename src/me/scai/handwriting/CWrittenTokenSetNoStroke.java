@@ -19,19 +19,31 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	/* Default constructor */
 	public CWrittenTokenSetNoStroke() { }		
 	
-	/* Constructor: taking a CAbstarctWrittenTokenSet, extract a subset of the
+	/* Constructor: taking a CWrittenTokenSetNoStroke, extract a subset of the
 	 * tokens and used them to form a new CWrittenTokenSetNoStroke. 
 	 * Information about strokes is discarded in this construction process.
 	 */
 	public CWrittenTokenSetNoStroke(CWrittenTokenSetNoStroke owts, int [] indices) {
 		setTokenNames(owts.tokenNames);
 		
-		for ( int i = 0; i < indices.length; ++i ) {
+		for (int i = 0; i < indices.length; ++i) {
 			addToken(owts.tokens.get(indices[i]));
 			tokenIDs.add(owts.tokenIDs.get(indices[i]));
 		}
 		
 //		assert( tokens.size() == tokenIDs.size() );	// DEBUG
+		
+		calcBounds();
+	}
+	
+	/* Constructor: convert a CWrittenTokenSet into a CWrittenTokenSetNoStroke */
+	public CWrittenTokenSetNoStroke(CWrittenTokenSet wts) {
+		setTokenNames(wts.tokenNames);
+		
+		for (int i = 0; i < wts.nTokens(); ++i) {
+			addToken(wts.tokens.get(i));
+			tokenIDs.add(i);
+		}
 		
 		calcBounds();
 	}

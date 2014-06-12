@@ -152,10 +152,10 @@ public class ParseTreeEvaluator {
 	public double divide(Object numer, Object denom)
 		throws DivisionByZeroException 
 	{
-		double d_numer = getDouble(numer);
+		double d_numer = getDouble(numer);	/* TODO: Figure out what is wrong */
 		double d_denom = getDouble(denom);
 		
-		if ( d_denom == 0.0 )
+		if ( d_numer == 0.0 )
 			throw new DivisionByZeroException();
 		
 		return d_denom / d_numer;

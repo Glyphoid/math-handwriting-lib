@@ -13,8 +13,8 @@ import java.util.HashMap;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 public class TokenSetParser implements ITokenSetParser {
-	protected static final String errStr = ParseTreeStringizer.parsingErrString;
-		
+	public static final String errStr = ParseTreeStringizer.parsingErrString;
+	
 	private TerminalSet termSet = null;
 	private GraphicalProductionSet gpSet = null;
 	//protected ParseTreeStringizer stringizer = null;
@@ -23,7 +23,7 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* Properties */
 	private int drillDepthLimit = Integer.MAX_VALUE; 	/* No limit on levels of recursive drill */
-//	private int drillDepthLimit = 3;	/* Limiting it to a specific number runs without errors, but may cause wrong parsing */
+//	private int drillDepthLimit = 2;	/* Limiting it to a specific number runs without errors, but may cause wrong parsing */
 	private int currDrillDepth = 0;	/* Thread-safe? */
 	
 	private boolean bDebug = false;
@@ -496,42 +496,10 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* Testing routine */
 	public static void main(String [] args) {
-		int [] tokenSetNums           = {1, 2, 4, 6, 9, 10, 
-									     11, 12, 13, 14, 
-				                         15, 18, 21, 22, 
-				                         23, 24, 103, 104, 106,	107, 108,		/* Exponentiation */
-				                         27, 28, 29, 
-				                         32, 34, 36, 37, 
-				                         41, 42, 43, 44, 45, 
-				                         48, 49,
-				                         50, 51, 52, 53, 54, 55, 
-				                         56, 57, 58, 59, 
-				                         60, 
-				                         67, 68, 69, 70, 
-				                         72, 73, 74, 75, 76, 
-				                         83, 84, 85, 86, 88, 89, 
-				                         90, 91, 100, 101, 
-				                         98, 99}; /* Begins token sets with syntax errors */
-		String [] tokenSetTrueStrings = {"12", "236", "77", "36", "-28", "(21 - 3)",  
-							             "(21 + 3)", "(21 - 5)", "009", "900", 
-										 "100", "(56 - 3)", "(29 / 3)", "--3", 
-										 "(9 ^ 3)", "(2 ^ -3)", "(68 ^ 75)", "(2 ^ 34)", "(258 ^ 76)", "(256 ^ 481)", "(289 ^ 643)", /* Exponentiation */
-										 "(5 / 8)", "((5 / 8) / 9)", "(3 / (2 / 7))", 
-										 "(1 - (2 / 3))", "(4 / (5 + (2 / 3)))", "(23 / 4)", "((5 + 9) / ((3 / 2) - 1))", 
-										 "((4 - 2) / 3)", "((7 - 8) / 10)", "((3 + 1) / 4)", "(72 / 3)",  "((8 - 3) / 4)", 
-										 "8.3", "4.0", 
-									 	 "0.01", "-53", "-7.4", "(8.1 / 0.9)", "(-1 / -3.2)", "(-4.2 / (7 + 3))", 
-									 	 "(5 * 3)", "(3 * 4)",  "(-2 * 8)", "(2 * -3)", 
-									 	 "(2 * +3)",
-									 	 "2", "0", "1.20", "0.02", 
-										 "-1", "-1.2", "-0.11", "-12", "-13.9", 
-										 "(0 + 0)", "(1.3 + 4)", "(4 + 2.1)", "(2.0 + 1.1)", "(-1 + -3)", "(-3.0 + -1)", 
-										 "((1 + 2) + 3)", "((2 - 3) - 4)", "-3", "+3",  
-										 errStr, errStr};
-
+		QADataSet qaDataSet = new QADataSet();
+		
 		/* Single out for debugging */
-		Integer [] singleOutIdx = {};
-//		Integer [] singleOutIdx = {91};
+		String [] singleOutIdx = {};
 		
 		String tokenSetSuffix = ".wts";
 		String tokenSetPrefix = null;
@@ -587,15 +555,19 @@ public class TokenSetParser implements ITokenSetParser {
 		int nTested = 0;
 		long totalParsingTime_ms = 0;
 		
-		for (int i = 0; i < tokenSetNums.length; ++i) {
+		for (int i = 0; i < qaDataSet.entries.length; ++i) {
+//		for (int i = 0; i < tokenSetNums.length; ++i) {
+			String tokenSetFileName = qaDataSet.entries[i].tokenSetFileName;
+			String tokenSetTrueString = qaDataSet.entries[i].correctParseRes;
+			
 			/* Single out option */
 			if ( singleOutIdx != null && singleOutIdx.length > 0 ) {
-				List<Integer> singleOutList = Arrays.asList(singleOutIdx); 
-				if ( !singleOutList.contains(tokenSetNums[i]) )
+				List<String> singleOutList = Arrays.asList(singleOutIdx); 
+				if ( !singleOutList.contains(tokenSetFileName) )
 					continue;
 			}
 			
-			String tokenSetFN = tokenSetPrefix + tokenSetNums[i] + tokenSetSuffix;
+			String tokenSetFN = tokenSetPrefix + tokenSetFileName + tokenSetSuffix;
 			
 			try {
 				wts.readFromFile(tokenSetFN);
@@ -608,7 +580,6 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 		
 			/* Parse graphically */
-			//Node parseRoot = tokenSetParser.parse(wts, "ROOT");
 			long millis_0 = System.currentTimeMillis();
 
 			Node parseRoot = tokenSetParser.parse(wts);	/* Parsing action */
@@ -626,16 +597,16 @@ public class TokenSetParser implements ITokenSetParser {
 					throw new RuntimeException("Unexpected return type from evaluator");
 			}
 			
-			boolean checkResult = stringized.equals(tokenSetTrueStrings[i]);
+			boolean checkResult = stringized.equals(tokenSetTrueString);
 			String checkResultStr = checkResult ? "PASS" : "FAIL";
 			nPass += checkResult ? 1 : 0; 
 			
 			String strPrint = "[" + checkResultStr + "] "
 					          + "(" + parsingTime + " ms) " 
-			                  + "File " + tokenSetNums[i] + ": " 
+			                  + "File " + tokenSetFileName + ": " 
 					          + "\"" + stringized + "\"";
 			if ( !checkResult )
-				strPrint += " <> " + " \"" + tokenSetTrueStrings[i] + "\"";
+				strPrint += " <> " + " \"" + tokenSetTrueString + "\"";
 						
 			strPrint += " {Value = " + evalRes + "}";
 			
