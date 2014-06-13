@@ -80,9 +80,16 @@ public class QADataSet {
 						      new QADataEntry("90",       "((1 + 2) + 3)"), 
 						      new QADataEntry("91",       "((2 - 3) - 4)"), 
 						      new QADataEntry("100",       "-3"), 
-						      new QADataEntry("101",       "+3"), 
+						      new QADataEntry("101",       "+3"),
+						      new QADataEntry("110",      "((4 + 3) + 8)"),
+						      new QADataEntry("111",      "((8 - 5) + 2)"),
+						      new QADataEntry("112",      "((4 + 48) - 5)"), 
+						      new QADataEntry("113",      "((4 - 8) + 5)"), 
+						      new QADataEntry("114",      "(2 ^ (3 ^ 4))"),
+						      new QADataEntry("115",      "(0.5 ^ (2 ^ 3))"), 
 						      new QADataEntry("98",       TokenSetParser.errStr), 
 						      new QADataEntry("99",       TokenSetParser.errStr), 
+						      
 			                  };
 	/* ~Member variables */
 }

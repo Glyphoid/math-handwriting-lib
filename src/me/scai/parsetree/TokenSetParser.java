@@ -22,6 +22,8 @@ public class TokenSetParser implements ITokenSetParser {
 	/* TODO: Separate the stringize and evaluator from the parser */
 	
 	/* Properties */
+	private float recursionGeomScoreRatioThresh = 0.90f;
+	
 	private int drillDepthLimit = Integer.MAX_VALUE; 	/* No limit on levels of recursive drill */
 //	private int drillDepthLimit = 2;	/* Limiting it to a specific number runs without errors, but may cause wrong parsing */
 	private int currDrillDepth = 0;	/* Thread-safe? */
@@ -45,10 +47,25 @@ public class TokenSetParser implements ITokenSetParser {
 	
 	/* Constructor */
 	public TokenSetParser(TerminalSet t_termSet, 
-			              GraphicalProductionSet t_gpSet) {
+			              GraphicalProductionSet t_gpSet, 
+			              final float t_recursionGeomScoreRatioThresh) {
 		termSet = t_termSet;
-		gpSet = t_gpSet;		
+		gpSet = t_gpSet;
+		setRecursionGeomScoreRatioThresh(t_recursionGeomScoreRatioThresh);
+				
 		biaser = new ParseTreeBiaser(gpSet);
+	}
+	
+	public void setRecursionGeomScoreRatioThresh(final float t_recursionGeomScoreRatioThresh) {
+		if ( t_recursionGeomScoreRatioThresh < 0.0f || 
+			 t_recursionGeomScoreRatioThresh >= 1.0f )
+			throw new IllegalArgumentException();
+		
+		recursionGeomScoreRatioThresh = t_recursionGeomScoreRatioThresh;
+	}
+	
+	public float getRecursionGeomScoreRatioThresh() {
+		return recursionGeomScoreRatioThresh;
 	}
 	
 	public void setDebug(boolean t_bDebug) {
@@ -96,6 +113,7 @@ public class TokenSetParser implements ITokenSetParser {
 			                   CWrittenTokenSetNoStroke [][][] aRemainingSets)
 	{
 		final boolean bDebug = false;
+		float selectiveDrillThresh = recursionGeomScoreRatioThresh;	/* To disable selective drill, set to 0.0f */
 		
 		String hashKey1 = null;
 		String tHashKey = tokenSet.toString() + "@" + MathHelper.intArray2String(idxValidProds);
@@ -122,21 +140,88 @@ public class TokenSetParser implements ITokenSetParser {
 		if ( this.bDebug2 )
 			System.out.println("evalGeometry: " + tHashKey);
 		
+		/* First pass: Obtain the geometric scores without drill-down */
+		boolean [][] bToDrill = null;
+		if ( selectiveDrillThresh > 0.0f ) {
+			float [][] maxGeomScores_noFlag = new float[maxGeomScores.length][];
+			
+			for (int i = 0; i < idxValidProds.length; ++i) {
+				int nrhs = gpSet.prods.get(idxValidProds[i]).rhs.length;
+				/* Number of right-hand size elements, including the head */
+				
+				nodes[i] = new Node[idxPossibleHead.get(i).length];
+				maxGeomScores[i] = new float[idxPossibleHead.get(i).length];
+				maxGeomScores_noFlag[i] = new float[idxPossibleHead.get(i).length];
+				aRemainingSets[i] = new CWrittenTokenSetNoStroke[idxPossibleHead.get(i).length][];
+				
+				for (int j = 0; j < idxPossibleHead.get(i).length; ++j) {
+					int [] idxHead = idxPossibleHead.get(i)[j];
+					
+					CWrittenTokenSetNoStroke [] remainingSets = new CWrittenTokenSetNoStroke[nrhs];
+					float [] maxGeomScore = new float[1];
+					
+					if ( idxHead.length == 0 ) {
+						/* The head must not be an empty */
+	//					throw new RuntimeException("TokenSetParser.evalGeometry encountered empty idxHead");
+						nodes[i][j] = null;
+						maxGeomScores[i][j] = 0.0f;
+						maxGeomScores_noFlag[i][j] = 0.0f;
+					}
+					else {
+						Node n = gpSet.prods.get(idxValidProds[i]).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
+						
+						/* If the head child is a terminal, replace tokenName with the actual name of the token */
+						if ( n != null && termSet.isTypeTerminal(n.ch[0].termName) )
+							n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogWinner();
+						
+						nodes[i][j] = n;
+						maxGeomScores[i][j] = maxGeomScore[0];
+						maxGeomScores_noFlag[i][j] = maxGeomScore[0];
+						if ( maxGeomScores_noFlag[i][j] == GraphicalProduction.flagNTNeedsParsing )
+							maxGeomScores_noFlag[i][j] = 1.0f;	/* Is this correct? */
+						
+						aRemainingSets[i][j] = remainingSets;	//PerfTweak new key
+					}
+				}
+				
+			}
+			
+			/* Determine which ones need to be drilled down */
+			int [] t_idxMax2 = MathHelper.indexMax2D(maxGeomScores_noFlag);
+			float t_max2 = maxGeomScores_noFlag[ t_idxMax2[0] ][ t_idxMax2[1] ];
+			
+			bToDrill = new boolean[maxGeomScores_noFlag.length][]; 
+			for (int i = 0; i < maxGeomScores_noFlag.length; ++i) {
+				bToDrill[i] = new boolean[maxGeomScores_noFlag[i].length];
+				
+				for (int j = 0; j < maxGeomScores_noFlag[i].length; ++j) {
+					if ( maxGeomScores_noFlag[i][j] > t_max2 * selectiveDrillThresh ) {
+						bToDrill[i][j] = true; 
+					}
+					else {
+						bToDrill[i][j] = false;
+						maxGeomScores[i][j] = 0.0f;
+					}
+				}
+			}
+		}
+		
+		
+		/* Second pass: Selective drill-down */
 		for (int i = 0; i < idxValidProds.length; ++i) {
 			int nrhs = gpSet.prods.get(idxValidProds[i]).rhs.length;
 			/* Number of right-hand size elements, including the head */
-					
-			nodes[i] = new Node[idxPossibleHead.get(i).length];
-			maxGeomScores[i] = new float[idxPossibleHead.get(i).length];
-			aRemainingSets[i] = new CWrittenTokenSetNoStroke[idxPossibleHead.get(i).length][];
+			
+			if ( selectiveDrillThresh == 0.0f ) {
+				nodes[i] = new Node[idxPossibleHead.get(i).length];				//SelectiveDrill
+				maxGeomScores[i] = new float[idxPossibleHead.get(i).length];	//SelectiveDrill
+				aRemainingSets[i] = new CWrittenTokenSetNoStroke[idxPossibleHead.get(i).length][];	//SelectiveDrill
+			}
 			
 			/* Iterate through all potential heads */
 			for (int j = 0; j < idxPossibleHead.get(i).length; ++j) {
 				int [] idxHead = idxPossibleHead.get(i)[j];
-				
-				/* Does not include the head */
-//				CWrittenTokenSetNoStroke [] remainingSets = new CWrittenTokenSetNoStroke[nrhs - 1];
-				
+								
 				/* Includes the head */
 				CWrittenTokenSetNoStroke [] remainingSets = new CWrittenTokenSetNoStroke[nrhs];
 				
@@ -149,13 +234,26 @@ public class TokenSetParser implements ITokenSetParser {
 					maxGeomScores[i][j] = 0.0f;
 				}
 				else {
-					Node n = gpSet.prods.get(idxValidProds[i]).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
+					Node n;
+					if ( selectiveDrillThresh == 0.0f ) {
+						n = gpSet.prods.get(idxValidProds[i]).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
 					
-					/* If the head child is a terminal, replace tokenName with the actual name of the token */
-					if ( n != null && termSet.isTypeTerminal(n.ch[0].termName) )
-						n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogWinner();
+						/* If the head child is a terminal, replace tokenName with the actual name of the token */
+						if ( n != null && termSet.isTypeTerminal(n.ch[0].termName) )
+							n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogWinner();
+					}
+					else {
+						n = nodes[i][j];
+						remainingSets = aRemainingSets[i][j];
+						maxGeomScore[0] = maxGeomScores[i][j];
+					}
 					
-					if ( currDrillDepth < drillDepthLimit 
+					boolean bToDrillThis = true;
+					if ( selectiveDrillThresh > 0.0f )
+						bToDrillThis = bToDrill[i][j];
+					
+					if ( bToDrillThis
+						 && currDrillDepth < drillDepthLimit 
 					     && maxGeomScore[0] != 0.0f 
 					     && nrhs > 1 ) {
 						/* Drill one level down: get the maximum geometric scores from its children */
@@ -181,7 +279,6 @@ public class TokenSetParser implements ITokenSetParser {
 								continue;
 							}
 							
-							//CAbstractWrittenTokenSet d_tokenSet;
 							CWrittenTokenSetNoStroke d_tokenSet;
 							if ( k == 0 ) {
 								/* Head */
@@ -242,7 +339,6 @@ public class TokenSetParser implements ITokenSetParser {
 							currDrillDepth--;
 							d_scores[k] = d_maxGeomScore; 
 							/* Is this right? Or should maxGeomScore be multiplied by the geometric mean of the d_maxGeomScores's? TODO */
-							
 						}
 						
 						maxGeomScore[0] *= MathHelper.geometricMean(d_scores);
@@ -500,6 +596,7 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		/* Single out for debugging */
 		String [] singleOutIdx = {};
+//		String [] singleOutIdx = {"37"};
 		
 		String tokenSetSuffix = ".wts";
 		String tokenSetPrefix = null;
@@ -546,7 +643,7 @@ public class TokenSetParser implements ITokenSetParser {
 			System.err.println(e.getMessage());
 		}
 		
-		TokenSetParser tokenSetParser = new TokenSetParser(termSet, gpSet);		
+		TokenSetParser tokenSetParser = new TokenSetParser(termSet, gpSet, 0.90f);
 		ParseTreeStringizer stringizer = gpSet.genStringizer();
 		ParseTreeEvaluator evaluator = gpSet.genEvaluator();
 		
