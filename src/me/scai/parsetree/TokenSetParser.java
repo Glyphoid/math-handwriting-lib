@@ -596,7 +596,15 @@ public class TokenSetParser implements ITokenSetParser {
 		
 		/* Single out for debugging */
 		String [] singleOutIdx = {};
-//		String [] singleOutIdx = {"37"};
+//		String [] singleOutIdx = {"24"};
+//		String [] singleOutIdx = {"sim_11"};
+//		String [] singleOutIdx = {"sim_4"};
+//		String [] singleOutIdx = {"sim_1", "1", "2", "4", "6", "9", "10", "11", "12", 
+//				                  "13", "14", "15", "21", "22", "23", "103", "104", "108", 
+//				                  "28", "29", "32", "34", "36", "37", "41", "42", "43", "44", "45", 
+//				                  "48", "49", "50", "51", "53", "54", "55", "56", "57", "58", "59", "60", 
+//				                  "72", "83", "88", "89", "100", "101", "110", "111", "112", "113", 
+//				                  "114", "115"};
 		
 		String tokenSetSuffix = ".wts";
 		String tokenSetPrefix = null;
@@ -619,6 +627,7 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 		catch (Exception e) {
 			System.err.println("Cannot determine host name");
+			System.err.flush();
 		}
 		
 		/* Create written token set */
@@ -630,6 +639,7 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 		catch ( Exception e ) {
 			System.err.println(e.getMessage());
+			System.err.flush();
 		}
 		
 		GraphicalProductionSet gpSet = null;
@@ -638,9 +648,13 @@ public class TokenSetParser implements ITokenSetParser {
 		}
 		catch ( FileNotFoundException fnfe ) {
 			System.err.println(fnfe.getMessage());
-		}
+			System.err.flush();
+			throw new RuntimeException("Error occurred during the creation of graphical production set from file: File not found");
+		} 
 		catch ( IOException e ) {
 			System.err.println(e.getMessage());
+			System.err.flush();
+			throw new RuntimeException("Error occurred during the creation of graphical production set from file: File I/O exception");
 		}
 		
 		TokenSetParser tokenSetParser = new TokenSetParser(termSet, gpSet, 0.90f);
@@ -671,9 +685,11 @@ public class TokenSetParser implements ITokenSetParser {
 			}
 			catch ( FileNotFoundException fnfe ) {
 				System.err.println(fnfe.getMessage());
+				System.err.flush();
 			}
 			catch ( IOException ioe ) {
 				System.err.println(ioe.getMessage());
+				System.err.flush();
 			}
 		
 			/* Parse graphically */
@@ -723,6 +739,6 @@ public class TokenSetParser implements ITokenSetParser {
 				           "; Passed: " + nPass + 
 				           "; Failed: " + (nTested - nPass));
 		System.out.println("Total parsing time = " + totalParsingTime_ms + " ms");
-		
+		System.out.flush();
 	}
 }

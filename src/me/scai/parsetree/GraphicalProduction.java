@@ -98,6 +98,9 @@ class AlignRelation extends GeometricRelation {
 	private AlignRelation() {}
 	
 	private static float inclusionEdgeDiff(float [] limsTested, float [] limsInRel) {
+		/* Tests if limsTested is contained with in limsInRel.
+		 * A smaller return value corresponds to better inclusion under this criterion. */
+		
 		if ( limsTested[0] >= limsInRel[0] && limsTested[1] <= limsInRel[1] )
 			return 0.0f;
 		else if ( limsTested[0] < limsInRel[0] && limsTested[1] > limsInRel[1] )
@@ -126,6 +129,7 @@ class AlignRelation extends GeometricRelation {
 			throw new IllegalArgumentException("tiTested does not have length 1");
 	
 		float szTested, szInRel, szMean, edgeDiff;
+//		float szMin;
 		float v;	/* Return value */
 		if ( alignType == AlignType.AlignBottom || 
 			 alignType == AlignType.AlignTop ||
@@ -136,7 +140,9 @@ class AlignRelation extends GeometricRelation {
 			/* sz is height */
 			szTested = bndsTested[3] - bndsTested[1];
 			szInRel = bndsInRel[3] - bndsInRel[1];
+			
 			szMean = (szTested + szInRel) * 0.5f;
+//			szMin = (szTested < szInRel) ? szTested : szInRel;
 			
 			if ( alignType == AlignType.AlignBottom ) {
 				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
@@ -150,6 +156,7 @@ class AlignRelation extends GeometricRelation {
 				edgeDiff = Math.abs((bndsTested[1] + bndsTested[3]) * 0.5f - 
 						            (bndsInRel[1] + bndsInRel[3]) * 0.5f);
 				v = 1 - edgeDiff / szMean;
+//				v = 1 - edgeDiff / szMin;
 			}
 			else if ( alignType == AlignType.AlignHeightInclusion ) {
 				float [] limsTested = new float[2];
@@ -198,17 +205,24 @@ class AlignRelation extends GeometricRelation {
 			                        (bndsInRel[0] + bndsInRel[2]) * 0.5f);
 				v = 1 - edgeDiff / szMean;
 			}
-			else {
+			else if ( alignType == AlignType.AlignWidthInclusion ) {
 				float [] limsTested = new float[2];
 				float [] limsInRel = new float[2];
-				limsTested[0] = bndsTested[0]; 
+				limsTested[0] = bndsTested[0];
 				limsTested[1] = bndsTested[2];
 				limsInRel[0] = bndsInRel[0];
 				limsInRel[1] = bndsInRel[2]; 
 				
 				edgeDiff = inclusionEdgeDiff(limsTested, limsInRel);
-				v = 1 - edgeDiff / szMean;
+				v = 1 - edgeDiff * 4.0f / szMean;
+				/* TODO: The 4.0f value here is rather ad hoc (same for AlignHeightInclusion
+				 * above). Is there a way to make it more elegant?
+				 */
 			}
+			else {
+				throw new RuntimeException("Unrecognized alignType");
+			}
+			
 		}
 		
 		if ( v > 1f )
@@ -388,6 +402,13 @@ class PositionRelation extends GeometricRelation {
 		}
 		
 		float moveScore = GeometryHelper.pctMove(lesserMoveBnds, greaterMoveBnds);
+		if ( positionType == PositionType.PositionGenEast || 
+				 positionType == PositionType.PositionGenWest ||
+				 positionType == PositionType.PositionGenNorth ||
+			     positionType == PositionType.PositionGenSouth )
+			/* Leniency designed specially for exponentiation */
+			moveScore = (float) Math.sqrt((double) moveScore);
+			/* TODO: is sqrt() function ad hoc? */
 		
 		float v = stayScore * moveScore;
 		if ( v < 0.0f ) 
@@ -420,7 +441,6 @@ class PositionRelation extends GeometricRelation {
 			positionType = PositionType.PositionGenNorth;
 		else
 			throw new RuntimeException("Unrecognized PositionType: " + items[0]);
-		
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;
@@ -879,13 +899,15 @@ class GeometricShortcut {
  * collection. 
  */
 public class GraphicalProduction {
-	/* Tree bias for dealing with structures such as additions and substractions in a row 
+	/* Tree association for dealing with structures such as additions and subtractions in a row 
 	 * This could probably be taken care of by grammar. But currently we deal with it by 
-	 * using this bias.
+	 * using this association.
 	 */
-	public enum BiasType {	
-		NoBias,
-		BiasLeft, 
+	public enum AssocType {	
+		NoAssoc,	
+		AssocLeft2A,		/* For productions with two RHS items. Bias toward the first item. */
+		AssocRight2B, 		/* For productions with two RHS items. Bias toward the second item. */
+		AssocLeft3B,			/* For productions with three RHS items, the first one being the T head node. Bias toward the second item. */		
 //		BiasRight
 	};
 	
@@ -920,7 +942,13 @@ public class GraphicalProduction {
 	GeometricRelation [][] geomRels;
 	GeometricShortcut geomShortcut;
 	
-	BiasType biasType = BiasType.NoBias;
+	AssocType assocType = AssocType.NoAssoc;
+	String assocName = "";
+	/* In addition to association type, the association name needs to be specified. 
+	 * This is because different sets of productions may share different associations, 
+	 * e.g., addition-subtraction, multiplication-division (non-fraction)
+	 */
+	
 	String [] stringizeInstr;		/* Instruction for stringization */
 	String [] evalInstr;				/* Instruction for evaluation */
 	
@@ -933,7 +961,8 @@ public class GraphicalProduction {
 			                   boolean [] t_bt, 
 			                   TerminalSet termSet, 		/* For determine if the rhs are terminals */
 			                   GeometricRelation [][] t_geomRels, 
-			                   BiasType t_biasType, 
+			                   AssocType t_assocType,
+			                   String t_assocName, 
 			                   String [] t_stringizeInstr, 
 			                   String [] t_evalInstr) {
 		lhs = t_lhs;
@@ -960,7 +989,8 @@ public class GraphicalProduction {
 		 * If there is no shortcut, shortcutType will be noShortcut. */
 		geomShortcut = new GeometricShortcut(this);
 		
-		biasType = t_biasType;
+		assocType = t_assocType;
+		assocName = t_assocName;
 		stringizeInstr = t_stringizeInstr;
 		evalInstr = t_evalInstr;
 	}
@@ -1176,11 +1206,12 @@ public class GraphicalProduction {
 					            + ") lines for creating new graphical production");
 		
 		String t_lhs;
-		BiasType t_biasType = BiasType.NoBias;
+		AssocType t_assocType = AssocType.NoAssoc;
+		String t_assocName = "";
 		String headLine = strs.get(0).trim();
 		
-		if ( headLine.contains(tokenRelSeparator) ) 
-			throw new Exception("Head node unexpectedly contains geometric relation(s)");
+//		if ( headLine.contains(tokenRelSeparator) ) 
+//			throw new Exception("Head node unexpectedly contains geometric relation(s)");
 		
 		int nLBs = TextHelper.numInstances(headLine, "(");
 		int nRBs = TextHelper.numInstances(headLine, ")");
@@ -1189,15 +1220,30 @@ public class GraphicalProduction {
 			int iLB = headLine.indexOf("(");
 			int iRB = headLine.indexOf(")");
 			if ( iLB > iRB )
-				throw new Exception("Syntax error in line: \"" + headLine + "\"");
+				throw new Exception("Syntax error in line: \"" + headLine + "\": Wrong order of the left and right brackets");
 			
-			String biasStr = headLine.substring(iLB + 1, iRB).trim();			
-			if ( biasStr.equals("BIAS_LEFT") ) {
-				t_biasType = BiasType.BiasLeft;
-				
-			}
+			String assocStr = headLine.substring(iLB + 1, iRB).trim();
+			int [] idxColon = TextHelper.findAll(assocStr, ":");
+			if ( idxColon.length != 2 )
+				throw new Exception("Syntax error in line: \"" + headLine + "\": Number of colons is not equal to two");
+			
+			String assocHeaderStr = assocStr.substring(0, idxColon[0]).trim();
+			if ( !assocHeaderStr.equals("ASSOC") )
+				throw new Exception("Syntax error in line: \"" + headLine + "\": The string preceding the first colon is not as expected");
+			
+			String assocTypeStr = assocStr.substring(idxColon[0] + 1, idxColon[1]).trim();
+			if ( assocTypeStr.equals("ASSOC_LEFT_2A") )
+				t_assocType = AssocType.AssocLeft2A;
+			else if ( assocTypeStr.equals("ASSOC_RIGHT_2B") )
+				t_assocType = AssocType.AssocRight2B;
+			else if ( assocTypeStr.equals("ASSOC_LEFT_3B") )
+				t_assocType = AssocType.AssocLeft3B;
 			else
-				throw new Exception("Unrecognized bias type: " + biasStr);
+				throw new Exception("Unrecognized association type: " + assocTypeStr);
+			
+			t_assocName = assocStr.substring(idxColon[1] + 1, assocStr.length()).trim();
+			if ( t_assocName.length() == 0 )
+				throw new Exception("Syntax error in line: \"" + headLine + "\": The association name is empty");
 			
 			t_lhs = headLine.substring(0, iLB).trim();
 		}
@@ -1311,16 +1357,29 @@ public class GraphicalProduction {
 		t_evalInstr = new String[evalItems.size()];
 		evalItems.toArray(t_evalInstr);
 		
-		/* Sanity check for bias types */
-		if ( t_biasType == BiasType.BiasLeft ) { 
+		/* Sanity check for association types */
+		/* TODO */
+		if ( t_assocType == AssocType.AssocLeft2A || 
+			 t_assocType == AssocType.AssocRight2B) {
+			if ( t_rhs.length != 2 )
+				throw new RuntimeException("Under the current association type, the number of rhs (" + t_rhs.length + ") is incorrect.");
+			if ( !t_rhs[0].equals(t_rhs[1]) )
+				throw new RuntimeException("Under the current association type, it is unacceptable that the 2nd and 3rd RHS items are different");
+		}
+		else if ( t_assocType == AssocType.AssocLeft3B ) {
 			if ( t_rhs.length != 3 )
-				throw new RuntimeException("Under the current bias type, the number of rhs is incorrect.");
+				throw new RuntimeException("Under the current association type, the number of rhs (" + t_rhs.length + ") is incorrect.");
 			if ( !t_rhs[1].equals(t_rhs[2]) )
-				throw new RuntimeException("Under the current bias type, it is unacceptable that the 2nd and 3rd RHS items are different");
+				throw new RuntimeException("Under the current association type, it is unacceptable that the 2nd and 3rd RHS items are different");
 		}
 		
+//		if ( t_assocName == null ) { //DEBUG
+//			int ii = 0;
+//			ii++;
+//		}
+		
 		return new GraphicalProduction(t_lhs, t_rhs, t_bt, termSet, t_geomRels, 
-									   t_biasType, t_stringizeInstr, t_evalInstr);
+									   t_assocType, t_assocName, t_stringizeInstr, t_evalInstr);
 	}
 	
 	public int getNumNonHeadTokens() {

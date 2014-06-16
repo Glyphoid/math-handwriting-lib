@@ -32,13 +32,27 @@ DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)}
 _STRINGIZE_		n0 n1
 _EVAL_ 			NEGATIVE(n1)
 
+--- 
+DECIMAL_NUMBER		# Superfluous plus sign
+PLUS_OP
+DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)}
+_STRINGIZE_		n0 n1
+_EVAL_ 			NEGATIVE(n1)
+
 ---
-EXPONENTIATION		# Base ^ Exponent.
-EXPR_LV2			# The head is the base.
-EXPR_LV2 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
+EXPONENTIATION		(ASSOC: ASSOC_RIGHT_2B: EXPONENTIATION) # Base ^ Exponent.
+EXPR_LV4			# The head is the base.
+EXPR_LV4 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
 _STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
 _EVAL_			EXPONENTIATION(n0, n1)
 
+#---
+#EXPONENTIATION		(ASSOC: ASSOC_RIGHT_2B: EXPONENTIATION) # Base ^ Exponent.
+#EXPR_LV3			# The head is the base.
+#EXPR_LV3 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
+#_STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
+#_EVAL_			EXPONENTIATION(n0, n1)
+#
 ---
 EXPR_LV1
 DECIMAL_NUMBER
@@ -46,89 +60,133 @@ _STRINGIZE_		n0
 _EVAL_			n0
 
 ---
-EXPR_LV1
+EXPR_LV1				# 
 EXPONENTIATION
 _STRINGIZE_		n0
 _EVAL_			n0
 
 ---
-MULTIPLICATION
+EXPR_LV1				# 
+FRACTION_TERM
+_STRINGIZE_		n0
+_EVAL_			n0
+
+---
+MULTIPLICATION		(ASSOC: ASSOC_LEFT_3B: MULTIPLICATION)
 MULT_OP
-EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number.
-EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+EXPR_LV1 : {AlignMiddle(0), PositionWest(0)} # 1st number.
+EXPR_LV1 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _EVAL_			MULTIPLY(n1, n2)
 
 ---
-ADDITION	(BIAS_LEFT)
+EXPR_LV1
+MULTIPLICATION
+_STRINGIZE_		n0
+_EVAL_			n0
+
+#---
+#MULTIPLICATION
+#MULT_OP
+#FRACTION_TERM : {AlignMiddle(0), PositionWest(0)} # 1st number.
+#FRACTION_TERM : {AlignMiddle(0), PositionEast(0)} # 2nd number
+#_STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
+#_EVAL_			MULTIPLY(n1, n2)
+#
+---
+EXPR_LV2
+MULTIPLICATION
+_STRINGIZE_		n0
+_EVAL_			n0
+
+---
+ADDITION	(ASSOC: ASSOC_LEFT_3B: ADDITION_SUBTRACTION)
 PLUS_OP
-EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number.
-EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+EXPR_LV4 : {AlignMiddle(0), PositionWest(0)} # 1st number.
+EXPR_LV4 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _EVAL_			ADD(n1, n2)
 
 ---
-SUBTRACTION	(BIAS_LEFT)
+SUBTRACTION	(ASSOC: ASSOC_LEFT_3B: ADDITION_SUBTRACTION)
 MINUS_OP
-EXPR_LV2 : {AlignMiddle(0), PositionWest(0)} # 1st number
-EXPR_LV2 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+EXPR_LV4 : {AlignMiddle(0), PositionWest(0)} # 1st number
+EXPR_LV4 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _EVAL_			SUBTRACT(n1, n2)
 
 ---
-EXPR_LV1
+EXPR_LV3
 ADDITION
 _STRINGIZE_		n0
 _EVAL_			n0
 
 ---
-EXPR_LV1
+EXPR_LV3
 SUBTRACTION
 _STRINGIZE_		n0
 _EVAL_			n0
 
 ---
-EXPR_LV1
-MULTIPLICATION
-_STRINGIZE_		n0
-_EVAL_			n0
-
----
-EXPR_LV2
-EXPR_LV1
-_STRINGIZE_		n0
-_EVAL_			n0
-
----
-EXPR_LV2	# Negative
+FRACTION
 MINUS_OP
-EXPR_LV2 : {AlignMiddle(0), PositionWest(0)}
-_STRINGIZE_		n0 n1
-_EVAL_ 			NEGATIVE(n1)
-
---- 
-EXPR_LV2	# Superfluous positive sign
-PLUS_OP
-EXPR_LV2 : {AlignMiddle(0), PositionEast(0)}
-_STRINGIZE_		n0 n1
-_EVAL_ 			n1
+EXPR_LV4 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator.
+EXPR_LV4 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
+_STRINGIZE_		( n1 _SPACE_ / _SPACE_ n2 )
+_EVAL_			DIVIDE(n2, n1)
 
 ---
-EXPR_LV2
+FRACTION_TERM
 FRACTION
 _STRINGIZE_		n0
 _EVAL_ 			n0
 
 ---
-FRACTION
+FRACTION_TERM		# Negative of fraction
 MINUS_OP
-EXPR_LV2 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator.
-EXPR_LV2 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
-_STRINGIZE_		( n1 _SPACE_ / _SPACE_ n2 )
-_EVAL_			DIVIDE(n2, n1)
+FRACTION_TERM : {AlignMiddle(0), PositionEast(0)}
+_STRINGIZE_		n0 n1
+_EVAL_ 			NEGATIVE(n1)
+
+#---
+#FRACTION_TERM		 # Superfluous plus sign before fraction
+#PLUS_OP
+#FRACTION : {AlignMiddle(0), PositionWest(0)}
+#_STRINGIZE_		n0 n1
+#_EVAL_ 			n1
+#
+---
+EXPR_LV3
+FRACTION_TERM
+_STRINGIZE_		n0
+_EVAL_ 			n0
+
+---
+EXPR_LV3
+FRACTION_TERM
+_STRINGIZE_		n0
+_EVAL_ 			n0
+
+---
+EXPR_LV4
+EXPR_LV1
+_STRINGIZE_		n0
+_EVAL_			n0
+
+---
+EXPR_LV4
+EXPR_LV2
+_STRINGIZE_		n0
+_EVAL_			n0
+
+---
+EXPR_LV4
+EXPR_LV3
+_STRINGIZE_		n0
+_EVAL_			n0
 
 ---
 ROOT
-EXPR_LV2
+EXPR_LV4
 _STRINGIZE_		n0
 _EVAL_			n0

@@ -74,13 +74,14 @@ public class TextHelper {
 		int i = 0;
 		int len = subs.length();
 		
-		while ( s.indexOf(subs, i) != -1 ) {
-			indices.add(s.indexOf(subs, i) + i);
+		int i0;
+		while ( (i0 = s.substring(i, s.length()).indexOf(subs, i)) != -1 ) {
+			indices.add(i0 + i);
 			i += s.indexOf(subs, i) + len; 
 		}
 		
 		int [] r = new int[indices.size()];  
-		for (int n = 0; i < indices.size(); ++i)
+		for (int n = 0; n < indices.size(); ++n)
 			r[n] = indices.get(n);
 		
 		return r;

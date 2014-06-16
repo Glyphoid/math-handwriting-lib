@@ -1,13 +1,15 @@
 package me.scai.parsetree;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.HashMap;
 
 public class ParseTreeBiaser {
 	/* Member variables */
-	HashMap<String, GraphicalProduction.BiasType> sumString2BiasMap
-		= new HashMap<String, GraphicalProduction.BiasType>();
+	HashMap<String, GraphicalProduction.AssocType> sumString2AssocTypeMap	
+		= new HashMap<String, GraphicalProduction.AssocType>();
+	
+	HashMap<String, String> sumString2AssocNameMap
+		= new HashMap<String, String>();
 	
 	/* ~Member variables */
 	
@@ -17,33 +19,40 @@ public class ParseTreeBiaser {
 		for (int i = 0; i < gpSet.prods.size(); ++i) {
 			GraphicalProduction prod = gpSet.prods.get(i);
 			
-			sumString2BiasMap.put(prod.sumString, prod.biasType);
+			sumString2AssocTypeMap.put(prod.sumString, prod.assocType);
+			sumString2AssocNameMap.put(prod.sumString, prod.assocName);
 		}
 	}
 	
 	public <T> void swapStackItems(LinkedList<T> stack, int i0, int i1) {
-		ArrayList<T> items = new ArrayList<T>();
-		items.ensureCapacity(i1 - i0 + 1);
-		for (int k = 0; k < i1 - i0 + 1; ++k) {
-			items.add(stack.get(i0)); 
-			stack.remove(i0);
-		}
+//		ArrayList<T> items = new ArrayList<T>();
+//		items.ensureCapacity(i1 - i0 + 1);
+//		for (int k = 0; k < i1 - i0 + 1; ++k) {
+//			items.add(stack.get(i0)); 
+//			stack.remove(i0);
+//		}
+//		
+//		T top = stack.pop();
+//		
+//		for (int k = items.size() - 1; k >= 0; --k)
+//			stack.push(items.get(k));
+//		
+//		stack.add(i1, top);
 		
-		T top = stack.pop();
+		assert(i1 > i0);
+		T tmpVal = stack.get(i1);
+		stack.set(i1, stack.get(i0));
+		stack.set(i0, tmpVal);
 		
-		for (int k = items.size() - 1; k >= 0; --k)
-			stack.push(items.get(k));
-		
-		stack.add(i1, top);
-		
-//		nStack.remove(k - 1);
-//		nStack.remove(k - 2);
-//		nStack.remove(k - 3);
-		
-//		nStack.push(A);
-//		nStack.push(ACh1);
-//		nStack.push(ACh0);
-		
+//		assert(i1 > i0);
+//		T item0 = stack.get(i0);
+//		T item1 = stack.get(i1);
+//		
+//		stack.remove(i1);
+//		stack.remove(i0);
+//		
+//		stack.add(i0, item1);
+//		stack.add(i1, item0);
 	}
 	
 	public void process(Node n) {
@@ -73,16 +82,28 @@ public class ParseTreeBiaser {
 			boolean rTop = rStack.getFirst();
 			int lv = lvStack.getFirst();
 			
-			GraphicalProduction.BiasType bias = sumString2BiasMap.get(nTop.prodSumString);
-			if ( bias != null && bias != GraphicalProduction.BiasType.NoBias 
-				 && nStack.size() > 1 && rTop ) {	/* TODO: Check to make sure that bias cannot be null */
+			GraphicalProduction.AssocType assocType = sumString2AssocTypeMap.get(nTop.prodSumString);
+			String assocName = sumString2AssocNameMap.get(nTop.prodSumString);
+			
+			if ( assocType != null && assocType != GraphicalProduction.AssocType.NoAssoc 
+				 && nStack.size() > 1 && rTop ) {	/* TODO: Check to make sure that assocType cannot be null */
 				/* Look for the actual matching parent. 
 				 * Note that it may not be the immediate parent */
-				String pString = nTop.prodSumString;
+//				String pString = nTop.prodSumString;
 				
-				if ( bias != GraphicalProduction.BiasType.BiasLeft )
-					throw new RuntimeException("Unsupported bias type");
-				int nInterExpected = nTop.rhsTypes.length - 1;
+				/* TODO: Other association types */
+				if ( !(assocType == GraphicalProduction.AssocType.AssocLeft3B || 
+					   assocType == GraphicalProduction.AssocType.AssocRight2B) ) 
+					throw new RuntimeException("Unsupported association type");
+				
+				/* TODO: Other association types */
+				int nInterExpected = 0;
+				if ( assocType == GraphicalProduction.AssocType.AssocLeft3B )
+					nInterExpected = nTop.rhsTypes.length - 1;
+				else if ( assocType == GraphicalProduction.AssocType.AssocRight2B )
+					nInterExpected = 0;
+				else 
+					throw new RuntimeException();
 				
 				boolean bMatchFound = false;
 				Node passageBegin = null;
@@ -91,8 +112,15 @@ public class ParseTreeBiaser {
 				int endLv = lv;
 				int k;
 				String thisRHS = nTop.lhs;
+				
 				for (k = 1; k < nStack.size(); ++k) {
-					if ( nStack.get(k).prodSumString.equals(pString) ) {
+					String t_assocName = "";
+					if ( !nStack.get(k).isTerminal() ) {
+						String pSumString = nStack.get(k).prodSumString;
+						t_assocName = sumString2AssocNameMap.get(pSumString);
+					}
+					
+					if ( t_assocName.equals(assocName) ) {
 						bMatchFound = true;
 						break;
 					}
@@ -116,8 +144,7 @@ public class ParseTreeBiaser {
 				}
 				
 				if ( bMatchFound && nInter == nInterExpected ) {
-//					System.out.println("Match found for bias type"); //DEBUG
-					
+//					System.out.println("Match found for bias type"); //DEBUG					
 					Node A = nStack.get(k);
 					Node B = nStack.get(0);
 					String A_LHS = A.lhs;
@@ -142,18 +169,33 @@ public class ParseTreeBiaser {
 					if ( !bFoundACh )
 						throw new RuntimeException("");
 				
+					if ( assocType == GraphicalProduction.AssocType.AssocLeft3B ) {
+						Node tmpNode = B.ch[1];
+						passageBegin.ch[0] = A;
+						B.ch[1] = passageEnd;
+						A.ch[A.nc - 1] = tmpNode;
 					
-					Node tmpNode = B.ch[1];
-					passageBegin.ch[0] = A;
-					B.ch[1] = passageEnd;
-					A.ch[A.nc - 1] = tmpNode;
+						/* Let the parent of A point to B */
+						AParent.ch[AParentChIdx] = B; 
 					
-					/* Let the parent of A point to B */
-					AParent.ch[AParentChIdx] = B; 
+						/* Swap items in nStack */
+						swapStackItems(nStack, k - 2, k);
+						swapStackItems(rStack, k - 2, k);	/* TODO: Set the top item in rStack to true (?) */
+					}
+					else if ( assocType == GraphicalProduction.AssocType.AssocRight2B ) {
+						Node tmpNode = B.ch[1];
+						passageBegin.ch[0] = A;
+						B.ch[1] = passageEnd;
+						A.ch[0] = tmpNode;
 					
-					/* Swap items in nStack */
-					swapStackItems(nStack, k - 2, k);
-					swapStackItems(rStack, k - 2, k);	/* TODO: Set the top item in rStack to true (?) */
+						/* Let the parent of A point to B */
+						AParent.ch[AParentChIdx] = B; 
+					
+						/* Swap items in nStack */
+//						swapStackItems(nStack, 0, 1);
+						swapStackItems(nStack, k - 3, k);
+						swapStackItems(rStack, k - 3, k);	/* TODO: Set the top item in rStack to true (?) */
+					}
 					
 					/* Recalculate the values in lvStack */
 					for (int m = lvStack.size() - 1; m >= 0; --m) {

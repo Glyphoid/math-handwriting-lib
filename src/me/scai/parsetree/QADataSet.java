@@ -31,7 +31,7 @@ public class QADataSet {
 			                  new QADataEntry("21",    "(29 / 3)"), 
 			                  new QADataEntry("22",    "--3"), 
 			                  new QADataEntry("23",    "(9 ^ 3)"), 
-			                  new QADataEntry("24",    "(2 ^ -3)"), 
+			                  new QADataEntry("24",    "(2 ^ -3)"), 		/* Error due to geometric inprecision? */
 			                  new QADataEntry("103",   "(68 ^ 75)"), 
 			                  new QADataEntry("104",      "(2 ^ 34)"), 
 			                  new QADataEntry("106",      "(258 ^ 76)"), 
@@ -81,15 +81,37 @@ public class QADataSet {
 						      new QADataEntry("91",       "((2 - 3) - 4)"), 
 						      new QADataEntry("100",       "-3"), 
 						      new QADataEntry("101",       "+3"),
-						      new QADataEntry("110",      "((4 + 3) + 8)"),
-						      new QADataEntry("111",      "((8 - 5) + 2)"),
-						      new QADataEntry("112",      "((4 + 48) - 5)"), 
-						      new QADataEntry("113",      "((4 - 8) + 5)"), 
-						      new QADataEntry("114",      "(2 ^ (3 ^ 4))"),
-						      new QADataEntry("115",      "(0.5 ^ (2 ^ 3))"), 
+						      new QADataEntry("110",      "((4 + 3) + 8)"),			/* AssocLeft3B */
+						      new QADataEntry("111",      "((8 - 5) + 2)"),			/* AssocLeft3B */
+						      new QADataEntry("112",      "((4 + 48) - 5)"), 		/* AssocLeft3B */
+						      new QADataEntry("113",      "((4 - 8) + 5)"), 		/* AssocLeft3B */
+						      new QADataEntry("114",      "(2 ^ (3 ^ 4))"),			/* AssocRight2B */
+						      new QADataEntry("115",      "(0.5 ^ (2 ^ 3))"), 		/* AssocRight2B */
 						      new QADataEntry("98",       TokenSetParser.errStr), 
 						      new QADataEntry("99",       TokenSetParser.errStr), 
-						      
+						      new QADataEntry("sim_1",    "((1 * 2) + (3 * 4))"), 				/* Add - multiplication precedence */
+						      new QADataEntry("sim_2",    "-(1 / 2)"),				/* Negative of high-level expressions */
+						      new QADataEntry("sim_3",    "-(23 / 4)"), 			/* Negative of high-level expressions */
+						      new QADataEntry("sim_4",    "((1 / 2) + (3 / 4))"),
+						      new QADataEntry("sim_5",    "((1 / 2) * (3 / 4))"), 	/* Multiplication of two fractions */
+						      new QADataEntry("sim_6",    "((1 * 10) + (2 * 3))"),
+						      new QADataEntry("sim_7",    "((1 + (2 * 3)) - 4)"),
+						      new QADataEntry("sim_8",    "((5 / 8) * (4 / 7))"),	/* Multiplication of two fractions */
+						      new QADataEntry("sim_9",    "((4 + ((2 * 3) * 5)) + 8)"),
+//							  new QADataEntry("sim_10",   "((9 - (4 * 8)) + 2)"), 	/* Why does this token set cause error? */
+						      new QADataEntry("sim_11",   "((1 / 2) ^ 3)"), 		/* Exponentiation of a fraction */
+						      new QADataEntry("sim_12",   "((1 + (10 * 20)) + 3)"), 						      
+						      new QADataEntry("sim_13",   "(1 * (2 ^ 3))"), 
+						      new QADataEntry("sim_14",   "((4 ^ 5) * (2 ^ 3))"), 
+						      new QADataEntry("sim_15",   "((2 + ((3 ^ 4) * (2 ^ 3))) - 5)"),
+						      new QADataEntry("sim_16",   "((1 + ((2 * 3) * 4)) + 5)"), 
+						      new QADataEntry("sim_17",   "(1 + (((2 * 3) * 4) * 5))"), 
+						      new QADataEntry("sim_18",   "(((2 * 3) * 4) * 5)"), 
+						      new QADataEntry("sim_19",   "(2 * (3 / 4))"), 
+						      new QADataEntry("sim_20",   "((11 * 22) * 33)"),
+						      new QADataEntry("sim_21",   "((3 * (4 / 5)) * 2)"), 
+						      new QADataEntry("sim_22",   "(((((23 / 45) * 7) * (15 / 26)) * 4) + (2 * 5))"), 
+						      new QADataEntry("sim_23",   "(((12 / 13) * 5) + (28 * 3))"), 
 			                  };
 	/* ~Member variables */
 }

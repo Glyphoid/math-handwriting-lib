@@ -47,7 +47,6 @@ public class GeometryHelper {
 		}
 			
 	}
-			
 
 	public static float pctMove(float [] lesserBnds, float [] greaterBnds) {
 		if ( lesserBnds.length != 2 || greaterBnds.length != 2 )
@@ -57,6 +56,9 @@ public class GeometryHelper {
 			throw new IllegalArgumentException("Input bounds are not all in the ascending order");
 		
 		float pm = (greaterBnds[0] - lesserBnds[0]) / (lesserBnds[1] - lesserBnds[0]);
+//		if ( pm < 1.0f )
+//			pm = 0.0f;
+		
 		if ( pm > 1.0f )
 			pm = 1.0f;
 		else if ( pm < 0.0f )
