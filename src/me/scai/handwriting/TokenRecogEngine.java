@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.io.Serializable;
 
+
 //import org.encog.Encog;
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.MLDataSet;
@@ -22,9 +23,6 @@ import org.encog.util.simple.EncogUtility;
 
 
 public class TokenRecogEngine implements Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	
 	private final static boolean bDebug = true;
@@ -34,6 +32,8 @@ public class TokenRecogEngine implements Serializable {
 	private final static String im_file_suffix = ".im";
 	
 	/* Feature settings */
+	private int writtenTokenImgW;
+	private int writtenTokenImgH;
 	private boolean bIncludeTokenSize = false;
 	private boolean bIncludeTokenWHRatio = true;
 	private boolean bIncludeTokenNumStrokes = true;
@@ -98,11 +98,14 @@ public class TokenRecogEngine implements Serializable {
 	
 	/* Set the features set (token size, width-height ratio (WHR) and number of strokes (NS) */
 	/* Inputs: length==3 boolean array */
-	public void setFeatures(boolean [] fs) {
-		if ( fs.length == 3 ) {
-			bIncludeTokenSize = fs[0];
-			bIncludeTokenWHRatio = fs[1];
-			bIncludeTokenNumStrokes = fs[2];
+	public void setFeatures(int [] ivs, boolean [] bvs) {
+		if ( ivs.length == 2 && bvs.length == 3 ) {
+			writtenTokenImgW = ivs[0];
+			writtenTokenImgH = ivs[1];
+			
+			bIncludeTokenSize = bvs[0];
+			bIncludeTokenWHRatio = bvs[1];
+			bIncludeTokenNumStrokes = bvs[2];
 		}
 		else {
 			System.err.println("Incorrect number of elements in feature setting input");
@@ -394,6 +397,7 @@ public class TokenRecogEngine implements Serializable {
 		return (bnet != null) && (tokenNames != null);
 	}
 	
+	
 	/* Recognize using the currently version of network */
 	public int recognize(CHandWritingTokenImageData imData, double [] outPs) {
 		if ( !isReadyToRecognize() ) {
@@ -411,6 +415,24 @@ public class TokenRecogEngine implements Serializable {
 		}
 		
 		return bnet.winner(getMLData(imData));
+	}
+	
+	/* Recognize, with CWrittenToken, not image data, as input. 
+	 * This is more general.
+	 */
+	public int recognize(CWrittenToken wt, double [] outPs) {		
+		CHandWritingTokenImageData imgDat 
+			= wt.getImageData(writtenTokenImgW, writtenTokenImgH,  
+					  		  bIncludeTokenSize, 
+					  		  bIncludeTokenWHRatio, 
+					  		  bIncludeTokenNumStrokes);
+		
+		return recognize(imgDat, outPs);
+	}
+	
+	/* Get the i-th token name */
+	public String getTokenName(int i) {
+		return tokenNames.get(i);
 	}
 
 	/* Re-format all .im files */

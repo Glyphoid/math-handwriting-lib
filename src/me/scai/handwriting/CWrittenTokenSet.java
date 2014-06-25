@@ -13,8 +13,9 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	public CWrittenTokenSet() {
 	}
 	
-	/* Add a token: without any recognition results */
+	/* Add a token at the end: without any recognition results */
 	public void addToken(CWrittenToken wt) {
+		/* TODO: Merge into addToken(int i, CWrittenToken wt) */
 		if ( !wt.bNormalized )
 			wt.normalizeAxes();
 		
@@ -32,19 +33,53 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		addOneToken();
 	}
 	
-	/* Add a token: with recognition results */
+	/* Add a token at specified location: without any recognition results */
+	public void addToken(int i, CWrittenToken wt) {
+		if ( !wt.bNormalized )
+			wt.normalizeAxes();
+		
+		float [] bounds = wt.getBounds();
+		if ( min_x > bounds[0] )
+			min_x = bounds[0];
+		if ( min_y > bounds[1] ) 
+			min_y = bounds[1];
+		if ( max_x < bounds[2] ) 
+			max_x = bounds[2];
+		if ( max_y < bounds[3] ) 
+			max_y = bounds[3];
+		
+		tokens.add(i, wt);
+		addOneToken();
+	}
+	
+	/* Add a token at the end: with recognition results */
 	public void addToken(CWrittenToken wt, String t_recogWinner, double [] t_recogP) {
 		addToken(wt);
 		addTokenRecogRes(t_recogWinner, t_recogP);
 	}
 	
-	/* Add recognition results for a token: 
+	/* Add a token at specified location: with recognition results */
+	public void addToken(int i, CWrittenToken wt, String t_recogWinner, double [] t_recogP) {
+		addToken(i, wt);
+		addTokenRecogRes(i, t_recogWinner, t_recogP);
+	}
+	
+	/* Add recognition results for a token, at the end:
 	 * including the winner of the recognition and the detailed p-values.
 	 */
 	public void addTokenRecogRes(String t_recogWinner, double [] t_recogP) {
 		recogWinners.add(t_recogWinner);
 		recogPs.add(t_recogP);
 	}
+	
+	/* Add recognition results for a token, at the specified location: 
+	 * including the winner of the recognition and the detailed p-values.
+	 */
+	public void addTokenRecogRes(int i, String t_recogWinner, double [] t_recogP) {
+		recogWinners.add(i, t_recogWinner);
+		recogPs.add(i, t_recogP);
+	}
+	
 	
 	/* (Re-)calculate the bounds */
 	@Override

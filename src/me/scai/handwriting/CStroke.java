@@ -4,12 +4,14 @@ import java.util.LinkedList;
 
 /* CStroke: class for supporting a single, continuous stroke */
 public class CStroke {
+	/* Member variables */
 	private LinkedList<Float> xs = new LinkedList<Float>();
 	private LinkedList<Float> ys = new LinkedList<Float>();
 	private boolean bNormalized = false;
 	
 	public float min_x = Float.MAX_VALUE, max_x = Float.MIN_VALUE; /* Record bounds */
 	public float min_y = Float.MAX_VALUE, max_y = Float.MIN_VALUE; /* Record bounds */
+	/* ~Member variables */
 
 	/* Constructor: no initial point: empty initially */
 	public CStroke() {
@@ -19,6 +21,24 @@ public class CStroke {
 	/* Constructor: supply the initial x and y coordinates */
 	public CStroke(float x, float y) {
 		addPoint(x, y);
+	}
+	
+	/* Copy constructor */
+	public CStroke(CStroke s0) {
+		xs = new LinkedList<Float>();
+		ys = new LinkedList<Float>();
+		
+		for (int i = 0; i < s0.xs.size(); ++i) {
+			xs.add(s0.xs.get(i));
+			ys.add(s0.ys.get(i));
+		}
+		
+		bNormalized = s0.bNormalized;
+		
+		min_x = s0.min_x;
+		max_x = s0.max_x;
+		min_y = s0.min_y;
+		max_y = s0.max_y;
 	}
 	
 	/* Add a single point */
@@ -179,5 +199,9 @@ public class CStroke {
 		}
 		
 		return s;
+	}
+	
+	public boolean isNormalized() {
+		return bNormalized;
 	}
 }

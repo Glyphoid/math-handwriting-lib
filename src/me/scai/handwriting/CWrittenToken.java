@@ -121,6 +121,20 @@ public class CWrittenToken {
 		return bounds;
 	}
 	
+	public float getCentralX() {
+		if ( !bNormalized )
+			throw new RuntimeException("Calling getCentralX before normalization");
+		
+		return 0.5f * (min_x + max_x); 
+	}
+	
+	public float getCentralY() {
+		if ( !bNormalized )
+			throw new RuntimeException("Calling getCentralY before normalization");
+		
+		return 0.5f * (min_y + max_y); 
+	}
+	
 	
 	@Override 
 	public String toString() {

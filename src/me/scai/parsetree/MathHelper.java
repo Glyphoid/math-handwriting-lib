@@ -44,6 +44,10 @@ public class MathHelper {
 		return sum / (float) xs.length;
 	}
 	
+	public static float mean(float x, float y) {
+		return (x + y) * 0.5f;
+	}
+	
 	/* Geometric mean of an array of float */
 	public static float geometricMean(float [] xs) {
 		if ( xs == null || xs.length == 0 )
@@ -165,12 +169,11 @@ public class MathHelper {
 		return (x < y) ? x : y;
 	}
 	
-	/* Sorting an array of float and give the indices in the sorted array */
+	/* Sorting an array of float in place and give the indices in the sorted array */
 	public static void sort(float [] xs, int [] idxInSorted) {
 		if ( xs.length != idxInSorted.length )
 			throw new RuntimeException("Length of idxInSorted does not equal length of x");
-			
-		
+
 		PairedValueIndex [] pvis = new PairedValueIndex[xs.length];
 		
 		for (int i = 0; i < xs.length; ++i)
@@ -181,8 +184,7 @@ public class MathHelper {
 		for (int i = 0; i < xs.length; ++i) {
 			xs[i] = pvis[i].x;
 			idxInSorted[i] = pvis[i].index;
-		}		
-		
+		}
 	}
 	
 	/* Convert an array of integers to string */

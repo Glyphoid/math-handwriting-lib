@@ -37,7 +37,7 @@ DECIMAL_NUMBER		# Superfluous plus sign
 PLUS_OP
 DECIMAL_NUMBER : {AlignMiddle(0), PositionEast(0)}
 _STRINGIZE_		n0 n1
-_EVAL_ 			NEGATIVE(n1)
+_EVAL_ 			n1
 
 ---
 EXPONENTIATION		(ASSOC: ASSOC_RIGHT_2B: EXPONENTIATION) # Base ^ Exponent.

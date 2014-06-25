@@ -111,7 +111,8 @@ public class QADataSet {
 						      new QADataEntry("sim_20",   "((11 * 22) * 33)"),
 						      new QADataEntry("sim_21",   "((3 * (4 / 5)) * 2)"), 
 						      new QADataEntry("sim_22",   "(((((23 / 45) * 7) * (15 / 26)) * 4) + (2 * 5))"), 
-						      new QADataEntry("sim_23",   "(((12 / 13) * 5) + (28 * 3))"), 
+						      new QADataEntry("sim_23",   "(((12 / 13) * 5) + (28 * 3))"),
+						      new QADataEntry("sim_24",   "((1 + 2) / (3 * 4))"), 
 			                  };
 	/* ~Member variables */
 }
