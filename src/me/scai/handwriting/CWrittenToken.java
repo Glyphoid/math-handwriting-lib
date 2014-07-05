@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.IOException;
 
 import me.scai.handwriting.CHandWritingTokenImageData;
+import me.scai.parsetree.MathHelper;
 
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
 public class CWrittenToken {
@@ -39,6 +40,15 @@ public class CWrittenToken {
 		
 		width = max_x - min_x;
 		height = max_y - min_y;
+	}
+	
+	public CWrittenToken(File wtFile) {		
+		try {
+			readFromFile(wtFile);
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException("IOException occurred during construction of CWrittenToken from File");
+		}
 	}
 	
 	/* Clear */
@@ -442,6 +452,91 @@ public class CWrittenToken {
 		return recogPs;
 	}
 	
+	/* Convert the CWrittenToken to SDV (Stroke direction vector):
+	 * Input arguments (Parameters for the SDV generation):
+	 * 		npPerStroke: Number of points per stroke. 
+	 * 		maxNumStrokes: Maximum number of strokes, 
+	 * 			will discard any strokes after the maximum number */
+	public float [] getSDV(final int npPerStroke, 
+						   final int maxNumStrokes) {
+		if ( npPerStroke < 2 )
+			throw new RuntimeException("The input value of npPerStroke is too small");
+		if ( maxNumStrokes < 1 )
+			throw new RuntimeException("The input value of maxNumStrokes is too small");
+		
+		if ( !bNormalized )
+			this.normalizeAxes();
+		
+		int sdvLen = (npPerStroke - 1) * maxNumStrokes;
+		float [] sdv = new float[sdvLen];
+		
+		int nStrokesToProcess = (this.nStrokes() > maxNumStrokes) ? maxNumStrokes : this.nStrokes();
+		
+		int sdvIdx = 0;
+		for (int i = 0; i < nStrokesToProcess; ++i) {
+			float [] xs = strokes.get(i).getXs();
+			float [] ys = strokes.get(i).getYs();
+			
+			int N = xs.length;
+			
+			if ( N <= 2 ) {
+				sdvIdx += (npPerStroke - 1);
+				continue; /* TODO: Think about what this means for dots */
+			}
+			
+			float [] dx = MathHelper.diff(xs);
+			float [] dy = MathHelper.diff(ys);
+			
+			float [] ls = new float[dx.length];
+			for (int j = 0; j < dx.length; ++j)
+				ls[j] = (float) Math.sqrt((double) (dx[j] * dx[j] + dy[j] * dy[j]));
+			
+			float [] cuml = MathHelper.cumsum(ls, true);	/* Include initial zero */
+			float suml = MathHelper.sum(ls);
+			float ulen = suml / (npPerStroke - 1);
+			
+//			float [] sxs = new float[npPerStroke];	/* TODO: Optimize: Avoid repeated new */
+//			float [] sys = new float[npPerStroke];
+			
+			float cx = xs[0];
+			float cy = ys[0];
+			float cl = 0f;
+			int cp = 0;
+
+			for (int k = 0; k < npPerStroke - 1; ++k) {
+				cl += ulen;
+				
+				while ( cuml[cp] < cl && cp + 1 < cuml.length - 1 )
+					++cp;
+				
+				float cf = (cl - cuml[cp - 1]) / (cuml[cp] - cuml[cp - 1]);
+				
+				float cx1 = xs[cp - 1] + (xs[cp] - xs[cp - 1]) * cf;
+				float cy1 = ys[cp - 1] + (ys[cp] - ys[cp - 1]) * cf;
+				
+				sdv[sdvIdx++] = (float) Math.atan2((double) (cy1 - cy), 
+						                           (double) (cx1 - cx));
+				
+				cx = cx1;
+				cy = cy1;
+			}
+		}
+		
+		return sdv;
+	}
 	
-	
+	/* main() for testing */
+	public static void main(String [] args) {
+		final String testWT_fn = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\letters\\L_100.wt";
+		
+		final int npPerStroke = 16;
+		final int maxNumStrokes = 4;
+		
+		System.out.println("CWrittenToken.main started");
+		
+		File testWT_f = new File(testWT_fn);
+		CWrittenToken wt = new CWrittenToken(testWT_f);
+		
+		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes);
+	}
 }

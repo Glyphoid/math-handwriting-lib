@@ -200,4 +200,63 @@ public class MathHelper {
 		
 		return s;
 	}
+	
+	
+	/* Differentiation of a float array: 
+	 * Emulating "diff" command in MATLAB */
+	public static float [] diff(final float [] x) {
+		if ( x == null )
+			throw new RuntimeException("diff function encountered null input");
+		if ( x.length == 0 )
+			throw new RuntimeException("diff function encountered empty array");
+		
+		float [] dx = new float[x.length - 1];
+		for (int i = 0; i < x.length - 1; ++i)
+			dx[i] = x[i + 1] - x[i];
+		
+		return dx;
+	}
+	
+	/* Cumulative sum of a float array:
+	 * Emulating "cumsum" function in MATLAB
+	 */
+	 public static float [] cumsum(final float [] x, final boolean bInitialZero) {
+		 if ( x == null )
+			 throw new RuntimeException("diff function encountered null input");
+		 if ( x.length == 0 )
+			 throw new RuntimeException("diff function encountered empty array");
+		 
+		 float [] cx = null;
+		 if ( !bInitialZero ) {
+			 cx = new float[x.length];
+			 
+			 cx[0] = x[0];
+			 for (int i = 1; i < x.length; ++i)
+				 cx[i] = cx[i - 1] + x[i];
+		 }
+		 else {
+			cx = new float[x.length + 1];
+			
+			cx[0] = 0f;
+			cx[1] = x[0];
+			for (int i = 1; i < x.length; ++i)
+				cx[i + 1] = cx[i] + x[i];
+		 }
+		 
+		 return cx;
+	 }
+	 
+	 /* Sum of elements in a floar array:
+	  * Emulating "sum" function in MATLAB
+	  */
+	 public static float sum(final float [] x) {
+		 if ( x == null )
+			 throw new RuntimeException("diff function encountered null input");
+
+		 float s = 0f;
+		 for (int i = 0; i < x.length; ++i)
+			 s += x[i];
+		 
+		 return s;
+	 }
 }
