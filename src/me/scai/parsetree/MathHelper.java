@@ -246,7 +246,7 @@ public class MathHelper {
 		 return cx;
 	 }
 	 
-	 /* Sum of elements in a floar array:
+	 /* Sum of elements in a float array:
 	  * Emulating "sum" function in MATLAB
 	  */
 	 public static float sum(final float [] x) {
