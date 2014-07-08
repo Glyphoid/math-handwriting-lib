@@ -169,6 +169,25 @@ public class MathHelper {
 		return (x < y) ? x : y;
 	}
 	
+	/* Get the index to the smallest of an array of float numbers */
+	public static int minIndex(float [] xs) {
+		if (xs == null)
+			throw new RuntimeException("Received null input");
+		if (xs.length == 0)
+			throw new RuntimeException("Receveid empty array input");
+		
+		int minIdx = -1;
+		float minVal = Float.MAX_VALUE;
+		for (int i = 0; i < xs.length; ++i) {
+			if ( xs[i] < minVal ) {
+				minVal = xs[i];
+				minIdx = i;
+			}
+		}
+		
+		return minIdx;
+	}
+	
 	/* Sorting an array of float in place and give the indices in the sorted array */
 	public static void sort(float [] xs, int [] idxInSorted) {
 		if ( xs.length != idxInSorted.length )

@@ -118,9 +118,9 @@ public class GraphicalProductionSet {
 			for ( int i = 0; i < searchIdx.length; ++i)
 				searchIdx[i] = i;
 		}
-		else {
-			searchIdx = searchSubsetIdx;
-		}
+//		else {
+//			searchIdx = searchSubsetIdx;
+//		}
 		
 //		for (int i = 0; i < prods.size(); ++i) {
 		for (int i = 0; i < searchIdx.length; ++i) {

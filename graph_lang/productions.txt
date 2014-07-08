@@ -71,6 +71,14 @@ FRACTION_TERM
 _STRINGIZE_		n0
 _EVAL_			n0
 
+#---
+#EXPR_LV1			# Addition with brackets
+#ADDITION
+#BRACKET_L : {AlignMiddle(0), PositionWest(0)}	# Left bracket
+#BRACKET_R : {AlignMiddle(0), PositionEast(0)}	# Right bracket
+#_STRINGIZE_ 	( n0 )
+#_EVAL_ 			n0
+
 ---
 MULTIPLICATION		(ASSOC: ASSOC_LEFT_3B: MULTIPLICATION)
 MULT_OP
