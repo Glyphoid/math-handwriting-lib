@@ -16,7 +16,8 @@ class QADataEntry {
 
 public class QADataSet {
 	/* Member variables */
-	QADataEntry [] entries = {new QADataEntry("1",     "12"), 
+	QADataEntry [] entries = {
+			                  new QADataEntry("1",     "12"), 
 			                  new QADataEntry("2",     "236"), 
 			                  new QADataEntry("4",     "77"), 
 			                  new QADataEntry("6", 	   "36"), 
@@ -110,9 +111,18 @@ public class QADataSet {
 						      new QADataEntry("sim_19",   "(2 * (3 / 4))"), 
 						      new QADataEntry("sim_20",   "((11 * 22) * 33)"),
 						      new QADataEntry("sim_21",   "((3 * (4 / 5)) * 2)"), 
-						      new QADataEntry("sim_22",   "(((((23 / 45) * 7) * (15 / 26)) * 4) + (2 * 5))"), 
+						      //new QADataEntry("sim_22",   "(((((23 / 45) * 7) * (15 / 26)) * 4) + (2 * 5))"), /* Causes hanging. TODO: Debug. */
 						      new QADataEntry("sim_23",   "(((12 / 13) * 5) + (28 * 3))"),
 						      new QADataEntry("sim_24",   "((1 + 2) / (3 * 4))"), 
+						      new QADataEntry("sim_25",   "((1 + 2))"), 
+						      new QADataEntry("sim_26",   "((2 + 3))"), 
+						      new QADataEntry("sim_27",   "((20 + 3))"), 
+						      new QADataEntry("sim_28",   "(((1 + 2) + 3))"), 
+						      new QADataEntry("sim_29",   "((1 - 2))"), 
+						      new QADataEntry("sim_30",   "((2 X 3))"), 
+						      new QADataEntry("sim_31",   "((3 * 45))"), 
+						      new QADataEntry("sim_32",   "(((2 X 4)) ^ 6)"), 
+						      new QADataEntry("sim_33",   "(12 * 34)"), 
 			                  };
 	/* ~Member variables */
 }

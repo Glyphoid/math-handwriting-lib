@@ -87,6 +87,17 @@ public class MathHelper {
 		return idxMax;
 	}
 	
+	public static int indexMin(float [] xs) {
+		if ( xs == null || xs.length == 0 ) 
+			throw new IllegalArgumentException("Input to indexMin() is an empty array");
+		
+		float [] neg_xs = new float[xs.length];
+		for (int i = 0; i < xs.length; ++i)
+			neg_xs[i] = -xs[i];
+		
+		return indexMax(neg_xs);
+	}
+	
 	/* Get the index to the largest element in a 2D array of float, 
 	 * i.e., array of array.
 	 * Output: length-2 array of int. 1st element: 1st index.

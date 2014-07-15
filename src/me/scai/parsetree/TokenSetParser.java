@@ -98,6 +98,8 @@ public class TokenSetParser implements ITokenSetParser {
 	public Node parse(CWrittenTokenSetNoStroke tokenSet) {
 		init();
 		
+		tokenSet.getAllTokensTerminalTypes(termSet);
+		
 		Node n = parse(tokenSet, "ROOT");
 		biaser.process(n);
 		
@@ -146,6 +148,10 @@ public class TokenSetParser implements ITokenSetParser {
 			float [][] maxGeomScores_noFlag = new float[maxGeomScores.length][];
 			
 			for (int i = 0; i < idxValidProds.length; ++i) {
+				int dd = 44;	// DEBUG
+				if ( tokenSet.nTokens() == 5 && idxValidProds[i] == 13 ) // DEBUG
+					dd += 44; // DEBUG
+				
 				int nrhs = gpSet.prods.get(idxValidProds[i]).rhs.length;
 				/* Number of right-hand size elements, including the head */
 				
@@ -267,6 +273,8 @@ public class TokenSetParser implements ITokenSetParser {
 							d_lhs = gpSet.prods.get(idxValidProds[i]).rhs[k];
 													
 							if ( termSet.isTypeTerminal(d_lhs) ) {
+								/* TODO: Add to hashmaps */
+									
 								int nTokens;
 
 								nTokens = remainingSets[k].nTokens();	// Assumes that remainingSets includes the head
@@ -276,6 +284,11 @@ public class TokenSetParser implements ITokenSetParser {
 								else
 									d_scores[k] = 0.0f;
 								
+//								if ( d_lhs.equals("BRACKET_L") || d_lhs.equals("BRACKET_R") ) {
+//									String hashKey = remainingSets[k].toString() + "@" + d_lhs;
+//									hashKey += "";
+//								}
+//								
 								continue;
 							}
 							
@@ -300,7 +313,7 @@ public class TokenSetParser implements ITokenSetParser {
 							int [] d_idxValidProds_noExclude = null;
 
 							hashKey1 = d_tokenSet.toString() + "@" + d_lhs;
-							if ( !tokenSetLHS2IdxValidProdsMap.containsKey(hashKey1) ) {							
+							if ( !tokenSetLHS2IdxValidProdsMap.containsKey(hashKey1) ) {
 								d_idxValidProds_wwoe = gpSet.getIdxValidProds(d_tokenSet, null, termSet, d_lhs, 
 																		      d_idxPossibleHead, this.bDebug);
 								d_idxValidProds = d_idxValidProds_wwoe[0];
@@ -377,7 +390,7 @@ public class TokenSetParser implements ITokenSetParser {
 			int [] c_idxValidProds_noExclude = null;
 			
 			String hashKey = tokenSet.toString() + "@" + c_lhs;
-			if ( !tokenSetLHS2IdxValidProdsMap.containsKey(tokenSet.toString()) ) {
+			if ( !tokenSetLHS2IdxValidProdsMap.containsKey(tokenSet.toString()) ) {				
 				c_idxValidProds_wwoe = gpSet.getIdxValidProds(tokenSet, null, termSet, c_lhs, 
 						                                      c_idxPossibleHead, this.bDebug);
 				c_idxValidProds = c_idxValidProds_wwoe[0];
@@ -555,31 +568,45 @@ public class TokenSetParser implements ITokenSetParser {
 						continue;
 					}
 					
-					CWrittenTokenSetNoStroke t_remSet = remSets[k];
-					
-					if ( t_remSet == null )
-						return null;
-					
-					String tHashKey1 = t_remSet.toString() + "@" + nStackTop.rhsTypes[k];
-					
-					int [] t_idxValidProds = null;
-					t_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(tHashKey1);
-						
-					String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
-					
-					float [][] t_c_scores = this.evalGeom2ScoresMap.get(tHashKey2);	/* TODO: Why can't we store the best Node? */
-					Node [][] t_c_nodes = this.evalGeom2NodesMap.get(tHashKey2);
-					
-					int [] t_c_idxMax2 = MathHelper.indexMax2D(t_c_scores);
-					Node t_c_node = t_c_nodes[t_c_idxMax2[0]][t_c_idxMax2[1]];
-					CWrittenTokenSetNoStroke [] t_c_remSets = this.evalGeom2RemSetsMap.get(tHashKey2)[t_c_idxMax2[0]][t_c_idxMax2[1]];
+					boolean bNodeIsTerminal = termSet.isTypeTerminal(nStackTop.rhsTypes[k]);
+//					if ( bNodeIsTerminal ) // DEBUG
+//						System.out.println("Stack operation: encountered termianl non-head node"); // DEBUG
 							
-					/* Push onto stack */
-					nStack.push(t_c_node);
-					rsStack.push(t_c_remSets);
-					bParsedStack.push(t_c_node.isTerminal());
-					levelStack.push(topLevel + 1);
-
+					if ( !bNodeIsTerminal ) {	/* This node is NT */
+	 					CWrittenTokenSetNoStroke t_remSet = remSets[k];
+						
+						if ( t_remSet == null )
+							return null;
+						
+						String tHashKey1 = t_remSet.toString() + "@" + nStackTop.rhsTypes[k];
+						
+						int [] t_idxValidProds = null;
+						t_idxValidProds = tokenSetLHS2IdxValidProdsMap.get(tHashKey1);	/* If this is a T, this returns null and leads to a crash. TODO: Fix it */
+							
+						String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
+						
+						float [][] t_c_scores = this.evalGeom2ScoresMap.get(tHashKey2);	/* TODO: Why can't we store the best Node? */
+						Node [][] t_c_nodes = this.evalGeom2NodesMap.get(tHashKey2);
+						
+						int [] t_c_idxMax2 = MathHelper.indexMax2D(t_c_scores);
+						Node t_c_node = t_c_nodes[t_c_idxMax2[0]][t_c_idxMax2[1]];
+						CWrittenTokenSetNoStroke [] t_c_remSets = this.evalGeom2RemSetsMap.get(tHashKey2)[t_c_idxMax2[0]][t_c_idxMax2[1]];
+								
+						/* Push onto stack */
+						nStack.push(t_c_node);
+						rsStack.push(t_c_remSets);
+						bParsedStack.push(t_c_node.isTerminal());
+						levelStack.push(topLevel + 1);
+					}
+					else { /* This node is T */
+						rsStack.push(null);	/* No need to parse */
+						
+						Node tNode = new Node(nStackTop.lhs, nStackTop.prodSumString, nStackTop.rhsTypes[k]);
+						
+						nStack.push(tNode);
+						bParsedStack.push(true);
+						levelStack.push(topLevel + 1);
+					}
 				}
 			}
 		}

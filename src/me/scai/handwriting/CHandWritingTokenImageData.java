@@ -11,6 +11,8 @@ public class CHandWritingTokenImageData {
 	public int nw = 0;
 	public int nh = 0;	
 	public int nStrokes = 0; /* Number of strokes */
+	public float w;
+	public float h;
 
 	public Double[] imData = null;
 
@@ -37,7 +39,7 @@ public class CHandWritingTokenImageData {
 		final String N_H_LABEL = "n_h = ";
 		final String NS_LABEL = "ns = ";
 		final String W_LABEL = "w = ";
-		final String H_LABEL = "h = ";		
+		final String H_LABEL = "h = ";
 
 		CHandWritingTokenImageData dat = new CHandWritingTokenImageData();
 
@@ -113,7 +115,7 @@ public class CHandWritingTokenImageData {
 				if (line.startsWith(W_LABEL)) {
 					w = Double.parseDouble(line
 							.replaceFirst(W_LABEL, ""));
-					
+					dat.w = (float) w;
 					//dat.imData[0] = w;
 					if ( bIncludeTokenSize )
 						dat.imData[dcnt++] = w;
@@ -127,6 +129,8 @@ public class CHandWritingTokenImageData {
 				if (line.startsWith(H_LABEL)) {
 					h = Double.parseDouble(line
 							.replaceFirst(H_LABEL, ""));
+					dat.h = (float) h;
+					
 					//dat.imData[1] = h;
 					if ( bIncludeTokenSize )
 						dat.imData[dcnt++] = h;

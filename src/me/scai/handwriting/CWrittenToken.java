@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.IOException;
 
 import me.scai.handwriting.CHandWritingTokenImageData;
+import me.scai.parsetree.TerminalSet;
 import me.scai.parsetree.MathHelper;
 
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
@@ -23,6 +24,9 @@ public class CWrittenToken {
 	
 	private String recogWinner;
 	private double [] recogPs;
+	
+	/* The type of a token, according to the terminal set */
+	public String tokenTermType = null;
 	
 	/* ~Member variables */
 	
@@ -454,11 +458,21 @@ public class CWrittenToken {
 	
 	/* Convert the CWrittenToken to SDV (Stroke direction vector):
 	 * Input arguments (Parameters for the SDV generation):
-	 * 		npPerStroke: Number of points per stroke. 
+	 * 		npPerStroke:   Number of points per stroke. 
 	 * 		maxNumStrokes: Maximum number of strokes, 
+	 *      wh:            (Optional) true width and height (for legacy .im and .wt files). 
+	 *                         If not used, set to null.
 	 * 			will discard any strokes after the maximum number */
 	public float [] getSDV(final int npPerStroke, 
-						   final int maxNumStrokes) {
+						   final int maxNumStrokes, 
+						   final float [] wh) {
+		float hwRatio = 1.0f;
+		if ( wh != null ) {
+			if ( wh.length != 2 )
+				throw new RuntimeException("wh ratio does not have the expected length (2)");
+			hwRatio = wh[1] / wh[0];
+		}
+		
 		if ( npPerStroke < 2 )
 			throw new RuntimeException("The input value of npPerStroke is too small");
 		if ( maxNumStrokes < 1 )
@@ -514,7 +528,7 @@ public class CWrittenToken {
 				float cx1 = xs[cp - 1] + (xs[cp] - xs[cp - 1]) * cf;
 				float cy1 = ys[cp - 1] + (ys[cp] - ys[cp - 1]) * cf;
 				
-				sdv[sdvIdx++] = (float) Math.atan2((double) (cy1 - cy), 
+				sdv[sdvIdx++] = (float) Math.atan2((double) ((cy1 - cy) * hwRatio), 
 						                           (double) (cx1 - cx));
 				
 				cx = cx1;
@@ -523,6 +537,12 @@ public class CWrittenToken {
 		}
 		
 		return sdv;
+	}
+	
+	/* Get the terminal type of token */
+	public void getTokenTerminalType(TerminalSet termSet) {
+		if ( recogWinner != null )
+			tokenTermType = termSet.getTypeOfToken(recogWinner);
 	}
 	
 	/* main() for testing */
@@ -537,6 +557,6 @@ public class CWrittenToken {
 		File testWT_f = new File(testWT_fn);
 		CWrittenToken wt = new CWrittenToken(testWT_f);
 		
-		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes);
+		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, null);
 	}
 }

@@ -155,7 +155,10 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 								                              bIncludeTokenWHRatio, 
 								                              bIncludeTokenNumStrokes);
 				
-				float [] sdv = t_wt.getSDV(npPerStroke, maxNumStrokes);
+				float [] im_wh = new float[2];
+				im_wh[0] = t_imData.w;
+				im_wh[1] = t_imData.h;
+				float [] sdv = t_wt.getSDV(npPerStroke, maxNumStrokes, im_wh);
 				
 				sdve = this.addExtraDimsToSDV(sdv, t_wt);
 				
@@ -527,8 +530,15 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	 * This is more general.
 	 */
 	@Override
-	public int recognize(CWrittenToken wt, double [] outPs) {		
-		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes);
+	public int recognize(CWrittenToken wt, double [] outPs) {
+		float [] wh = null;
+		if ( wt.width != 0.0f && wt.height != 0.0f ) {
+			wh = new float[2];
+			wh[0] = wt.width;
+			wh[1] = wt.height;
+		}
+			
+		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, wh); /* TODO */
 		
 		float [] sdve = addExtraDimsToSDV(sdv, wt);
 		
@@ -565,7 +575,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	/* Testing routine */
 	public static void main(String [] args) {
 		/* Token engine settings */
-		final boolean bLoadEngineFromDisk = false;
+		final boolean bLoadEngineFromDisk = true;
 		
 		final int hiddenLayerSize1 = 100;
 		final int hiddenLayerSize2 = 0;
@@ -675,12 +685,14 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 								                              bIncludeTokenSize,
 								                              bIncludeTokenWHRatio, 
 								                              bIncludeTokenNumStrokes);
+				wt.width = t_imData.w;
+				wt.height = t_imData.h;
 			}
 			catch (IOException ioe) {
 				throw new RuntimeException();
 			}
 			
-			double [] ps = new double[tokEngine.tokenNames.size()];
+			double [] ps = new double[tokEngine.tokenNames.size()];			
 			int recogIdx = tokEngine.recognize(wt, ps);
 			String recogToken = tokEngine.getTokenName(recogIdx);
 			

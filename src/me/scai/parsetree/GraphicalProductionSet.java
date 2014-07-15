@@ -112,7 +112,7 @@ public class GraphicalProductionSet {
 		ArrayList<Integer> idxValidProdsList = new ArrayList<Integer>(); 
 		
 		final boolean bFast = false;		//DEBUG
-		int [] searchIdx = null;		
+		int [] searchIdx = null;		/* TODO: Create a member variable, so that this arracy doesn't need to be created every time */
 		if ( searchSubsetIdx == null || !bFast ) { //DEBUG
 			searchIdx = new int[prods.size()];
 			for ( int i = 0; i < searchIdx.length; ++i)
@@ -258,6 +258,15 @@ public class GraphicalProductionSet {
 
 				if ( t_prod.geomShortcut.existsBipartite() ) {
 					combs = t_prod.geomShortcut.getPartitionBipartite(wts, true);
+				}
+				else if ( t_prod.geomShortcut.existsTripartiteNT1T2() ) {
+					combs = t_prod.geomShortcut.getPartitionTripartiteNT1T2(wts);
+					/* TODO */
+//					/* This is the case in which the head node is NT,  
+//					 * and there are two non-heads
+//					 */
+//					int [] iHead = new iHead;
+//					combs = t_prod.geomShortcut.getPartitionTripartite(wts, true)
 				}
 				else {
 					combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());

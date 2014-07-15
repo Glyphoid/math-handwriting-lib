@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
+import me.scai.handwriting.CWrittenToken;
 import me.scai.handwriting.Rectangle;
 
 abstract class GeometricRelation {	
@@ -654,18 +655,20 @@ class WidthRelation extends GeometricRelation {
 class GeometricShortcut {
 	public enum ShortcutType {
 		noShortcut,
-		horizontalDivideNS,		/* 2-part shortcut types */ /* North to south */ 
-		horizontalDivideSN,		/* South to north */
-		verticalDivideWE,		/* West to east */
-		verticalDivideEW,		/* East to west */
-		westEast, 				/* 1-part shortcut type: head is at west and the (only) non-head is at the east */
+		horizontalTerminalDivide,		  /* 2-part shortcut types */ /* North to south */
+		horizontalTerminalDivideSN,		  /* South to north */
+		verticalTerminalDivideWE, /* 3-part shortcut types, with the head being T */ /* West to east */
+		verticalTerminalDivideEW, /* East to west */
+		verticalNT1T2DivideWE,		  /* 3-part shortcut types, with the head being NT and the remaining two items being both T. Hence the "NT1T2". Example: (Addition, Bracket_L, Bracket_R) */		
+		westEast, 				  /* 1-part shortcut type: head is at west and the (only) non-head is at the east */
 	}
 	
 	/* Member variables */
 	public ShortcutType shortcutType = ShortcutType.noShortcut;
 	
 	/* Methods */
-	public GeometricShortcut(GraphicalProduction gp) {
+	public GeometricShortcut(GraphicalProduction gp, 
+			                 TerminalSet termSet) {
 		int nrhs = gp.geomRels.length; 	/* Number of rhs items */
 		
 		if ( !(nrhs == 2 || nrhs == 3) ) {
@@ -700,7 +703,17 @@ class GeometricShortcut {
 				}
 			}
 		}
-		else if ( nrhs == 3 ){
+		else if ( nrhs == 3 ){ // 0712	
+			/* Examine whether the head-node is T. 
+			 * If so, this is potentially a _TerminalDivide__ (e.g., verticalDivideWE) type shortcut.
+			 * If not, go to the next logical branch. */
+			String tripartiteType = null;
+			if ( termSet.isTypeTerminal(gp.rhs[0]) )
+				tripartiteType = "TeminalDivide";
+			else if ( !termSet.isTypeTerminal(gp.rhs[0]) &&
+				      termSet.isTypeTerminal(gp.rhs[1]) && termSet.isTypeTerminal(gp.rhs[2]) )
+				tripartiteType = "NT1T2Divide";
+			
 			PositionRelation.PositionType [] posType = new PositionRelation.PositionType[2];
 			int [] nPosRels = new int[2];
 			/* Only if each of the two non-head tokens have exactly one positional relation, 
@@ -721,29 +734,41 @@ class GeometricShortcut {
 			if ( nPosRels[0] == 1 && nPosRels[1] == 1 ) {
 				if ( posType[0] == PositionRelation.PositionType.PositionWest && posType[1] == PositionRelation.PositionType.PositionEast ||
 					 posType[0] == PositionRelation.PositionType.PositionGenWest && posType[1] == PositionRelation.PositionType.PositionGenEast ) {
-					shortcutType = ShortcutType.verticalDivideWE;
+					if ( tripartiteType.equals("TeminalDivide") )
+						shortcutType = ShortcutType.verticalTerminalDivideWE;
+					else if ( tripartiteType.equals("NT1T2Divide") )
+						shortcutType = ShortcutType.verticalNT1T2DivideWE;
 				}
 				else if ( posType[0] == PositionRelation.PositionType.PositionEast && posType[1] == PositionRelation.PositionType.PositionWest ||
 						  posType[0] == PositionRelation.PositionType.PositionGenEast && posType[1] == PositionRelation.PositionType.PositionGenWest ) {
-					shortcutType = ShortcutType.verticalDivideEW;
+					if ( tripartiteType.equals("TeminalDivide") )
+						shortcutType = ShortcutType.verticalTerminalDivideEW;
 				}
 				else if ( posType[0] == PositionRelation.PositionType.PositionNorth && posType[1] == PositionRelation.PositionType.PositionSouth ||
 						  posType[0] == PositionRelation.PositionType.PositionGenNorth && posType[1] == PositionRelation.PositionType.PositionGenSouth ) {
-					shortcutType = ShortcutType.horizontalDivideNS;
+					if ( tripartiteType.equals("TeminalDivide") )
+						shortcutType = ShortcutType.horizontalTerminalDivide;
 				}
 				else if ( posType[0] == PositionRelation.PositionType.PositionSouth && posType[1] == PositionRelation.PositionType.PositionNorth ||
 						  posType[0] == PositionRelation.PositionType.PositionGenSouth && posType[1] == PositionRelation.PositionType.PositionGenNorth ) {
-					shortcutType = ShortcutType.horizontalDivideSN;
+					if ( tripartiteType.equals("TeminalDivide") )
+						shortcutType = ShortcutType.horizontalTerminalDivideSN;
 				}
 			}
-		}
+		}		
 		else {
 			throw new RuntimeException("Unexpected number of rhs items: " + nrhs);
 		}
 	}
 	
-	public boolean existsTripartite() {
-		return (shortcutType != ShortcutType.noShortcut) && (!existsBipartite());
+	public boolean existsTripartiteTerminal() {
+		return (shortcutType != ShortcutType.noShortcut) 
+				&& ( !existsTripartiteNT1T2() ) 
+				&&  ( !existsBipartite() );
+	}
+	
+	public boolean existsTripartiteNT1T2() {
+		return (shortcutType == ShortcutType.verticalNT1T2DivideWE);
 	}
 	
 	public boolean existsBipartite() {
@@ -753,12 +778,13 @@ class GeometricShortcut {
 	
 	/* Main work: divide a token set into two (or more, for future) parts b
 	 * based on the type of the geometric shortcut.
+	 * Return value: 0-1 indicators of whether a token is to be head or non-head
 	 */
 	public int [][] getPartitionBipartite(CAbstractWrittenTokenSet wts, boolean bReverse) {
 		int nt = wts.nTokens();
 		int [][] labels = null;
 		
-		if ( nt == 0 ) 
+		if ( nt == 0 )
 			throw new RuntimeException("Attempting to apply bipartite shortcut on one or fewer tokens");
 		
 		if ( nt == 1 ) {
@@ -807,8 +833,8 @@ class GeometricShortcut {
 		return labels;
 	}
 	
-	public int [][] getPartitionTripartite(CAbstractWrittenTokenSet wts, int [] iHead) {
-		if ( !existsTripartite() ) {
+	public int [][] getPartitionTripartiteTerminal(CAbstractWrittenTokenSet wts, int [] iHead) {
+		if ( !existsTripartiteTerminal() ) {
 			throw new RuntimeException("Geometric shortcuts do not exist");
 		}
 		
@@ -843,16 +869,16 @@ class GeometricShortcut {
 	    
 		for (int i = 0; i < inht.size(); ++i) {
 			int idx;
-			if ( shortcutType == ShortcutType.verticalDivideWE ) {
+			if ( shortcutType == ShortcutType.verticalTerminalDivideWE ) {
 				idx = rnht.get(i).isCenterWestOf(headCenterX) ? 0 : 1;
 			}
-			else if ( shortcutType == ShortcutType.verticalDivideEW ) {
+			else if ( shortcutType == ShortcutType.verticalTerminalDivideEW ) {
 				idx = rnht.get(i).isCenterEastOf(headCenterX) ? 0 : 1;
 			}
-			else if ( shortcutType == ShortcutType.horizontalDivideNS ) {
+			else if ( shortcutType == ShortcutType.horizontalTerminalDivide ) {
 				idx = rnht.get(i).isCenterNorthOf(headCenterX) ? 1 : 0;
 			}
-			else if ( shortcutType == ShortcutType.horizontalDivideSN ) {
+			else if ( shortcutType == ShortcutType.horizontalTerminalDivideSN ) {
 				idx = rnht.get(i).isCenterSouthOf(headCenterY) ? 1 : 0;
 			}
 			else {
@@ -866,6 +892,46 @@ class GeometricShortcut {
 	}
 	
 	
+	public int [][] getPartitionTripartiteNT1T2(CAbstractWrittenTokenSet wts) {
+		int nt = wts.nTokens();
+		int [][] labels = null;
+		
+		if ( nt < 3 ) {
+			labels = new int[0][];
+			return labels;
+		}
+//			throw new RuntimeException("Attempting to apply tripartite shortcut on two or fewer tokens");
+			
+		if ( shortcutType == ShortcutType.verticalNT1T2DivideWE ) {
+			/* Calculate the center X of all tokens */
+			float [] cntX = new float[nt];
+			
+			for (int i = 0; i < nt; ++i) {
+				float [] t_bnds = wts.getTokenBounds(i);
+				
+				cntX[i] = (t_bnds[0] + t_bnds[2]) * 0.5f;
+			}
+			
+			/* Sort */
+			int iRightmost = MathHelper.indexMax(cntX);
+			int iLeftmost = MathHelper.indexMin(cntX);
+			
+			labels = new int[1][];
+			labels[0] = new int[nt];
+			
+			int cnt = 0;
+			for (int i = 0; i < nt; ++i)
+				if (i != iRightmost && i != iLeftmost)
+					labels[0][i] = 1;
+		}
+		else {
+			throw new RuntimeException("Unexpected shortcut type encountered in getPartitionTripartiteNT1T2()");
+		}
+		
+		return labels;
+	}
+	
+	
 	@Override
 	public String toString() {
 		String s = "GeometricShortcut: ";
@@ -873,17 +939,17 @@ class GeometricShortcut {
 		if ( shortcutType == ShortcutType.noShortcut ) {
 			s += "noShortcut";
 		}
-		else if ( shortcutType == ShortcutType.horizontalDivideNS ) {
+		else if ( shortcutType == ShortcutType.horizontalTerminalDivide ) {
 			s += "horiztonalDivdeNS";
 		}
-		else if ( shortcutType == ShortcutType.horizontalDivideSN ) {
-			s += "horizontalDivideSN";
+		else if ( shortcutType == ShortcutType.horizontalTerminalDivideSN ) {
+			s += "horizontalTerminalDivideSN";
 		}
-		else if ( shortcutType == ShortcutType.verticalDivideWE ) {
-			s += "verticalDivideWE";
+		else if ( shortcutType == ShortcutType.verticalTerminalDivideWE ) {
+			s += "verticalTerminalDivideWE";
 		}
-		else if ( shortcutType == ShortcutType.verticalDivideEW ) {
-			s += "verticalDivideEW";
+		else if ( shortcutType == ShortcutType.verticalTerminalDivideEW ) {
+			s += "verticalTerminalDivideEW";
 		}
 		else {
 			s += "(unknown shortcut type)";
@@ -987,7 +1053,7 @@ public class GraphicalProduction {
 		
 		/* Generate geometric shortcut, if any. 
 		 * If there is no shortcut, shortcutType will be noShortcut. */
-		geomShortcut = new GeometricShortcut(this);
+		geomShortcut = new GeometricShortcut(this, termSet);
 		
 		assocType = t_assocType;
 		assocName = t_assocName;
@@ -1034,6 +1100,10 @@ public class GraphicalProduction {
 			            int [] iHead,
 			            CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
 			            float [] maxGeomScore) {
+		int dd = 44;
+		if ( this.lhs.equals("EXPR_LV0_5") && tokenSet.nTokens() == 5 )
+			dd += 44;
+			
 		if ( iHead.length == 0 )
 			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
 		
@@ -1055,9 +1125,9 @@ public class GraphicalProduction {
 
 		int [][] labels = null;
 
-		if ( geomShortcut.existsTripartite() && bUseShortcut ) {
+		if ( geomShortcut.existsTripartiteTerminal() && bUseShortcut ) {
 			/* Use this smarter approach when a geometric shortcut exists */
-			labels = geomShortcut.getPartitionTripartite(tokenSet, iHead);
+			labels = geomShortcut.getPartitionTripartiteTerminal(tokenSet, iHead);
 		}
 		else {
 			/* Get all possible partitions: in "labels" */
@@ -1108,7 +1178,6 @@ public class GraphicalProduction {
     		}
     		
     		for (int j = 0; j < nrn; ++j) {
-//    			assert( a_rems[i][j].tokens.size() == a_rems[i][j].tokenIDs.size() ); // DEBUG
     			a_rems[i][j].calcBounds();
     		}
     		
@@ -1132,34 +1201,54 @@ public class GraphicalProduction {
     		if ( nrn > 0 ) {    		
 	    		float [] t_geomScores = new float[nrn];
 		    	for (int j = 0; j < nrn; ++j) {
+		    		
 		    		/* Assume: there is only one head 
 		    		 * TODO: Make more general */
+		    		/* TODO: Deal with the case in which the remaining node is a Terminal (T) */
 		    		
-//		    		boolean bVerified = true;
-		    		if ( geomRels[j + 1] == null ) {
-		    			t_geomScores[j] = 1.0f;
-		    			continue;
-		    		}
-		    		
-		    		float [] t_t_geomScores = new float[geomRels[j + 1].length];
-		    		for (int k = 0; k < geomRels[j + 1].length; ++k) {
-		    			int idxInRel = geomRels[j + 1][k].idxInRel[0];
-		    			float [] bndsInRel;
-		    			if ( idxInRel == 0 ) {
-		    				bndsInRel = tokenSet.getTokenBounds(iHead);
-		    			}
-		    			else {
-		    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
-		    			}
+		    		if ( this.rhsIsTerminal[j + 1] ) {
+//		    			System.out.println("attempt encountered Terminal non-head: " + this.rhs[j + 1] + 
+//		    					           "; rem set nTokens = " + a_rems[i][j].nTokens() + 
+//		    					           "; rem set tokens[0] = " + a_rems[i][j].tokens.get(0).getRecogWinner());
+		    			/* TODO: Get the type of string, e.g, 1 -> DIGIT, ( -> BRACKET_L. 
+		    			 *       May need to add terminal set as an input argument. */
+		    			CWrittenTokenSetNoStroke tTokenSet = a_rems[i][j];
+		    			int t_nTokens = tTokenSet.nTokens();
+		    			if ( t_nTokens != 1 )
+		    				throw new RuntimeException("Encountered unexpected value of t_nTokens: != 1");
 		    			
-		    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);
-
-		    			t_t_geomScores[k] = v;
-		    			
+		    			String tokenTermType = tTokenSet.tokens.get(0).tokenTermType;
+		    			if ( tokenTermType.equals(this.rhs[j + 1]) )
+		    				t_geomScores[j] = 1.0f;
+	    				else
+	    					t_geomScores[j] = 0.0f;
 		    		}
-		    		
-		    		t_geomScores[j] = MathHelper.mean(t_t_geomScores);
-		    		
+		    		else {		    		
+//		    			boolean bVerified = true;
+			    		if ( geomRels[j + 1] == null ) {
+			    			t_geomScores[j] = 1.0f;
+			    			continue;
+			    		}
+			    		
+			    		float [] t_t_geomScores = new float[geomRels[j + 1].length];
+			    		for (int k = 0; k < geomRels[j + 1].length; ++k) {
+			    			int idxInRel = geomRels[j + 1][k].idxInRel[0];
+			    			float [] bndsInRel;
+			    			if ( idxInRel == 0 ) {
+			    				bndsInRel = tokenSet.getTokenBounds(iHead);
+			    			}
+			    			else {
+			    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
+			    			}
+			    			
+			    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);
+	
+			    			t_t_geomScores[k] = v;
+			    			
+			    		}
+			    		
+			    		t_geomScores[j] = MathHelper.mean(t_t_geomScores);
+		    		}
 		    	}
 		    	
 		    	geomScores[i] = MathHelper.mean(t_geomScores);
@@ -1372,11 +1461,6 @@ public class GraphicalProduction {
 			if ( !t_rhs[1].equals(t_rhs[2]) )
 				throw new RuntimeException("Under the current association type, it is unacceptable that the 2nd and 3rd RHS items are different");
 		}
-		
-//		if ( t_assocName == null ) { //DEBUG
-//			int ii = 0;
-//			ii++;
-//		}
 		
 		return new GraphicalProduction(t_lhs, t_rhs, t_bt, termSet, t_geomRels, 
 									   t_assocType, t_assocName, t_stringizeInstr, t_evalInstr);

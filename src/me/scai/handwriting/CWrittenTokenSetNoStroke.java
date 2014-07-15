@@ -9,6 +9,8 @@ import java.lang.AssertionError;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 
+import me.scai.parsetree.TerminalSet;
+
 public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	/* Member variables */
 	public ArrayList<CWrittenToken> tokens = new ArrayList<CWrittenToken>();
@@ -316,6 +318,13 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		}
 		
 		return bnds;
+	}
+	
+	/* Perform type getting operation on all tokens */
+	public void getAllTokensTerminalTypes(TerminalSet termSet) {
+		for (int i = 0; i < tokens.size(); ++i) {
+			tokens.get(i).getTokenTerminalType(termSet);
+		}
 	}
 
 //	@Override
