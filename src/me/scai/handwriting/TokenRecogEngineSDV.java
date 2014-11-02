@@ -589,9 +589,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		final boolean bIncludeTokenWHRatio = false;
 		final boolean bIncludeTokenNumStrokes = true;
 		
-		final String letterDir = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\letters";
+		final String letterDir = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\data\\letters";
 		
-		final String tokenEngineSerFN = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\engines\\token_engine.sdv.sz0_whr0_ns1.ser";
+		final String tokenEngineSerFN = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\engines\\token_engine.sdv.sz0_whr0_ns1.ser";
 		/* ~Token engine settings */
 				
 		/* TODO: Make both TokenRecogEngine and TokenRecogEngineSDV inherit from a 
@@ -669,7 +669,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			
 			CWrittenToken wt = new CWrittenToken();
 			
-			String data_dir = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\letters\\";
+			String data_dir = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\data\\letters\\";
 			String token_num = "1099";
 			String wt_fn = data_dir + tokEngine.wt_file_prefix + token_num + tokEngine.wt_file_suffix;
 			String im_fn = data_dir + tokEngine.im_file_prefix + token_num + tokEngine.im_file_suffix;

@@ -14,7 +14,7 @@ class QADataEntry {
 	}
 }
 
-public class QADataSet {
+public class Test_QADataSet {
 	/* Member variables */
 	QADataEntry [] entries = {
 			                  new QADataEntry("1",     "12"), 
@@ -76,7 +76,7 @@ public class QADataSet {
 							  new QADataEntry("84",         "(1.3 + 4)"), 
 							  new QADataEntry("85",         "(4 + 2.1)"), 
 							  new QADataEntry("86",         "(2.0 + 1.1)"), 
-							  new QADataEntry("88",      "(-1 + -3)"),  
+							  new QADataEntry("88",       "(-1 + -3)"),  
 						      new QADataEntry("89",       "(-3.0 + -1)"), 
 						      new QADataEntry("90",       "((1 + 2) + 3)"), 
 						      new QADataEntry("91",       "((2 - 3) - 4)"), 
@@ -88,8 +88,10 @@ public class QADataSet {
 						      new QADataEntry("113",      "((4 - 8) + 5)"), 		/* AssocLeft3B */
 						      new QADataEntry("114",      "(2 ^ (3 ^ 4))"),			/* AssocRight2B */
 						      new QADataEntry("115",      "(0.5 ^ (2 ^ 3))"), 		/* AssocRight2B */
-						      new QADataEntry("98",       TokenSetParser.errStr), 
-						      new QADataEntry("99",       TokenSetParser.errStr), 
+						      //new QADataEntry("98",       TokenSetParser.errStr), 
+						      //new QADataEntry("99",       TokenSetParser.errStr), 
+						      new QADataEntry("98",       ParseTreeStringizer.parsingErrString), 
+						      new QADataEntry("99",       ParseTreeStringizer.parsingErrString),
 						      new QADataEntry("sim_1",    "((1 * 2) + (3 * 4))"), 				/* Add - multiplication precedence */
 						      new QADataEntry("sim_2",    "-(1 / 2)"),				/* Negative of high-level expressions */
 						      new QADataEntry("sim_3",    "-(23 / 4)"), 			/* Negative of high-level expressions */

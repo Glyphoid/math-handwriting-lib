@@ -545,18 +545,18 @@ public class CWrittenToken {
 			tokenTermType = termSet.getTypeOfToken(recogWinner);
 	}
 	
-	/* main() for testing */
-	public static void main(String [] args) {
-		final String testWT_fn = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\letters\\L_100.wt";
-		
-		final int npPerStroke = 16;
-		final int maxNumStrokes = 4;
-		
-		System.out.println("CWrittenToken.main started");
-		
-		File testWT_f = new File(testWT_fn);
-		CWrittenToken wt = new CWrittenToken(testWT_f);
-		
-		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, null);
-	}
+//	/* main() for testing */
+//	public static void main(String [] args) {
+//		final String testWT_fn = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\letters\\L_100.wt";
+//		
+//		final int npPerStroke = 16;
+//		final int maxNumStrokes = 4;
+//		
+//		System.out.println("CWrittenToken.main started");
+//		
+//		File testWT_f = new File(testWT_fn);
+//		CWrittenToken wt = new CWrittenToken(testWT_f);
+//		
+//		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, null);
+//	}
 }

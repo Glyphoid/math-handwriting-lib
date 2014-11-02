@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
-import me.scai.handwriting.CWrittenToken;
 import me.scai.handwriting.Rectangle;
 
 abstract class GeometricRelation {	
@@ -919,7 +918,7 @@ class GeometricShortcut {
 			labels = new int[1][];
 			labels[0] = new int[nt];
 			
-			int cnt = 0;
+//			int cnt = 0;
 			for (int i = 0; i < nt; ++i)
 				if (i != iRightmost && i != iLeftmost)
 					labels[0][i] = 1;
@@ -1100,10 +1099,7 @@ public class GraphicalProduction {
 			            int [] iHead,
 			            CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
 			            float [] maxGeomScore) {
-		int dd = 44;
-		if ( this.lhs.equals("EXPR_LV0_5") && tokenSet.nTokens() == 5 )
-			dd += 44;
-			
+
 		if ( iHead.length == 0 )
 			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
 		

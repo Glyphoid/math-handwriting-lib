@@ -58,11 +58,7 @@ public class Node {
 	}
 	
 	/* Terminal (T) node with production summary string specified */
-	public Node(String t_lhs, String t_prodSumString, String t_termName) {
-		int dd = 44;//DEBUG
-		if ( t_termName.equals("PLUS_OP") ) //DEBUG
-			dd += 44; //DEBUG
-		
+	public Node(String t_lhs, String t_prodSumString, String t_termName) {		
 		lhs = t_lhs;
 		isTerminal = true; /* Will be set to false when addChild() is called */
 		prodSumString = t_prodSumString;
