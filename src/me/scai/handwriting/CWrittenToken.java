@@ -1,6 +1,7 @@
 package me.scai.handwriting;
 
 import java.util.LinkedList;
+
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -11,6 +12,10 @@ import java.io.IOException;
 import me.scai.handwriting.CHandWritingTokenImageData;
 import me.scai.parsetree.TerminalSet;
 import me.scai.parsetree.MathHelper;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
 public class CWrittenToken {
@@ -32,6 +37,53 @@ public class CWrittenToken {
 	
 	/* Constructor */
 	public CWrittenToken() {};
+	
+	/* Constructor: From JSON string */
+	/* Expected fields: 
+	 *   numStrokes : Number of strokes
+	 *   strokes    : A nested array for stroke data. Each element of the array are expected to have the following fields:
+	 *                numPoints: Number of discrete points
+	 *                x:         An array of x data
+	 *                y:         An array of y data 
+	 *                  (x and y data are assumed to follow the HTML canvas definition of coordinates)
+	 */
+	public CWrittenToken(String jsonStrokes) {
+		JSONObject jsonToken = null;
+		int numStrokes;
+		JSONObject strokes = null;
+		
+		try {
+			jsonToken = new JSONObject(jsonStrokes);
+			numStrokes = jsonToken.getInt("numStrokes");			
+			
+			strokes = jsonToken.getJSONObject("strokes");
+			for (int i = 0; i < numStrokes; ++i) {				
+				String key = String.format("%d", i);
+				
+				JSONObject tStroke = strokes.getJSONObject(key);
+				int numPoints = tStroke.getInt("numPoints");
+				
+				JSONArray xs = tStroke.getJSONArray("x");
+				JSONArray ys = tStroke.getJSONArray("y");
+				
+				CStroke s = new CStroke((float) xs.getDouble(0), (float) ys.getDouble(0));
+				for (int j = 1; j < numPoints; ++j) {
+					s.addPoint((float) xs.getDouble(j), (float) ys.getDouble(j));
+				}
+				
+				this.strokes.add(s);
+			}
+		}
+		catch (JSONException jsonE) {
+			throw new RuntimeException("JSONException occurred during parsing of JSON representation of written token" + jsonE.getMessage());
+		}
+		catch (IndexOutOfBoundsException oobE) {
+			throw new RuntimeException("Index exceeded bound(s) during parsing of JSON representation of written token");
+		}
+		
+
+		this.normalizeAxes();
+	}
 	
 	public CWrittenToken(float [] t_bnds, String t_recogWinner, double [] t_recogPs) {
 		min_x = t_bnds[0];
@@ -559,4 +611,12 @@ public class CWrittenToken {
 //		
 //		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, null);
 //	}
+	
+	/* main() for testing JSON */
+	public static void main(String [] args) {
+		String testJSON = "{\"numStrokes\":2,\"strokes\":{\"0\":{\"numPoints\":22,\"x\":[106,109,120,127,136,150,168,205,246,267,285,325,342,357,370,384,415,427,439,441,448,443],\"y\":[182,184,185,187,188,190,193,199,205,206,209,212,214,215,217,217,218,218,218,220,220,220]},\"1\":{\"numPoints\":23,\"x\":[284,282,279,278,276,276,276,276,276,276,277,277,279,279,280,280,280,282,282,282,281,281,281],\"y\":[75,75,82,89,98,110,124,151,164,181,196,212,242,257,271,281,292,307,310,314,323,328,329]}}}";
+		
+		CWrittenToken wt = new CWrittenToken(testJSON);
+		System.out.println("wt = " + wt);
+	}
 }
