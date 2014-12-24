@@ -1,6 +1,7 @@
 package me.scai.handwriting;
 
 import java.io.File;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -8,11 +9,16 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.FileNotFoundException;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.HashMap;
+
+import java.util.Properties;
+import java.net.URL;
 
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.MLDataSet;
@@ -122,6 +128,16 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			System.exit(1);
 		}
 		
+		File [] allFiles = inDir.listFiles();
+		/* Recursively retrieve data from sub-directories */
+		for (int i = 0; i < allFiles.length; ++i) {
+			if ( allFiles[i].isDirectory() ) {
+			  System.out.println("Reading data from subdirectory: " + allFiles[i].getPath()); //DEBUG
+			  this.readDataFromDir(allFiles[i].getPath(), testRatioDenom, testRatioNumer, 
+			                       sdvDataTrain, sdvDataTest, trueLabelsTrain, trueLabelsTest, aTokenNames);
+			}
+		}
+		
 		/* Get the list of all .wt files */
 		File [] files = inDir.listFiles(new FilenameFilter() {
 		    @Override
@@ -154,6 +170,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 								                              bIncludeTokenSize,
 								                              bIncludeTokenWHRatio, 
 								                              bIncludeTokenNumStrokes);
+//				if ( t_imData.tokenName.equals("p") ) {
+//				  System.out.println("tokenName = \"" + t_imData.tokenName + "\"");
+//				}
 				
 				float [] im_wh = new float[2];
 				im_wh[0] = t_imData.w;
@@ -174,15 +193,19 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		}
 		
 		/* Get the set of unique token names */
-		HashSet<String> uTokenNames = new HashSet<String>();
+		HashSet<String> uTokenNames = new HashSet<String>();		
 		uTokenNames.addAll(trueTokens);
 		if ( bDebug ) 
 			System.out.println("Discovered " + uTokenNames.size() + " unique token names.");
 		
 		aTokenNames.ensureCapacity(uTokenNames.size());
-		for (String s : uTokenNames)
-			aTokenNames.add(s);
-		Collections.sort(aTokenNames);
+		for (String s : uTokenNames) {
+			if ( !aTokenNames.contains(s) ) {
+				aTokenNames.add(s);
+			}
+			//aTokenNames.add(s);
+		}
+		//Collections.sort(aTokenNames); /* Deactivate sorting so that it does not fall part under recursive calling */
 		
 		/* Generate true labels */
 		trueLabels.ensureCapacity(trueTokens.size());
@@ -575,9 +598,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	/* Testing routine */
 	public static void main(String [] args) {
 		/* Token engine settings */
-		final boolean bLoadEngineFromDisk = true;
+		final boolean bLoadEngineFromDisk = false; /* false: train; true: test */
 		
-		final int hiddenLayerSize1 = 100;
+		final int hiddenLayerSize1 = 160; /* Orig: 100 */
 		final int hiddenLayerSize2 = 0;
 		final int trainMaxIter = 200;
 		final double trainThreshErr = 0.001;
@@ -589,9 +612,22 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		final boolean bIncludeTokenWHRatio = false;
 		final boolean bIncludeTokenNumStrokes = true;
 		
-		final String letterDir = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\data\\letters";
+ 
+		Properties props = new Properties();
+		URL url = TokenRecogEngineSDV.class.getResource("/resources/handwriting.properties");		
 		
-		final String tokenEngineSerFN = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\engines\\token_engine.sdv.sz0_whr0_ns1.ser";
+		try {
+//			props.load(new FileInputStream("/handwriting.properties"));
+			props.load(url.openStream());
+		}
+		catch (Exception exc) {
+			System.err.println("Failed to load property file: " + exc.getMessage());
+		}
+		
+//		final String letterDir = "C:\\Users\\scai\\Dropbox\\Plato\\data\\letters";
+		final String letterDir = props.getProperty("letterDir");
+//		final String tokenEngineSerFN = "C:\\Users\\scai\\Dropbox\\Plato\\engines\\token_engine.sdv.sz0_whr0_ns1.ser";
+		final String tokenEngineSerFN = props.getProperty("tokenEngineSerFN");
 		/* ~Token engine settings */
 				
 		/* TODO: Make both TokenRecogEngine and TokenRecogEngineSDV inherit from a 
@@ -602,6 +638,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 					hiddenLayerSize2, 
 					trainMaxIter, 
 					trainThreshErr);
+			
 			System.out.println("New instance of tokEngine created.");
 
 			int [] ivs = new int[2];
@@ -669,8 +706,10 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			
 			CWrittenToken wt = new CWrittenToken();
 			
-			String data_dir = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\data\\letters\\";
-			String token_num = "1099";
+			//String data_dir = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\data\\letters\\";
+			//String token_num = "1099";
+			String data_dir = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\data\\letters\\new2\\";
+			String token_num = "365";
 			String wt_fn = data_dir + tokEngine.wt_file_prefix + token_num + tokEngine.wt_file_suffix;
 			String im_fn = data_dir + tokEngine.im_file_prefix + token_num + tokEngine.im_file_suffix;
 			
