@@ -79,6 +79,8 @@ class AlignRelation extends GeometricRelation {
 		AlignHeightInclusion, /* Within the height range of the in-rel */ 
 		AlignLeft,
 		AlignRight,
+		AlignLeftWithin,
+		AlignRightWithin,
 		AlignCenter,   /* Center of the left-right dimension */
 		AlignWidthInclusion, /* Within the width range of the in-rel */
 		AlignBottomNorthPastMiddle, /* The bottom of the token should be more north than the middle of the in-rel token */
@@ -142,7 +144,6 @@ class AlignRelation extends GeometricRelation {
 			szInRel = bndsInRel[3] - bndsInRel[1];
 			
 			szMean = (szTested + szInRel) * 0.5f;
-//			szMin = (szTested < szInRel) ? szTested : szInRel;
 			
 			if ( alignType == AlignType.AlignBottom ) {
 				edgeDiff = Math.abs(bndsTested[3] - bndsInRel[3]);
@@ -156,7 +157,6 @@ class AlignRelation extends GeometricRelation {
 				edgeDiff = Math.abs((bndsTested[1] + bndsTested[3]) * 0.5f - 
 						            (bndsInRel[1] + bndsInRel[3]) * 0.5f);
 				v = 1 - edgeDiff / szMean;
-//				v = 1 - edgeDiff / szMin;
 			}
 			else if ( alignType == AlignType.AlignHeightInclusion ) {
 				float [] limsTested = new float[2];
@@ -193,12 +193,20 @@ class AlignRelation extends GeometricRelation {
 			szMean = (szTested + szInRel) * 0.5f;
 			
 			if ( alignType == AlignType.AlignLeft ) {
-				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]);
+				edgeDiff = Math.abs(bndsTested[2] - bndsInRel[2]); /* TODO: Check: Is AlignLeft and AlignRight supposed to be swapped? */
 				v = 1 - edgeDiff / szMean;
 			}
 			else if ( alignType == AlignType.AlignRight ) {
 				edgeDiff = Math.abs(bndsTested[0] - bndsInRel[0]);
 				v = 1 - edgeDiff / szMean;
+			}
+			else if ( alignType == AlignType.AlignLeftWithin ) {
+				edgeDiff = bndsTested[0] - bndsInRel[0];
+				v = edgeDiff / (szMean * 0.1f); /* TODO: 0.1 is somewhat ad hoc - Correct it */
+			}
+			else if ( alignType == AlignType.AlignRightWithin ) {
+				edgeDiff = bndsInRel[2] - bndsTested[2];
+				v = edgeDiff / (szMean * 0.1f); /* TODO: 0.1 is somewhat ad hoc - Correct it */
 			}
 			else if ( alignType == AlignType.AlignCenter ) {
 				edgeDiff = Math.abs((bndsTested[0] + bndsTested[2]) * 0.5f - 
@@ -237,7 +245,7 @@ class AlignRelation extends GeometricRelation {
 	public void parseString(String str, int t_idxTested) {
 		String [] items = splitInputString(str);
 		
-		if ( items[0].equals("AlignBottom") )
+		if ( items[0].equals("AlignBottom") )	/* TODO: Replace with valueOf() */
 			alignType = AlignType.AlignBottom;
 		else if ( items[0].equals("AlignTop") )
 			alignType = AlignType.AlignTop;
@@ -249,6 +257,10 @@ class AlignRelation extends GeometricRelation {
 			alignType = AlignType.AlignLeft;
 		else if ( items[0].equals("AlignRight") )
 			alignType = AlignType.AlignRight;
+		else if ( items[0].equals("AlignLeftWithin") )
+			alignType = AlignType.AlignLeftWithin;
+		else if ( items[0].equals("AlignRightWithin") )
+			alignType = AlignType.AlignRightWithin;
 		else if ( items[0].equals("AlignCenter") )
 			alignType = AlignType.AlignCenter;
 		else if ( items[0].equals("AlignWidthInclusion") )
@@ -256,7 +268,7 @@ class AlignRelation extends GeometricRelation {
 		else if ( items[0].equals("AlignBottomNorthPastMiddle") )
 			alignType = AlignType.AlignBottomNorthPastMiddle;
 		else if ( items[0].equals("AlignTopNorthPastTop") )
-			alignType = AlignType.AlignTopNorthPastTop;
+			alignType = AlignType.AlignTopNorthPastTop;		
 		else
 			throw new RuntimeException("Unrecognized AlignRelation type: " + items[0]);
 		
@@ -509,9 +521,9 @@ class HeightRelation extends GeometricRelation {
 				v = 1.0f;
 		}
 		else /* heightRelationType == HeightRelationType.HeightRelationLess */ {
-			v = (hInRel - hTested) / hInRel;
-			if ( v > 0.5f )
-				v = 1.0f;
+			v = (hInRel - hTested) / (hInRel * 0.1f); /* TODO: Remove ad hoc coefficients */
+//			if ( v > 0.1f )
+//				v = 1.0f;
 		}
 		
 		if ( v > 1.0f )
@@ -1052,6 +1064,11 @@ public class GraphicalProduction {
 		
 		/* Generate geometric shortcut, if any. 
 		 * If there is no shortcut, shortcutType will be noShortcut. */
+		if (t_lhs.startsWith("ASSIGNMENT_")) {
+			int i = 0; 
+			i += 0;
+		}
+		
 		geomShortcut = new GeometricShortcut(this, termSet);
 		
 		assocType = t_assocType;

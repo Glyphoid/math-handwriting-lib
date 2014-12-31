@@ -20,6 +20,8 @@ public class ParseTreeStringizer {
 		
 		/* Create map of special strings */
 		specialStringMap.put("_SPACE_", " ");
+		specialStringMap.put("_OPEN_PAREN_", "(");
+		specialStringMap.put("_CLOSE_PAREN_", ")");
 		
 		for (int i = 0; i < gpSet.prods.size(); ++i) {
 			GraphicalProduction gp = gpSet.prods.get(i);

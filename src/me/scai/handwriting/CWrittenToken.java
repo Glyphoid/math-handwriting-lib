@@ -38,6 +38,7 @@ public class CWrittenToken {
 	/* Constructor */
 	public CWrittenToken() {};
 	
+	
 	/* Constructor: From JSON string */
 	/* Expected fields: 
 	 *   numStrokes : Number of strokes
@@ -597,6 +598,16 @@ public class CWrittenToken {
 			tokenTermType = termSet.getTypeOfToken(recogWinner);
 	}
 	
+	/* Get the individual strokes */
+	public CStroke getStroke(int i) {
+		if (i < 0 || i >= nStrokes()) {
+			return null;
+		}
+		else {
+			return strokes.get(i);
+		}
+	}
+	
 //	/* main() for testing */
 //	public static void main(String [] args) {
 //		final String testWT_fn = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\letters\\L_100.wt";
@@ -612,11 +623,4 @@ public class CWrittenToken {
 //		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, null);
 //	}
 	
-	/* main() for testing JSON */
-	public static void main(String [] args) {
-		String testJSON = "{\"numStrokes\":2,\"strokes\":{\"0\":{\"numPoints\":22,\"x\":[106,109,120,127,136,150,168,205,246,267,285,325,342,357,370,384,415,427,439,441,448,443],\"y\":[182,184,185,187,188,190,193,199,205,206,209,212,214,215,217,217,218,218,218,220,220,220]},\"1\":{\"numPoints\":23,\"x\":[284,282,279,278,276,276,276,276,276,276,277,277,279,279,280,280,280,282,282,282,281,281,281],\"y\":[75,75,82,89,98,110,124,151,164,181,196,212,242,257,271,281,292,307,310,314,323,328,329]}}}";
-		
-		CWrittenToken wt = new CWrittenToken(testJSON);
-		System.out.println("wt = " + wt);
-	}
 }

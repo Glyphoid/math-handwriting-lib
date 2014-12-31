@@ -32,7 +32,7 @@ public class Test_QADataSet {
 			                  new QADataEntry("21",    "(29 / 3)"), 
 			                  new QADataEntry("22",    "--3"), 
 			                  new QADataEntry("23",    "(9 ^ 3)"), 
-			                  new QADataEntry("24",    "(2 ^ -3)"), 		/* Error due to geometric inprecision? */
+			                  new QADataEntry("24",    "(2 ^ -3)"), 		/* Error due to geometric imprecision? */
 			                  new QADataEntry("103",   "(68 ^ 75)"), 
 			                  new QADataEntry("104",      "(2 ^ 34)"), 
 			                  new QADataEntry("106",      "(258 ^ 76)"), 
@@ -124,7 +124,21 @@ public class Test_QADataSet {
 						      new QADataEntry("sim_30",   "((2 X 3))"), 
 						      new QADataEntry("sim_31",   "((3 * 45))"), 
 						      new QADataEntry("sim_32",   "(((2 X 4)) ^ 6)"), 
-						      new QADataEntry("sim_33",   "(12 * 34)"), 
+						      new QADataEntry("sim_33",   "(12 * 34)"),
+						      new QADataEntry("sim_34",   "(sqrt(16))"),
+						      new QADataEntry("sim_35",   "(sqrt(4))"),
+						      new QADataEntry("sim_36",   "(1 + (sqrt(243)))"),
+						      new QADataEntry("sim_37",   "(sqrt((5 - 3.8)))"), /* TODO: Fix it */
+						      new QADataEntry("sim_38",   "(sqrt((3 / 5)))"), /* TODO: Fix it */
+						      new QADataEntry("sim_39",   "(2 + (sqrt((1 / 6))))"),
+						      new QADataEntry("sim_40",   "(sqrt(((11 / 22) / 33)))"),
+			                  new QADataEntry("sim_41",   "(sqrt((7 + (1 / 12))))"),
+			                  new QADataEntry("sim_42",   "(sqrt(((3 - 4) + 5)))"), 
+			                  new QADataEntry("sim_43",   "((sqrt(2)) / 3)"),
+			                  new QADataEntry("sim_44",   "(sqrt((sqrt(2))))"),
+			                  new QADataEntry("sim_45",   "((sqrt((sqrt(21)))) / 8)"),
+			                  new QADataEntry("sim_46",   "(sqrt((1 + (sqrt(4)))))"),
+			                  new QADataEntry("sim_47",   "(sqrt(((sqrt(4)) / ((sqrt(9)) + (sqrt(16))))))")
 			                  };
 	/* ~Member variables */
 }

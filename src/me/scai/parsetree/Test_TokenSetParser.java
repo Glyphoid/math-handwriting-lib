@@ -40,10 +40,10 @@ public class Test_TokenSetParser {
 		String hostName;
 		try {
 			hostName = InetAddress.getLocalHost().getHostName();
-			if (hostName.toLowerCase().equals("smcg_w510")) {
-				tokenSetPrefix = "C:\\Users\\systemxp\\Documents\\Dropbox\\Plato\\data\\tokensets\\TS_";
-				prodSetFN = "C:\\Users\\systemxp\\Documents\\Dropbox\\javaWS\\handwriting\\graph_lang\\productions.txt";
-				termSetFN = "C:\\Users\\systemxp\\Documents\\Dropbox\\javaWS\\handwriting\\graph_lang\\terminals.txt";
+			if (hostName.toLowerCase().equals("ceres")) {
+				tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
+				prodSetFN = "C:\\Users\\scai\\Dropbox\\javaWS\\handwriting\\graph_lang\\productions.txt";
+				termSetFN = "C:\\Users\\scai\\Dropbox\\javaWS\\handwriting\\graph_lang\\terminals.txt";
 			} else {
 				tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
 				prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
@@ -144,6 +144,10 @@ public class Test_TokenSetParser {
 							"Unexpected return type from evaluator");
 			}
 			
+			if ( !stringized.equals(tokenSetTrueString) ) {
+				System.err.println("Mismatch: \"" + stringized + "\" != \"" + 
+			                       tokenSetTrueString + "\"");
+			}
 			assertEquals(stringized, tokenSetTrueString);
 
 			boolean checkResult = stringized.equals(tokenSetTrueString);

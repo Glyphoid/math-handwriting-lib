@@ -1,0 +1,32 @@
+{
+    "tokenPairRules":
+        [   
+            {   /* Merge two -'s as = */
+                "tokenA" : "-",
+                "tokenB" : "-",
+                "predicaments" : 
+                    [
+                        "relativeWidthDifference < 0.5",
+                        "relativeLeftXOffset < 0.3",
+                        "relativeRightXOffset < 0.3",
+                        "numTokensInBetweenY == 0"
+                    ],
+                "recommendation" : "mergeAs: \"=\""
+            },
+            {   /* Merge - with tick (reverse-tick, to be precise) to form root */
+                "tokenA" : "tick",  /* Pay attention to the ordering! */
+                "tokenB" : "-",
+                "predicaments" : 
+                    [
+                        "relativeHeightDifference > 0.5",
+                        "relativeTopYOffset < 0.25",
+                        "relativeBottomYOffset > 0.5",
+                        "relativeRightToLeftOffset < 0.2",  /* Order of the two tokens matters */
+                        "relativeRightToLeftOffset > -0.2",
+                        "numTokensInBetweenX == 0"
+                    ],
+                "recommendation" : "mergeAs: \"root\""
+            }
+            
+        ]
+}

@@ -153,8 +153,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		trueTokens.ensureCapacity(files.length);
 		
 		for (int i = 0; i < files.length; ++i) {
-			if ( bDebug )
-				System.out.print("Reading data from file: " + files[i].getName() + " ...");
+//			if ( bDebug )
+//				System.out.print("Reading data from file: " + files[i].getName() + " ...");
 			
 			float [] sdve = null;
 			try {
@@ -188,8 +188,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 				System.err.println("WARNING: Failed to read valid data from file: " + files[i].getName());
 			}
 			
-			if ( bDebug )
-				System.out.print(" Done\n");
+//			if ( bDebug )
+//				System.out.print(" Done\n");
 		}
 		
 		/* Get the set of unique token names */

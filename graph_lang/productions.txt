@@ -6,7 +6,7 @@ _STRINGIZE_ 	n0 n1	# Stringization scheme. Node numbers are preceded by "n". Ter
 _EVAL_      	DIGIT_CONCAT(n0, n1)	# Calculation scheme: DIGIT_CONCAT is a special scheme that needs to be implemented by the evaluation routine. 
 
 --- # 1
-DIGIT_STRING	
+DIGIT_STRING
 DIGIT
 _STRINGIZE_ 	n0
 _EVAL_ 			STRING(n0) # needs to be implemented by the evaluation routine
@@ -17,7 +17,7 @@ POINT
 DIGIT_STRING : {AlignBottom(0), PositionGenWest(0), HeightRelationGreater(0)} # Left digit string
 DIGIT_STRING : {AlignBottom(0), PositionGenEast(0), HeightRelationGreater(0), HeightRelationEqual(1)} # Right digit string
 _STRINGIZE_		n1 n0 n2
-_EVAL_ 			DECIMAL_BY_PARTS(n1, n2)	
+_EVAL_ 			DECIMAL_BY_PARTS(n1, n2)
 
 --- # 3
 DECIMAL_NUMBER
@@ -60,18 +60,24 @@ _STRINGIZE_		n0
 _EVAL_			n0
 
 --- # 9
-EXPR_LV1				# 
-EXPONENTIATION
+EXPR_LV1
+VARIABLE
 _STRINGIZE_		n0
 _EVAL_			n0
 
 --- # 10
-EXPR_LV1				# 
-FRACTION_TERM
+EXPR_LV1
+EXPONENTIATION
 _STRINGIZE_		n0
 _EVAL_			n0
 
 --- # 11
+EXPR_LV1
+FRACTION_TERM
+_STRINGIZE_		n0
+_EVAL_			n0
+
+--- # 12
 EXPR_LV1			# Addition with brackets
 ADDITION
 BRACKET_L : {AlignMiddle(0), PositionWest(0)}	# Left bracket
@@ -79,7 +85,7 @@ BRACKET_R : {AlignMiddle(0), PositionEast(0)}	# Right bracket
 _STRINGIZE_ 	( n0 )
 _EVAL_ 			n0
 
---- # 12
+--- # 13
 EXPR_LV1			# Addition with brackets
 SUBTRACTION
 BRACKET_L : {AlignMiddle(0), PositionWest(0)}	# Left bracket
@@ -87,7 +93,7 @@ BRACKET_R : {AlignMiddle(0), PositionEast(0)}	# Right bracket
 _STRINGIZE_ 	( n0 )
 _EVAL_ 			n0
 
---- # 13
+--- # 14
 EXPR_LV0_5
 MULTIPLICATION
 BRACKET_L : {AlignMiddle(0), PositionWest(0)}	# Left bracket
@@ -95,27 +101,34 @@ BRACKET_R : {AlignMiddle(0), PositionEast(0)}	# Right bracket
 _STRINGIZE_ 	( n0 )
 _EVAL_ 			n0
 
---- # 14
+--- # 15
 MULTIPLICATION		(ASSOC: ASSOC_LEFT_3B: MULTIPLICATION)
 MULT_OP
-EXPR_LV1 : {AlignMiddle(0), PositionWest(0)} # 1st number.
+EXPR_LV1 : {AlignMiddle(0), PositionWest(0)} # 1st number
 EXPR_LV1 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _EVAL_			MULTIPLY(n1, n2)
 
---- # 15
+--- # 16
+MULTIPLICATION		# TODO: Work out the proper assocation rule (ASSOC: ASSOC_LEFT_3B: MULTIPLICATION)
+VARIABLE                                     # 1st variable
+VARIABLE : {AlignMiddle(0), PositionEast(0)} # 2nd variable
+_STRINGIZE_		( n0 * n1 )
+_EVAL_			MULTIPLY(n0, n1)
+
+--- # 17
 EXPR_LV1
 MULTIPLICATION
 _STRINGIZE_		n0
 _EVAL_			n0
 
---- # 16
+--- # 18
 EXPR_LV2
 MULTIPLICATION
 _STRINGIZE_		n0
 _EVAL_			n0
 
---- # 17
+--- # 19
 ADDITION	(ASSOC: ASSOC_LEFT_3B: ADDITION_SUBTRACTION)
 PLUS_OP
 EXPR_LV4 : {AlignMiddle(0), PositionWest(0)} # 1st number.
@@ -123,7 +136,7 @@ EXPR_LV4 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _EVAL_			ADD(n1, n2)
 
---- # 18
+--- # 20
 SUBTRACTION	(ASSOC: ASSOC_LEFT_3B: ADDITION_SUBTRACTION)
 MINUS_OP
 EXPR_LV4 : {AlignMiddle(0), PositionWest(0)} # 1st number
@@ -131,19 +144,19 @@ EXPR_LV4 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _EVAL_			SUBTRACT(n1, n2)
 
---- # 19
+--- # 21
 EXPR_LV3
 ADDITION
 _STRINGIZE_		n0
 _EVAL_			n0
 
---- # 20
+--- # 22
 EXPR_LV3
 SUBTRACTION
 _STRINGIZE_		n0
 _EVAL_			n0
 
---- # 21
+--- # 23
 FRACTION
 MINUS_OP
 EXPR_LV4 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator.
@@ -151,57 +164,102 @@ EXPR_LV4 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
 _STRINGIZE_		( n1 _SPACE_ / _SPACE_ n2 )
 _EVAL_			DIVIDE(n2, n1)
 
---- # 22
+--- # 24
+SQROOT
+ROOT_OP
+EXPR_LV4 : {AlignBottom(0), AlignLeftWithin(0), AlignRightWithin(0), HeightRelationLess(0)}
+_STRINGIZE_		( sqrt _OPEN_PAREN_ n1 _CLOSE_PAREN_ )
+_EVAL_			SQRT(n1)
+
+--- # 25
+SQROOT_TERM
+SQROOT
+_STRINGIZE_		n0
+_EVAL_ 			n0
+
+--- # 26
 FRACTION_TERM
 FRACTION
 _STRINGIZE_		n0
 _EVAL_ 			n0
 
---- # 23
+--- # 27
 FRACTION_TERM		# Negative of fraction
 MINUS_OP
 FRACTION_TERM : {AlignMiddle(0), PositionEast(0)}
 _STRINGIZE_		n0 n1
 _EVAL_ 			NEGATIVE(n1)
 
---- # 24
+--- # 28
 EXPR_LV3
 FRACTION_TERM
 _STRINGIZE_		n0
 _EVAL_ 			n0
 
---- # 25
+--- # 29
 EXPR_LV3
-FRACTION_TERM
+SQROOT_TERM
 _STRINGIZE_		n0
 _EVAL_ 			n0
 
---- # 26
+--- # 30
 EXPR_LV4
 EXPR_LV1
 _STRINGIZE_		n0
 _EVAL_			n0
 
---- # 27
+--- # 31
 EXPR_LV4
 EXPR_LV0_5
 _STRINGIZE_		n0
 _EVAL_			n0
 
---- # 28
+--- # 32
 EXPR_LV4
 EXPR_LV2
 _STRINGIZE_		n0
 _EVAL_			n0
 
---- # 29
+--- # 33
 EXPR_LV4
 EXPR_LV3
 _STRINGIZE_		n0
 _EVAL_			n0
 
---- # 30
+--- # 34
+VARIABLE_SYMBOL_WRAPPER
+VARIABLE_SYMBOL
+_STRINGIZE_ 	n0
+_EVAL_ 			STRING(n0)
+
+--- # 35
+ASSIGNMENT_STATEMENT
+ASSIGN_OP
+VARIABLE_SYMBOL_WRAPPER : {AlignMiddle(0), PositionWest(0)} # Variable symbol
+EXPR_LV4                : {AlignMiddle(0), PositionEast(0)} # Value expression
+_STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
+_EVAL_			VARIABLE_ASSIGN_VALUE(n1, n2);
+
+--- $ 36
+VARIABLE
+VARIABLE_SYMBOL_WRAPPER
+_STRINGIZE_		n0
+_EVAL_			EVAL_VARIABLE(n0)
+
+--- # 37
 ROOT
 EXPR_LV4
+_STRINGIZE_		n0
+_EVAL_			n0
+
+--- # 38
+ROOT
+ASSIGNMENT_STATEMENT
+_STRINGIZE_		n0
+_EVAL_			n0
+
+--- # 39
+ROOT
+VARIABLE
 _STRINGIZE_		n0
 _EVAL_			n0

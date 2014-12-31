@@ -6,10 +6,25 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class TextHelper {
+	public static String readTextFile(String fileName) 
+		throws IOException {
+//		return new String(Files.readAllBytes(Paths.get(fileName)), StandardCharsets.UTF_8); /* Java 7 approach, which doesn't seem to work in Android 4.1 */
+		File file = new File(fileName);
+		FileInputStream fis = new FileInputStream(file);
+		byte [] data = new byte[(int) file.length()];
+		fis.read(data);
+		fis.close();
+		
+		return new String(data, "UTF-8");
+	}
+	
 	public static String [] readLinesTrimmedNoComment(final String fileName, final String commentString)
 		throws FileNotFoundException, IOException {
 		File wtsFile = new File(fileName);
