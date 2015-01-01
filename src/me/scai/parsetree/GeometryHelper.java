@@ -167,7 +167,6 @@ public class GeometryHelper {
 	 *   b) Has ctrY that falls in the joint inner Y bounds of the two tokens */
 	public static int getNumTokensInBetween(String dimension, float [] bndsA, float [] bndsB, List<Float> wtCtrXs, List<Float> wtCtrYs) {
 		/* TODO: Replace String with a more efficient type */
-		
 		boolean isX;
 		int idx1, idx2, auxIdx1, auxIdx2;
 		if (dimension.equals("X")) {
@@ -213,6 +212,12 @@ public class GeometryHelper {
 		if (dimMin == dimMax) {
 			/* Just touching edge: return 0 */
 			return 0;
+		}
+
+		if (dimMin > dimMax) {	/* Make sure that dimMin <= dimMax is always satisfied */
+			float dimTmp = dimMax;
+			dimMax = dimMin;
+			dimMin = dimTmp;
 		}
 		
 		int nBetween = 0;
