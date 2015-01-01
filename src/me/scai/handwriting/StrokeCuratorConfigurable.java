@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.net.URL;
 
+import me.scai.handwriting.StrokeCuratorConfig;
 import me.scai.parsetree.GeometryHelper;
 import me.scai.parsetree.MathHelper;
 import me.scai.parsetree.TerminalSet;
@@ -51,36 +53,18 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 	private List<Double> wtRecogMaxPs = new LinkedList<Double>();
 	
 	private List<int []> wtConstStrokeIdx = new LinkedList<int []>();	/* Indices to constituents stroke indices */ 
+	
+	private float mergePValueRatioThresh = 0.5F;
 	/* ~Member variables */
 	
 	/* Methods */
 	/* Constructor: 
 	 * 	Input arguments: configFN: Configuration file
 	 *   */
-	public StrokeCuratorConfigurable(String configFN, TokenRecogEngine tokEngine) {
+	public StrokeCuratorConfigurable(URL configFN, TokenRecogEngine tokEngine) {
 		tokenEngine = tokEngine;
 		
-		config = StrokeCuratorConfig.fromJsonFile(configFN);
-		
-//		String [] lines;
-//		try {
-//			lines = TextHelper.readLinesTrimmedNoComment(configFN, configFileCommentString);
-//		}
-//		catch ( Exception e ) {
-//			throw new RuntimeException("Failed to read terminal set from file: " + configFN);
-//		}
-//		
-//		for (int i = 0; i < lines.length; ++i) {
-//			String line = lines[i];
-//			
-//			if ( line.startsWith("<NO_MERGE>") ) {
-//				String [] items = line.replace("\t", " ").split(" ");
-//				
-//				for (int j = 1; j < items.length; ++j)
-//					if ( items[j].length() > 0 )
-//						noMergeTokens.add(items[j]);
-//			}
-//		}
+		config = StrokeCuratorConfig.fromJsonFileAtUrl(configFN);
 	}
 	
 	/* Constructor */
@@ -130,7 +114,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 		String newWinnerTokenName = tokenEngine.getTokenName(newRecRes); 
 		double newMaxP = newPs[newRecRes];
 		
-		if ( (!toCompareMaxPs) || (newMaxP > wtRecogMaxPs.get(oldWrittenTokenIdx)) ) {
+		if ( (!toCompareMaxPs) || (newMaxP > wtRecogMaxPs.get(oldWrittenTokenIdx) * mergePValueRatioThresh ) ) {
 			/* Replace the old token set with a new one that includes the new stroke */
 			wtRecogWinners.set(oldWrittenTokenIdx, newWinnerTokenName);
 			wtRecogPs.set(oldWrittenTokenIdx, newPs);
@@ -178,13 +162,19 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 		}
 		else {
 			/* More than one strokes exist */
-			boolean merged = false;
+			boolean merged = false;			
 			
 			/* Inclusion coefficients */
 			float [] negOverlapCoeffs = new float[wtSet.nTokens()];
 			int recomMergeIdx = -1;			/* TODO: Remove this var? */
 			String recomMergeToken = null;	/* TODO: Remove this var? */
 			for (int i = 0; i < wtSet.nTokens(); ++i) {
+				String tokenRecogWinner = wtSet.recogWinners.get(i);
+				
+				if ( !config.potentiallyMergeable(strokeRecogWinner, tokenRecogWinner) ) {					
+					continue;
+				}
+				
 				/* 2. ... TODO */
 				float [] t_bounds = wtSet.getTokenBounds(i);
 				float [] t_xBounds = new float[2];
@@ -208,8 +198,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 				
 				/* Apply rules in StrokeCuratorConfig */
 				if (recomMergeIdx == -1) {
-					recomMergeToken = config.applyRule(strokeRecogWinner, 
-												       wtSet.recogWinners.get(i), 
+					recomMergeToken = config.applyRule(strokeRecogWinner, tokenRecogWinner, 												       
 												       s_bounds, t_bounds, 
 												       wtCtrXs, wtCtrYs);	/* Assume, the first argument is the new stroke. TODO: Make this assumption a necessity. */
 					if (recomMergeToken != null) {
@@ -226,11 +215,6 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 			int [] idxInSorted = new int[negOverlapCoeffs.length];			
 			MathHelper.sort(negOverlapCoeffs, idxInSorted);
 			
-			/* DEBUG */
-//			String stringDebug = "";
-//			for (int k = 0; k < idxInSorted.length; ++k)
-//				stringDebug += " " + negOverlapCoeffs[idxInSorted[k]];
-			/* ~DEBUG */
 			
 			if (!merged) {
 				for (int n = 0; n < idxInSorted.length; ++n) {
@@ -239,46 +223,17 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 					}
 					
 					int wtIdx = idxInSorted[n];
+					String tokenRecogWinner = wtSet.recogWinners.get(wtIdx);
+					
+					if ( !config.potentiallyMergeable(strokeRecogWinner, tokenRecogWinner) ) {
+						continue;
+					}
 					
 					if ( tryMergeTokenWithStroke(true, wtIdx, strokesUN.size() - 1) ) {
 						merged = true;
 						break;
 					}
 					
-	//				int [] constIdx = wtConstStrokeIdx.get(wtIdx);
-	//				
-	//				CWrittenToken tmpWT = this.generateMergedToken(wtIdx, strokesUN.size() - 1);
-	//				
-	//				double [] newPs = new double[tokenEngine.tokenNames.size()];
-	//				int newRecRes = tokenEngine.recognize(tmpWT, newPs);
-	//				
-	//				String newWinnerTokenName = tokenEngine.getTokenName(newRecRes); 
-	//				double newMaxP = newPs[newRecRes];
-	//				
-	//				if ( newMaxP > wtRecogMaxPs.get(wtIdx) ) {
-	//					/* Replace the old token set with a new one that includes the new stroke */
-	//					wtRecogWinners.set(wtIdx, newWinnerTokenName);
-	//					wtRecogPs.set(wtIdx, newPs);
-	//					wtRecogMaxPs.set(wtIdx, newMaxP);
-	//					
-	//					int [] newConstIdx = new int[constIdx.length + 1];
-	//					java.lang.System.arraycopy(constIdx, 0, newConstIdx, 0, constIdx.length);
-	//					newConstIdx[constIdx.length] = strokesUN.size() - 1;
-	//					wtConstStrokeIdx.set(wtIdx, newConstIdx);
-	//					
-	//					strokeStats.set(strokeStats.size() - 1, wtIdx);
-	//					
-	//					wtSet.deleteToken(wtIdx);
-	//					wtSet.addToken(wtIdx, tmpWT, newWinnerTokenName, newPs);
-	//					/* TODO: wtSet.addToken(wtIdx, wt, winnerTokenName, ps) */
-	//					
-	//					/* Central X and Y coordinates of the token */
-	//					wtCtrXs.set(wtIdx, tmpWT.getCentralX());
-	//					wtCtrYs.set(wtIdx, tmpWT.getCentralY());
-	//					
-	//					merged = true;
-	//					break;
-	//				}
 				}
 			}
 			
@@ -452,4 +407,13 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 	
 	/* ~Methods */
 	
+	/* Setters */
+	public void setMergePValueRatioThresh(float tMergPValueRatioThresh) {
+		mergePValueRatioThresh = tMergPValueRatioThresh;
+	}
+	
+	/* Getters */
+	public float getMergePValueRatioThresh() {
+		return mergePValueRatioThresh;
+	}
 }

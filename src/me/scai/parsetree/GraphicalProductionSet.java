@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import java.net.URL;
 
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
@@ -42,21 +43,8 @@ public class GraphicalProductionSet {
 		return prods.size();
 	}
 	
-	/* Read productions from production list */
-	public void readProductionsFromFile(String prodListFileName, TerminalSet termSet)
-		throws FileNotFoundException, IOException 
-	{
-		String [] lines;
-		try {
-			lines = TextHelper.readLinesTrimmedNoComment(prodListFileName, commentString);
-		}
-		catch ( FileNotFoundException fnfe ) {
-			throw fnfe;
-		}
-		catch ( IOException ioe ) {
-			throw ioe;
-		}
-		
+	
+	private void readProductionsFromLines(String [] lines, TerminalSet termSet) {
 		int idxLine = 0;
 		
 		/* Remove the empty lines at the end */
@@ -84,7 +72,39 @@ public class GraphicalProductionSet {
 				System.err.println(e.getMessage());
 			}
 		}
+	}
+	
+	/* Read productions from production list file */
+	public void readProductionsFromFile(String prodListFileName, TerminalSet termSet)
+		throws FileNotFoundException, IOException 
+	{
+		String [] lines;
+		try {
+			lines = TextHelper.readLinesTrimmedNoComment(prodListFileName, commentString);
+		}
+		catch ( FileNotFoundException fnfe ) {
+			throw fnfe;
+		}
+		catch ( IOException ioe ) {
+			throw ioe;
+		}
 		
+		readProductionsFromLines(lines, termSet);
+	}
+	
+	/* Read productions from production list file at a URL */
+	public void readProductionsFromUrl(URL prodListFileUrl, TerminalSet termSet)
+		throws FileNotFoundException, IOException 
+	{
+		String [] lines;
+		try {
+			lines = TextHelper.readLinesTrimmedNoCommentFromUrl(prodListFileUrl, commentString);
+		}
+		catch ( IOException ioe ) {
+			throw ioe;
+		}
+		
+		readProductionsFromLines(lines, termSet);
 	}
 	
 	/* Get the indices to the productions that are valid for the token set.
@@ -302,7 +322,7 @@ public class GraphicalProductionSet {
 		return prods.get(i).getNumNonHeadTokens();
 	}
 	
-	/* Factory method */
+	/* Factory method: From file */
 	public static GraphicalProductionSet createFromFile(String prodListFileName, TerminalSet termSet)
 		throws FileNotFoundException, IOException {
 		GraphicalProductionSet gpSet = new GraphicalProductionSet();
@@ -321,27 +341,46 @@ public class GraphicalProductionSet {
 		return gpSet;
 	}
 	
-	/* Test main */
-	public static void main(String [] args) {
-		final String prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
-		final String termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
-		
-		TerminalSet termSet = null;
+	/* Factory method: From URL */
+	public static GraphicalProductionSet createFromUrl(URL prodListFileUrl, TerminalSet termSet)
+		throws FileNotFoundException, IOException {
+		GraphicalProductionSet gpSet = new GraphicalProductionSet();
 		try {
-			termSet = TerminalSet.createFromFile(termSetFN);
+			gpSet.readProductionsFromUrl(prodListFileUrl, termSet);
 		}
-		catch ( Exception e ) {
-			System.err.println(e);
+		catch ( FileNotFoundException fnfe ) {
+			throw fnfe;
+		}
+		catch ( IOException ioe ) {
+			throw ioe;
 		}
 		
-		GraphicalProductionSet gps = new GraphicalProductionSet();
-		try {
-			gps.readProductionsFromFile(prodSetFN, termSet);
-		}
-		catch ( Exception e ) {
-			System.err.println(e);
-		}
+		gpSet.calcTermTypes(termSet);
+		
+		return gpSet;
 	}
+	
+	/* Test main */
+//	public static void main(String [] args) {
+//		final String prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
+//		final String termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
+//		
+//		TerminalSet termSet = null;
+//		try {
+//			termSet = TerminalSet.createFromFile(termSetFN);
+//		}
+//		catch ( Exception e ) {
+//			System.err.println(e);
+//		}
+//		
+//		GraphicalProductionSet gps = new GraphicalProductionSet();
+//		try {
+//			gps.readProductionsFromFile(prodSetFN, termSet);
+//		}
+//		catch ( Exception e ) {
+//			System.err.println(e);
+//		}
+//	}
 	
 	/* Get the lists of all possible heads that corresponds to all
 	 * productions.

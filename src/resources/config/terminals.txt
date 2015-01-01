@@ -1,0 +1,11 @@
+DIGIT           0 1 2 3 4 5 6 7 8 9
+POINT	        .
+PLUS_OP			+
+MINUS_OP		-
+MULT_OP			* X
+ROOT_OP         root
+OBLIQUE_DIV_OP	/
+BRACKET_L		(
+BRACKET_R		)
+VARIABLE_SYMBOL a b c d e f g h i j k l m n o p q r s t u v w x y z gr_al gr_be gr_ga gr_de
+ASSIGN_OP       =

@@ -2,11 +2,13 @@ package me.scai.parsetree;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.net.URL;
 
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
@@ -19,13 +21,18 @@ import org.junit.Test;
 public class Test_TokenSetParser {
 	public static final String errStr = ParseTreeStringizer.parsingErrString;
 	
+	private static final String RESOURCES_DIR = "resources";
+	private static final String TERMINALS_FILE_NAME = "terminals.txt";
+	private static final String PRODUCTIONS_FILE_NAME = "productions.txt";
+	private static final String RESOURCES_CONFIG_DIR = "config";
+	
 	String[] singleOutIdx = {};
 	Test_QADataSet qaDataSet = null;
 	
 	String tokenSetSuffix = ".wts";
 	String tokenSetPrefix = null;
-	String prodSetFN = null;
-	String termSetFN = null;
+	URL prodSetFN = null;
+	URL termSetFN = null;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -37,22 +44,30 @@ public class Test_TokenSetParser {
 
 	@Before
 	public void setUp() throws Exception {
+		
+		
 		String hostName;
 		try {
 			hostName = InetAddress.getLocalHost().getHostName();
 			if (hostName.toLowerCase().equals("ceres")) {
 				tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
-				prodSetFN = "C:\\Users\\scai\\Dropbox\\javaWS\\handwriting\\graph_lang\\productions.txt";
-				termSetFN = "C:\\Users\\scai\\Dropbox\\javaWS\\handwriting\\graph_lang\\terminals.txt";
+//				prodSetFN = "C:\\Users\\scai\\Dropbox\\javaWS\\handwriting\\graph_lang\\productions.txt";
+//				termSetFN = "C:\\Users\\scai\\Dropbox\\javaWS\\handwriting\\graph_lang\\terminals.txt";
 			} else {
 				tokenSetPrefix = "C:\\Users\\scai\\Dropbox\\Plato\\data\\tokensets\\TS_";
-				prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
-				termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
+//				prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
+//				termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
 			}
 		} catch (Exception e) {
 			System.err.println("Cannot determine host name");
-			System.err.flush();
 		}
+		
+		prodSetFN = Thread.currentThread().getContextClassLoader().getResource(File.separator + RESOURCES_DIR + 
+						                        File.separator + RESOURCES_CONFIG_DIR + 
+						                        File.separator + PRODUCTIONS_FILE_NAME);
+		termSetFN = Thread.currentThread().getContextClassLoader().getResource(File.separator + RESOURCES_DIR + 
+								                File.separator + RESOURCES_CONFIG_DIR + 
+								                File.separator + TERMINALS_FILE_NAME);
 		
 		qaDataSet = new Test_QADataSet();
 	}
@@ -69,7 +84,8 @@ public class Test_TokenSetParser {
 		
 		TerminalSet termSet = null;
 		try {
-			termSet = TerminalSet.createFromFile(termSetFN);
+//			termSet = TerminalSet.createFromFile(termSetFN);
+			termSet = TerminalSet.createFromUrl(termSetFN);
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.err.flush();
@@ -77,7 +93,8 @@ public class Test_TokenSetParser {
 		
 		GraphicalProductionSet gpSet = null;
 		try {
-			gpSet = GraphicalProductionSet.createFromFile(prodSetFN, termSet);
+//			gpSet = GraphicalProductionSet.createFromFile(prodSetFN, termSet);
+			gpSet = GraphicalProductionSet.createFromUrl(prodSetFN, termSet);
 		} catch (FileNotFoundException fnfe) {
 			System.err.println(fnfe.getMessage());
 			System.err.flush();

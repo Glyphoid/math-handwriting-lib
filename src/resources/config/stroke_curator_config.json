@@ -18,11 +18,11 @@
                 "tokenB" : "-",
                 "predicaments" : 
                     [
-                        "relativeHeightDifference > 0.5",
-                        "relativeTopYOffset < 0.25",
-                        "relativeBottomYOffset > 0.5",
-                        "relativeRightToLeftOffset < 0.2",  /* Order of the two tokens matters */
-                        "relativeRightToLeftOffset > -0.2",
+                        "relativeHeightDifference > 0.3",
+                        "relativeTopYOffset < 0.3",
+                        "relativeBottomYOffset > 0.4",
+                        "relativeRightToLeftOffset < 0.25",  /* Order of the two tokens matters */
+                        "relativeRightToLeftOffset > -0.25",
                         "numTokensInBetweenX == 0"
                     ],
                 "recommendation" : "mergeAs: \"root\""

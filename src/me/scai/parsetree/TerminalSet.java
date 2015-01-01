@@ -3,6 +3,7 @@ package me.scai.parsetree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.net.URL;
 
 public class TerminalSet {
 	/* Constants */
@@ -17,14 +18,15 @@ public class TerminalSet {
 	/* Default constructor */
 	public TerminalSet() {}
 	
-	public void readFromFile(String tsFileName) 
+	public void readFromUrl(URL tsFileUrl) 
 			throws IOException {
 		String [] lines = null;
 		try {
-			lines = TextHelper.readLinesTrimmedNoComment(tsFileName, commentString);
+			lines = TextHelper.readLinesTrimmedNoCommentFromUrl(tsFileUrl, commentString);
 		}
 		catch ( Exception e ) {
-			throw new IOException("Failed to read terminal set from file: " + tsFileName);
+//			throw new IOException("Failed to read terminal set from file: " + tsFileName);
+			throw new IOException("Failed to read terminal set from URL: \"" + tsFileUrl + "\"");
 		}
 		finally {
 			
@@ -38,8 +40,10 @@ public class TerminalSet {
 			String [] t_items = t_line.split(" ");
 						
 			String t_type = t_items[0];			
-			if ( t_items[0].length() == 0 )
-				throw new IOException("Failed to read terminal set from file: " + tsFileName);
+			if ( t_items[0].length() == 0 ) {
+//				throw new IOException("Failed to read terminal set from file: " + tsFileName);
+				throw new IOException("Failed to read terminal set from URL: \"" + tsFileUrl + "\"");
+			}
 			
 			ArrayList<String> lst_tokens = new ArrayList<String>();
 			for (int j = 1; j < t_items.length; ++j) {
@@ -80,30 +84,32 @@ public class TerminalSet {
 	}
 	
 	/* Factory method */
-	public static TerminalSet createFromFile(String tsFileName)
+	public static TerminalSet createFromUrl(URL tsFileUrl)
 		throws Exception {
 		TerminalSet ts = new TerminalSet();
 		
 		try {
-			ts.readFromFile(tsFileName);
+//			ts.readFromFile(tsFileName);
+			ts.readFromUrl(tsFileUrl);
 		}
 		catch ( Exception e ) {
-			throw new Exception("Failed to create TerminalSet from file: " + tsFileName);
+//			throw new Exception("Failed to create TerminalSet from file: " + tsFileName);
+			throw new Exception("Failed to create TerminalSet from URL: \"" + tsFileUrl + "\"");
 		}
 		
 		return ts;
 	}
 	
 	/* Testing routine */
-	public static void main(String [] args) {
-		final String tsFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
-		
-		try {
-			TerminalSet.createFromFile(tsFN);
-		}
-		catch ( Exception e ) {
-			System.err.println(e.getMessage());
-		}
-	}
+//	public static void main(String [] args) {
+//		final String tsFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
+//		
+//		try {
+//			TerminalSet.createFromFile(tsFN);
+//		}
+//		catch ( Exception e ) {
+//			System.err.println(e.getMessage());
+//		}
+//	}
 	
 }

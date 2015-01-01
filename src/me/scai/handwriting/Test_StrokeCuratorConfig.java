@@ -47,6 +47,9 @@ public class Test_StrokeCuratorConfig {
 		assertEquals(config.tokenPairRules.get(1).tokenB, "-");		
 		assertEquals(config.tokenPairRules.get(1).predicaments.size(), 0);
 		assertEquals(config.tokenPairRules.get(1).recommendation, "mergeAs: \"root\"");
+		
+		assertEquals(config.mergePartners.size(), 1);
+		assertEquals(config.mergePartners.get("root").size(), 0);
 	}
 
 }

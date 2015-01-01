@@ -2,13 +2,12 @@ package me.scai.parsetree;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -25,22 +24,25 @@ public class TextHelper {
 		return new String(data, "UTF-8");
 	}
 	
-	public static String [] readLinesTrimmedNoComment(final String fileName, final String commentString)
-		throws FileNotFoundException, IOException {
-		File wtsFile = new File(fileName);
-		if ( !wtsFile.isFile() )
-			throw new FileNotFoundException("Cannot find file for reading: " + fileName);
+	public static String readTextFileAtUrl(URL url) 
+		throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+		StringBuilder sb = new StringBuilder();
 		
-		FileInputStream fin = null;
-		BufferedReader in = null;
-		try {			
-			fin = new FileInputStream(wtsFile);
-			in = new BufferedReader(new InputStreamReader(fin));
-		}
-		catch ( IOException e ) {
-			throw new IOException("IOException during reading of text file: " + fileName);
+		String inputLine;
+		while ((inputLine = br.readLine()) != null) {
+			sb.append(inputLine + "\n");
 		}
 		
+		br.close();
+		return sb.toString();
+		
+	}
+	
+	
+	
+	private static String [] readLinesTrimmedNoCommmentFromBufferedReader(final BufferedReader in, final String commentString) 
+		throws IOException {
 		ArrayList<String> lineList = new ArrayList<String>();
 		String line;
 		while ( in.ready() ) {
@@ -65,6 +67,41 @@ public class TextHelper {
 		
 		return lines;
 	}
+	
+	/* Read lines from a file name, with comments removed and white spaces trimmd */
+	public static String [] readLinesTrimmedNoComment(final String fileName, final String commentString)
+			throws FileNotFoundException, IOException {
+		File wtsFile = new File(fileName);
+		if ( !wtsFile.isFile() )
+			throw new FileNotFoundException("Cannot find file for reading: " + fileName);
+		
+		FileInputStream fin = null;
+		BufferedReader in = null;
+		try {			
+			fin = new FileInputStream(wtsFile);
+			in = new BufferedReader(new InputStreamReader(fin));
+		}
+		catch ( IOException e ) {
+			throw new IOException("IOException during reading of text file: " + fileName);
+		}
+		
+		return readLinesTrimmedNoCommmentFromBufferedReader(in, commentString);
+	}
+	
+	/* Read lines from a file name, with comments removed and white spaces trimmd */
+	public static String [] readLinesTrimmedNoCommentFromUrl(final URL fileUrl, final String commentString) 
+		throws IOException {		
+		BufferedReader in = null;
+		try {			
+			in =  new BufferedReader(new InputStreamReader(fileUrl.openStream()));
+		}
+		catch ( IOException e ) {
+			throw new IOException("IOException during reading from URL: \"" + fileUrl + "\"");
+		}
+		
+		return readLinesTrimmedNoCommmentFromBufferedReader(in, commentString);
+	}
+	
 	
 	public static String [] removeTrailingEmptyLines(String [] lines) {
 		ArrayList<String> linesList = new ArrayList<String>(Arrays.asList(lines));
