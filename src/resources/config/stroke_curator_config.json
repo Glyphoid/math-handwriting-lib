@@ -7,8 +7,8 @@
                 "predicaments" : 
                     [
                         "relativeWidthDifference < 0.5",
-                        "relativeLeftXOffset < 0.3",
-                        "relativeRightXOffset < 0.3",
+                        "relativeLeftXOffset < 0.4",
+                        "relativeRightXOffset < 0.4",
                         "numTokensInBetweenY == 0"
                     ],
                 "recommendation" : "mergeAs: \"=\""

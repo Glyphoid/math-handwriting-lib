@@ -3,6 +3,48 @@ package me.scai.parsetree;
 import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.IllegalAccessException;
+
+/* Exception classes */
+class ParseTreeEvaluatorException extends Exception {
+	private static final long serialVersionUID = 1L;
+	
+	public ParseTreeEvaluatorException(String msg) { super(msg); } 
+}
+
+class UnexpectedTypeException extends ParseTreeEvaluatorException {
+	private static final long serialVersionUID = 1L;
+	
+	public UnexpectedTypeException(String msg) { super(msg); }
+};
+
+class ParseTreeMathException extends ParseTreeEvaluatorException {
+	private static final long serialVersionUID = 1L;
+	
+	public ParseTreeMathException(String msg) { super(msg); }
+};
+
+class DivisionByZeroException extends ParseTreeMathException {
+	private static final long serialVersionUID = 1L;
+	
+	public DivisionByZeroException() { super("Division by zero"); }
+};
+
+class ZeroToZerothPowerException extends ParseTreeMathException {
+	private static final long serialVersionUID = 1L;
+	
+	public ZeroToZerothPowerException() { super("Attempt to calculate zero to the zeroth power"); }
+	
+}
+
+class SquareRootOfNegativeException extends ParseTreeMathException {
+	private static final long serialVersionUID = 1L;
+	
+	public SquareRootOfNegativeException(String msg) { super(msg); }
+}
+
+/* ~Exception classes */
 
 public class ParseTreeEvaluator {
 	/* Member variables */
@@ -15,23 +57,6 @@ public class ParseTreeEvaluator {
 	Map<String, Double> varMap = new HashMap<>(); 
 	
 	/* ~Member variables */
-
-	/* Error classes */
-	public class UnexpectedTypeException extends Exception {
-		private static final long serialVersionUID = 1L;
-	};
-
-	public class MathException extends Exception {
-		private static final long serialVersionUID = 1L;
-	};
-
-	public class DivisionByZeroException extends MathException {
-		private static final long serialVersionUID = 1L;
-	};
-
-	public class ZeroToZerothPowerException extends MathException {
-		private static final long serialVersionUID = 1L;
-	};
 
 	/* Methods */
 
@@ -69,7 +94,7 @@ public class ParseTreeEvaluator {
 	}
 
 	/* Main method: eval: evaluate a parse tree */
-	public Object eval(Node n) {
+	public Object eval(Node n) throws ParseTreeEvaluatorException {
 		String sumString = n.prodSumString;
 		String funcName = sumString2FuncNameMap.get(sumString);
 		int[] argIndices = sumString2NodeIdxMap.get(sumString);
@@ -104,14 +129,17 @@ public class ParseTreeEvaluator {
 			try {
 				// System.out.println("Invoking " + m.toString()); //DEBUG
 				evalRes = m.invoke(this, args);
-			} catch (Exception e) {
-				throw new RuntimeException(
-						"Exception(s) occurred during invocation of method \""
-								+ funcName + "\" with " + args.length
-								+ " input arguments");
+			} 
+			catch (InvocationTargetException iteExc) {
+				throw new ParseTreeEvaluatorException("Evaluation failed due to InvocationTargetException");
 			}
+			catch (IllegalAccessException iaeExc) {
+				throw new ParseTreeEvaluatorException("Evaluation failed due to IllegalAccessExcpetion");
+			}
+			
+			
 		} catch (NoSuchMethodException nsme) {
-			throw new RuntimeException(
+			throw new ParseTreeEvaluatorException(
 					"Cannot find evaluation function named \"" + funcName
 							+ "\" and with " + argTypes.length + " arguments");
 		}
@@ -161,8 +189,9 @@ public class ParseTreeEvaluator {
 		double d_numer = getDouble(numer); /* TODO: Figure out what is wrong */
 		double d_denom = getDouble(denom);
 
-		if (d_numer == 0.0)
+		if (d_numer == 0.0) {
 			throw new DivisionByZeroException();
+		}
 
 		return d_denom / d_numer;
 	}
@@ -178,8 +207,12 @@ public class ParseTreeEvaluator {
 		return Math.pow(d_base, d_exp);
 	}
 	
-	public double sqrt(Object x) {
+	public double sqrt(Object x) throws SquareRootOfNegativeException {
 		double d_x = getDouble(x);
+		
+		if (d_x < 0.0) {
+			throw new SquareRootOfNegativeException("Attempt to get the square root of negative number " + d_x);
+		}
 		
 		double y = Math.sqrt(d_x);
 		return y;

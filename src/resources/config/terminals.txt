@@ -7,5 +7,5 @@ ROOT_OP         root
 OBLIQUE_DIV_OP	/
 BRACKET_L		(
 BRACKET_R		)
-VARIABLE_SYMBOL a b c d e f g h i j k l m n o p q r s t u v w x y z gr_al gr_be gr_ga gr_de
+VARIABLE_SYMBOL a b c d e f g h i j k l m n o p q r s t u v w x y z gr_al gr_be gr_ga gr_de gr_ep gr_ze gr_et gr_th gr_io gr_ka gr_la gr_mu gr_nu gr_xi gr_omicron gr_pi gr_rh gr_si gr_ta gr_up gr_ph gr_ch gr_omega
 ASSIGN_OP       =

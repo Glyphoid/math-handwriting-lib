@@ -600,7 +600,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		/* Token engine settings */
 		final boolean bLoadEngineFromDisk = false; /* false: train; true: test */
 		
-		final int hiddenLayerSize1 = 160; /* Orig: 100 */
+		final int hiddenLayerSize1 = 140; /* Orig: 100 */
 		final int hiddenLayerSize2 = 0;
 		final int trainMaxIter = 200;
 		final double trainThreshErr = 0.001;

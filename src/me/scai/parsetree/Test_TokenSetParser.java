@@ -155,10 +155,17 @@ public class Test_TokenSetParser {
 			String stringized = stringizer.stringize(parseRoot);
 			Object evalRes = null;
 			if (!stringized.contains(errStr)) {
-				evalRes = evaluator.eval(parseRoot);
-				if (!evalRes.getClass().equals(Double.class))
+				try {
+					evalRes = evaluator.eval(parseRoot);
+				}
+				catch (Exception exc) {
+					fail("Failed due to evaluator exception");
+				}
+				
+				if (!evalRes.getClass().equals(Double.class)) {
 					throw new RuntimeException(
 							"Unexpected return type from evaluator");
+				}
 			}
 			
 			if ( !stringized.equals(tokenSetTrueString) ) {
