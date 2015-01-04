@@ -207,9 +207,11 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 				float [] im_wh = new float[2];
 				im_wh[0] = t_imData.w;
 				im_wh[1] = t_imData.h;
-				float [] sdv = t_wt.getSDV(npPerStroke, maxNumStrokes, im_wh);
 				
-				sdve = this.addExtraDimsToSDV(sdv, t_wt);
+				/* TODO: Combine into a function */
+				float [] sdv = t_wt.getSDV(npPerStroke, maxNumStrokes, im_wh);
+				float [] sepv = t_wt.getSEPV(maxNumStrokes);
+				sdve = this.addExtraDimsToSDV(sdv, sepv, t_wt);
 				
 				sdvData.add(sdve);
 				trueTokens.add(t_imData.tokenName);
@@ -218,8 +220,6 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 				System.err.println("WARNING: Failed to read valid data from file: " + files[i].getName());
 			}
 			
-//			if ( bDebug )
-//				System.out.print(" Done\n");
 		}
 		
 		/* Get the set of unique token names */
@@ -554,14 +554,19 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		return bnet.winner(getMLData(sdve));
 	}
 	
-	private float [] addExtraDimsToSDV(float [] sdv, 
+	/* The SEPV (Stroke end-points vector) will be appended to the end SDV, 
+	 * before other features are appended. 
+	 * */
+	private float [] addExtraDimsToSDV(float [] sdv, float [] sepv, 
 			                           CWrittenToken wt) {
+		
 		float [] sdve = null;
 		float [] extraDims = new float[4];	
 		/* The size needs to be expanded if more potential options 
 		 * are added in the future */
 		
 		int nExtraDims = 0;
+//		nExtraDims += sepv.length; /* TODO: Make optional */
 		/* Get the extra dimensions */
 		if ( this.bIncludeTokenSize ) {
 			float [] t_bnds = wt.getBounds();
@@ -583,11 +588,15 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			sdve = sdv; 
 		}
 		else {
-			sdve = new float[sdv.length + nExtraDims];
+			sdve = new float[sdv.length + sepv.length + nExtraDims]; /* TODO: Make SEPV optional */
 			
 			System.arraycopy(sdv, 0, sdve, 0, sdv.length);
-			for (int j = 0; j < nExtraDims; ++j)
-				sdve[j + sdv.length] = extraDims[j];
+			System.arraycopy(sepv, 0, sdve, sdv.length, sepv.length); 
+			
+			int i0 = sdv.length + sepv.length;
+			for (int j = 0; j < nExtraDims; ++j) {
+				sdve[j + i0] = extraDims[j];
+			}
 		}
 		
 		return sdve;
@@ -628,9 +637,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			wh[1] = wt.height;
 		}
 			
-		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, wh); /* TODO */
-		
-		float [] sdve = addExtraDimsToSDV(sdv, wt);
+		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, wh);
+		float [] sepv = wt.getSEPV(maxNumStrokes); /* TODO: Make optional */
+		float [] sdve = addExtraDimsToSDV(sdv, sepv, wt);
 		
 		return recognize(sdve, outPs);
 	}

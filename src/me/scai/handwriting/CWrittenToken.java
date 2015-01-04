@@ -509,6 +509,30 @@ public class CWrittenToken {
 		return recogPs;
 	}
 	
+	/* Convert the CWrittenToken to SEPV (Stroke end-points vector): 
+	 * For each stroke, there are four numerical values, all in normalized coordinate systems: [0.0, 1.0] 
+	 * 	{startPointNormX, startPointNormY, endPointNormX, endPointNormY}
+	 */
+	public float [] getSEPV(final int maxNumStrokes) {
+		
+		float [] sepv = new float[4 * maxNumStrokes];
+		int ns = (nStrokes() <= maxNumStrokes) ? nStrokes() : maxNumStrokes;
+		
+		for (int i = 0; i < ns; ++i) {
+			int np = strokes.get(i).nPoints(); /* Number of points */
+			float [] sxs = strokes.get(i).getXs(); /* Stroke X values */
+			float [] sys = strokes.get(i).getYs(); /* Stroke Y values */
+			
+			sepv[i * 4] = sxs[0];
+			sepv[i * 4 + 1] = sys[0];
+			sepv[i * 4 + 2] = sxs[np - 1];
+			sepv[i * 4 + 3] = sys[np - 1];
+		}
+		
+		return sepv;
+	}
+
+	
 	/* Convert the CWrittenToken to SDV (Stroke direction vector):
 	 * Input arguments (Parameters for the SDV generation):
 	 * 		npPerStroke:   Number of points per stroke. 
