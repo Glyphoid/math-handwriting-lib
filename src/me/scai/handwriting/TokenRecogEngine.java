@@ -13,7 +13,7 @@ import org.encog.neural.networks.BasicNetwork;
 public abstract class TokenRecogEngine implements Serializable {
 	protected static final long serialVersionUID = 1L;
 	
-	protected final static boolean bDebug = true;
+	protected final static boolean bDebug = false;
 	protected final static String wt_file_prefix = "L_";
 	protected final static String wt_file_suffix = ".wt";
 	protected final static String im_file_prefix = "L_";

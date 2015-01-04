@@ -40,6 +40,11 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	private int npPerStroke = 16;
 	private int maxNumStrokes = 4;	
 	
+	private float dotMaxWidth = 3;
+	private float dotMaxHeight = 3;
+	private int dotTokenIndex = -1;
+	
+	private String [] hardCodedTokens; 
 	
 	/* Inner interface */
 	/* Inner interface: Progress bar updater */
@@ -63,6 +68,10 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		hiddenLayer1_size = 50;
 		hiddenLayer2_size = 0;
 		useTanh = false;
+	}
+	
+	public void setHardCodedTokens(String [] tHardCodedTokens) {
+		hardCodedTokens = tHardCodedTokens;
 	}
 	
 	public TokenRecogEngineSDV(int t_hiddenLayer1_size, 
@@ -103,6 +112,24 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		fs[2] = bIncludeTokenNumStrokes;
 		
 		return fs;
+	}
+	
+	private boolean isTokenHardCoded(String token) {
+		if (hardCodedTokens == null) {
+			return false;
+		}
+		else {
+			boolean isTokenHardCoded = false;
+			for (String hardCodedToken : hardCodedTokens) {
+				if ( token.equals(hardCodedToken) ) {
+					isTokenHardCoded = true;
+					break;
+				}	
+			}
+			
+			return isTokenHardCoded;
+		}
+		
 	}
 	
 	public void readDataFromDir(String inDirName, 
@@ -156,6 +183,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 //			if ( bDebug )
 //				System.out.print("Reading data from file: " + files[i].getName() + " ...");
 			
+			
 			float [] sdve = null;
 			try {
 				/* Actual reading */
@@ -170,9 +198,11 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 								                              bIncludeTokenSize,
 								                              bIncludeTokenWHRatio, 
 								                              bIncludeTokenNumStrokes);
-//				if ( t_imData.tokenName.equals("p") ) {
-//				  System.out.println("tokenName = \"" + t_imData.tokenName + "\"");
-//				}
+				
+				/* Skip exclusion tokens */
+				if ( isTokenHardCoded(t_imData.tokenName) ) {
+					continue;
+				}
 				
 				float [] im_wh = new float[2];
 				im_wh[0] = t_imData.w;
@@ -210,13 +240,15 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		/* Generate true labels */
 		trueLabels.ensureCapacity(trueTokens.size());
 		//Integer [] trueLabels = new Integer[trueTokens.size()];
-		for (int i = 0; i < trueTokens.size(); ++i)
+		for (int i = 0; i < trueTokens.size(); ++i) {
 			trueLabels.add(aTokenNames.indexOf(trueTokens.get(i)));
+		}
 				
 		/* Divide the data set into training and test sets */
 		HashMap<String, Integer> tokenIdxMap = new HashMap<String, Integer>();
-		for (int i = 0; i < aTokenNames.size(); ++i) 
+		for (int i = 0; i < aTokenNames.size(); ++i) { 
 			tokenIdxMap.put(aTokenNames.get(i), i);
+		}
 		
 		ArrayList<LinkedList<Integer>> tokenIndices = new ArrayList<LinkedList<Integer>>();
 		ArrayList<LinkedList<Integer>> isTest = new ArrayList<LinkedList<Integer>>();
@@ -383,6 +415,18 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 					        sdveDataTrain, sdveDataTest, 
 					        trueLabelsTrain, trueLabelsTest, 
 					        tokenNames);
+			
+			/* Add dot, if it is not included */
+			for (String hardCodedToken : hardCodedTokens) {
+				if (tokenNames.indexOf(hardCodedToken) == -1) {
+					tokenNames.add(hardCodedToken);
+				}
+			}
+			
+			/* Determine the index of the dot (".") token */
+			if (dotTokenIndex == -1) {
+				dotTokenIndex = tokenNames.indexOf(".");
+			}
 			
 			/* Output sanity check */
 			if ( sdveDataTrain.size() == 0 ) {
@@ -555,6 +599,29 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	@Override
 	public int recognize(CWrittenToken wt, double [] outPs) {
 		float [] wh = null;
+		
+		/* If the token is small enough in both width and height, recognize it as a dot */
+		if ( wt.width <= dotMaxWidth && wt.height <= dotMaxHeight ) {
+			if (dotTokenIndex == -1) {
+				dotTokenIndex = tokenNames.indexOf(".");
+			}
+			
+			if (dotTokenIndex >= 0) {
+				/* Dummy outPs under the condition of force dot recognition */
+				for (int i = 0; i < outPs.length; ++i) {
+					if (i == dotTokenIndex) {
+						outPs[i] = 1.0;
+					}
+					else {
+						outPs[i] = 0.0;
+					}
+				}
+				
+	
+				return dotTokenIndex;
+			}
+		}
+		
 		if ( wt.width != 0.0f && wt.height != 0.0f ) {
 			wh = new float[2];
 			wh[0] = wt.width;
@@ -611,22 +678,18 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		final boolean bIncludeTokenSize = false;
 		final boolean bIncludeTokenWHRatio = false;
 		final boolean bIncludeTokenNumStrokes = true;
-		
- 
+
 		Properties props = new Properties();
 		URL url = TokenRecogEngineSDV.class.getResource("/resources/handwriting.properties");		
 		
 		try {
-//			props.load(new FileInputStream("/handwriting.properties"));
 			props.load(url.openStream());
 		}
 		catch (Exception exc) {
 			System.err.println("Failed to load property file: " + exc.getMessage());
 		}
 		
-//		final String letterDir = "C:\\Users\\scai\\Dropbox\\Plato\\data\\letters";
 		final String letterDir = props.getProperty("letterDir");
-//		final String tokenEngineSerFN = "C:\\Users\\scai\\Dropbox\\Plato\\engines\\token_engine.sdv.sz0_whr0_ns1.ser";
 		final String tokenEngineSerFN = props.getProperty("tokenEngineSerFN");
 		/* ~Token engine settings */
 				
@@ -638,6 +701,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 					hiddenLayerSize2, 
 					trainMaxIter, 
 					trainThreshErr);
+			String [] hardCodedTokens = {"."};
+			tokEngine.setHardCodedTokens(hardCodedTokens);
 			
 			System.out.println("New instance of tokEngine created.");
 
@@ -658,12 +723,13 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			float errRate = tokEngine.getTestErrRate();
 			System.out.println("Final test error rate = " + errRate);
 			
-			/* Serialize to disk */
+			/* Serialize to file */
 			ObjectOutputStream objOutStream = null;
 			try {
 				objOutStream = new ObjectOutputStream(new FileOutputStream(tokenEngineSerFN));
 				objOutStream.writeObject(tokEngine);
 				objOutStream.flush();
+				
 			}
 			catch (IOException e) {
 				System.err.println("WRITE_TOKEN_ENGINE_ERROR: Failed to write token engine to file: " + tokenEngineSerFN);
@@ -676,6 +742,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 					System.err.println("TOKEN_ENGINE_OUTPUT_STREAM_CLOSE_ERR: Failed to close token engine output stream");
 				}
 			}
+			
+			System.out.println("Wrote token engine to file \"" + tokenEngineSerFN + "\"");
 		}
 		else {
 			ObjectInputStream objInStream = null;
