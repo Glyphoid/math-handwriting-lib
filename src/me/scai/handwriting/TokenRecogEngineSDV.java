@@ -1,7 +1,6 @@
 package me.scai.handwriting;
 
 import java.io.File;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -10,13 +9,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.FileNotFoundException;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.HashMap;
-
 import java.util.Properties;
 import java.net.URL;
 
@@ -52,6 +51,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		public void update(); /* To be overridden in derived classes */
 	}
 	private transient ProgBarUpdater progBarUpdater = null;
+	private transient TokenDegeneracy tokenDegen = null;
 	
 	/* Testing data */
 	ArrayList<float []> sdveDataTest = null;
@@ -67,7 +67,11 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		
 		hiddenLayer1_size = 50;
 		hiddenLayer2_size = 0;
-		useTanh = false;
+		useTanh = false;		
+	}
+	
+	public void loadTokenDegeneracy() {
+		tokenDegen = new TokenDegeneracy();
 	}
 	
 	public void setHardCodedTokens(String [] tHardCodedTokens) {
@@ -132,6 +136,18 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		
 	}
 	
+	
+	/* Construct the list of degenerated strings */
+//	private void getDegeneratedTokenName() {
+//		Map<String, String> degens = new HashMap<String, String>();
+//		
+//		degens.put("O", "0");
+//		degens.put("C", "c");
+//		degens.put("S", "s");
+//		degens.put("o", "0");
+//
+//	}
+	
 	public void readDataFromDir(String inDirName, 
 							    int testRatioDenom, int testRatioNumer, 
 					            ArrayList<float []> sdvDataTrain,
@@ -180,9 +196,6 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		trueTokens.ensureCapacity(files.length);
 		
 		for (int i = 0; i < files.length; ++i) {
-//			if ( bDebug )
-//				System.out.print("Reading data from file: " + files[i].getName() + " ...");
-			
 			
 			float [] sdve = null;
 			try {
@@ -214,7 +227,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 				sdve = this.addExtraDimsToSDV(sdv, sepv, t_wt);
 				
 				sdvData.add(sdve);
-				trueTokens.add(t_imData.tokenName);
+				trueTokens.add(tokenDegen.getDegenerated(t_imData.tokenName));
 			}
 			catch (Exception e) {
 				System.err.println("WARNING: Failed to read valid data from file: " + files[i].getName());
@@ -710,6 +723,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 					hiddenLayerSize2, 
 					trainMaxIter, 
 					trainThreshErr);
+			tokEngine.loadTokenDegeneracy(); /* TODO: Make more elegant */
+			
 			String [] hardCodedTokens = {"."};
 			tokEngine.setHardCodedTokens(hardCodedTokens);
 			

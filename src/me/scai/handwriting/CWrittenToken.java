@@ -20,7 +20,7 @@ import org.json.JSONException;
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
 public class CWrittenToken {
 	/* Member variables */
-	private LinkedList<CStroke> strokes = new LinkedList<CStroke>();
+	private LinkedList<CStroke> strokes = new LinkedList<>();
 	public boolean bNormalized = false;
 	private float min_x = Float.MAX_VALUE, max_x = Float.MIN_VALUE;
 	private float min_y = Float.MAX_VALUE, max_y = Float.MIN_VALUE;
@@ -37,6 +37,34 @@ public class CWrittenToken {
 	
 	/* Constructor */
 	public CWrittenToken() {};
+	
+	/* Copy constructor */
+	public CWrittenToken(CWrittenToken wt0) {
+		for (CStroke stroke : wt0.strokes) {
+			addStroke(stroke);
+		}
+		
+		bNormalized = wt0.bNormalized;
+		min_x = wt0.min_x;
+		min_y = wt0.min_y;
+		width = wt0.width;
+		height = wt0.height;
+		
+		if (recogWinner != null) {
+			recogWinner = new String(wt0.recogWinner);
+		}
+		
+		if (recogPs != null) {
+			recogPs = new double[wt0.recogPs.length];
+			for (int i = 0; i < wt0.recogPs.length; ++i) {
+				recogPs[i] = wt0.recogPs[i];
+			}
+		}
+		
+		if (wt0.tokenTermType != null) {
+			tokenTermType = new String(wt0.tokenTermType);
+		}
+	}
 	
 	
 	/* Constructor: From JSON string */
@@ -121,6 +149,11 @@ public class CWrittenToken {
 		height = 0f;
 		
 		bNormalized = false;
+	}
+	
+	/* Whether there are no strokes in this token */
+	public boolean isEmpty() {
+		return strokes.isEmpty();
 	}
 	
 	/* Remove a given stroke */
@@ -600,16 +633,35 @@ public class CWrittenToken {
 				while ( cuml[cp] < cl && cp + 1 < cuml.length - 1 )
 					++cp;
 				
-				float cf = (cl - cuml[cp - 1]) / (cuml[cp] - cuml[cp - 1]);
+				float cf;
+				float cx1;
+				float cy1;
 				
-				float cx1 = xs[cp - 1] + (xs[cp] - xs[cp - 1]) * cf;
-				float cy1 = ys[cp - 1] + (ys[cp] - ys[cp - 1]) * cf;
+				if (cuml[cp] == cuml[cp - 1]) {
+					cf = 0.0f;
+					
+					if (sdvIdx > 0) {
+						sdv[sdvIdx] = sdv[sdvIdx - 1];
+					}
+					else {
+						sdv[sdvIdx] = 0.0f;
+					}
+				}
+				else {
+					cf = (cl - cuml[cp - 1]) / (cuml[cp] - cuml[cp - 1]);
+					
+					cx1 = xs[cp - 1] + (xs[cp] - xs[cp - 1]) * cf;
+					cy1 = ys[cp - 1] + (ys[cp] - ys[cp - 1]) * cf;
+					
+					sdv[sdvIdx] = (float) Math.atan2((double) ((cy1 - cy) * hwRatio), 
+							                         (double) (cx1 - cx));
+					
+					cx = cx1;
+					cy = cy1;
+				}
 				
-				sdv[sdvIdx++] = (float) Math.atan2((double) ((cy1 - cy) * hwRatio), 
-						                           (double) (cx1 - cx));
+				sdvIdx++;
 				
-				cx = cx1;
-				cy = cy1;
 			}
 		}
 		

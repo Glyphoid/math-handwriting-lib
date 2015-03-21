@@ -68,15 +68,15 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 	}
 	
 	/* Constructor */
-	public StrokeCuratorConfigurable(String [] tokNames, TokenRecogEngine tokEngine) {
-		if ( tokNames == null )
-			throw new RuntimeException("Input tokNames is null");
-			
-		if ( tokEngine == null )
-			throw new RuntimeException("Input tokEngine is null");
-		
-//		initialize(tokEngine);
-	}
+//	public StrokeCuratorConfigurable(String [] tokNames, TokenRecogEngine tokEngine) {
+//		if ( tokNames == null )
+//			throw new RuntimeException("Input tokNames is null");
+//			
+//		if ( tokEngine == null )
+//			throw new RuntimeException("Input tokEngine is null");
+//		
+////		initialize(tokEngine);
+//	}
 	
 //	public void initialize(//String [] tokNames, 
 //						   TokenRecogEngine tokEngine) {
@@ -101,7 +101,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 		return tmpWT;
 	}
 	
-	private boolean tryMergeTokenWithStroke(boolean toCompareMaxPs, int oldWrittenTokenIdx, int strokeUNIdx) {
+	private boolean mergeTokenWithStroke(boolean toCompareMaxPs, int oldWrittenTokenIdx, int strokeUNIdx) {
 		boolean merged = false;
 		
 		int [] constIdx = wtConstStrokeIdx.get(oldWrittenTokenIdx);
@@ -204,17 +204,18 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 					if (recomMergeToken != null) {
 						recomMergeIdx = i;
 						
+						mergeTokenWithStroke(false, i, strokesUN.size() - 1); /* Obey the rule and perform the merging */
 						merged = true;
-						tryMergeTokenWithStroke(false, i, strokesUN.size() - 1);
 					}
 				}
+				
+				/* Calculate the negative overlap coefficient */
 				negOverlapCoeffs[i] = -1f * GeometryHelper.pctOverlap(t_xBounds, s_xBounds) * 
 						                    GeometryHelper.pctOverlap(t_yBounds, s_yBounds);
 			}
 			
 			int [] idxInSorted = new int[negOverlapCoeffs.length];			
 			MathHelper.sort(negOverlapCoeffs, idxInSorted);
-			
 			
 			if (!merged) {
 				for (int n = 0; n < idxInSorted.length; ++n) {
@@ -229,7 +230,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 						continue;
 					}
 					
-					if ( tryMergeTokenWithStroke(true, wtIdx, strokesUN.size() - 1) ) {
+					if ( mergeTokenWithStroke(true, wtIdx, strokesUN.size() - 1) ) {
 						merged = true;
 						break;
 					}
