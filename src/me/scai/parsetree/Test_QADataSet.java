@@ -4,62 +4,71 @@ class QADataEntry {
 	/* Member variables */
 	public String tokenSetFileName;
 	public String correctParseRes;
+	public String correctMathTex;
 	/* ~Member variables */
 	
 	/* Constructor */
 	public QADataEntry(final String t_tokenSetFileName, 
 			           final String t_correctParseRes) {
 		tokenSetFileName = t_tokenSetFileName;
-		correctParseRes = t_correctParseRes;
+		correctParseRes  = t_correctParseRes;
+	}
+	
+	public QADataEntry(final String t_tokenSetFileName, 
+	                   final String t_correctParseRes, 
+	                   final String t_correctMathTex) {
+		tokenSetFileName = t_tokenSetFileName;
+		correctParseRes  = t_correctParseRes;
+		correctMathTex   = t_correctMathTex;
 	}
 }
 
 public class Test_QADataSet {
 	/* Member variables */
 	QADataEntry [] entries = {
-			                  new QADataEntry("1",     "12"), 
-			                  new QADataEntry("2",     "236"), 
-			                  new QADataEntry("4",     "77"), 
-			                  new QADataEntry("6", 	   "36"), 
-			                  new QADataEntry("9",     "-28"), 
-			                  new QADataEntry("10",    "(21 - 3)"), 
-			                  new QADataEntry("11",    "(21 + 3)"), 
-			                  new QADataEntry("12",    "(21 - 5)"), 
-			                  new QADataEntry("13",    "009"), 
-			                  new QADataEntry("14",    "900"), 
-			                  new QADataEntry("15",    "100"), 
-			                  new QADataEntry("18",    "(56 - 3)"), 
-			                  new QADataEntry("21",    "(29 / 3)"), 
-			                  new QADataEntry("22",    "--3"), 
-			                  new QADataEntry("23",    "(9 ^ 3)"), 
-			                  new QADataEntry("24",    "(2 ^ -3)"), 		/* Error due to geometric imprecision? */
-			                  new QADataEntry("103",   "(68 ^ 75)"), 
-			                  new QADataEntry("104",      "(2 ^ 34)"), 
-			                  new QADataEntry("106",      "(258 ^ 76)"), 
-			                  new QADataEntry("107",      "(256 ^ 481)"), 
-			                  new QADataEntry("108",      "(289 ^ 643)"), 
-			                  new QADataEntry("27",      "(5 / 8)"), 
-			                  new QADataEntry("28",      "((5 / 8) / 9)"), 
-			                  new QADataEntry("29",      "(3 / (2 / 7))"), 
-			                  new QADataEntry("32",      "(1 - (2 / 3))"), 
-			                  new QADataEntry("34",      "(4 / (5 + (2 / 3)))"), 
-			                  new QADataEntry("36",      "(23 / 4)"), 
-			                  new QADataEntry("37",      "((5 + 9) / ((3 / 2) - 1))"), 
-			                  new QADataEntry("41",      "((4 - 2) / 3)"),
-			                  new QADataEntry("42",       "((7 - 8) / 10)"),
-			                  new QADataEntry("43",       "((3 + 1) / 4)"), 
-			                  new QADataEntry("44",       "(72 / 3)"), 
-			                  new QADataEntry("45",       "((8 - 3) / 4)"), 
-			                  new QADataEntry("48",       "8.3"), 
-			                  new QADataEntry("49",       "4.0"), 
-			                  new QADataEntry("50",       "0.01"), 
-			                  new QADataEntry("51",       "-53"), 
-			                  new QADataEntry("52",       "-7.4"), 
-			                  new QADataEntry("53",       "(8.1 / 0.9)"), 
-			                  new QADataEntry("54",       "(-1 / -3.2)"), 
-			                  new QADataEntry("55",       "(-4.2 / (7 + 3))"), 
-			                  new QADataEntry("56",       "(5 * 3)"), 
-			                  new QADataEntry("57",       "(3 * 4)"), 
+			                  new QADataEntry("1",     "12",             "12"), 
+			                  new QADataEntry("2",     "236",            "236"), 
+			                  new QADataEntry("4",     "77",             "77"), 
+			                  new QADataEntry("6", 	   "36",             "36"), 
+			                  new QADataEntry("9",     "-28",            "-{28}"), 
+			                  new QADataEntry("10",    "(21 - 3)",       "{21}-{3}"), 
+			                  new QADataEntry("11",    "(21 + 3)",       "{21}+{3}"), 
+			                  new QADataEntry("12",    "(21 - 5)",       "{21}-{5}"), 
+			                  new QADataEntry("13",    "009",            "009"), 
+			                  new QADataEntry("14",    "900",            "900"), 
+			                  new QADataEntry("15",    "100",            "100"), 
+			                  new QADataEntry("18",    "(56 - 3)",       "{56}-{3}"), 
+			                  new QADataEntry("21",    "(29 / 3)",       "\\frac{29}{3}"), 
+			                  new QADataEntry("22",    "--3",            "-{-{3}}"), 
+			                  new QADataEntry("23",    "(9 ^ 3)",        "{9}^{3}"), 
+			                  new QADataEntry("24",    "(2 ^ -3)",       "{2}^{-{3}}"), 		/* Error due to geometric imprecision? */
+			                  new QADataEntry("103",   "(68 ^ 75)",      "{68}^{75}"), 
+			                  new QADataEntry("104",     "(2 ^ 34)",       "{2}^{34}"), 
+			                  new QADataEntry("106",     "(258 ^ 76)",     "{258}^{76}"), 
+			                  new QADataEntry("107",     "(256 ^ 481)",    "{256}^{481}"), 
+			                  new QADataEntry("108",     "(289 ^ 643)",    "{289}^{643}"), 
+			                  new QADataEntry("27",      "(5 / 8)",        "\\frac{5}{8}"),
+			                  new QADataEntry("28",      "((5 / 8) / 9)",  "\\frac{\\frac{5}{8}}{9}"), 
+			                  new QADataEntry("29",      "(3 / (2 / 7))",  "\\frac{3}{\\frac{2}{7}}"), 
+			                  new QADataEntry("32",      "(1 - (2 / 3))",  "{1}-{\\frac{2}{3}}"), 
+			                  new QADataEntry("34",      "(4 / (5 + (2 / 3)))",  "\\frac{4}{{5}+{\\frac{2}{3}}}"), 
+			                  new QADataEntry("36",      "(23 / 4)",             "\\frac{23}{4}"), 
+			                  new QADataEntry("37",      "((5 + 9) / ((3 / 2) - 1))", "\\frac{{5}+{9}}{{\\frac{3}{2}}-{1}}"), 
+			                  new QADataEntry("41",      "((4 - 2) / 3)",  "\\frac{{4}-{2}}{3}"),
+			                  new QADataEntry("42",       "((7 - 8) / 10)",  "\\frac{{7}-{8}}{10}"),
+			                  new QADataEntry("43",       "((3 + 1) / 4)",   "\\frac{{3}+{1}}{4}"), 
+			                  new QADataEntry("44",       "(72 / 3)",        "\\frac{72}{3}"), 
+			                  new QADataEntry("45",       "((8 - 3) / 4)",   "\\frac{{8}-{3}}{4}"), 
+			                  new QADataEntry("48",       "8.3",             "8.3"), 
+			                  new QADataEntry("49",       "4.0",             "4.0"), 
+			                  new QADataEntry("50",       "0.01",            "0.01"), 
+			                  new QADataEntry("51",       "-53",             "-{53}"), 
+			                  new QADataEntry("52",       "-7.4",            "-{7.4}"), 
+			                  new QADataEntry("53",       "(8.1 / 0.9)",     "\\frac{8.1}{0.9}"), 
+			                  new QADataEntry("54",       "(-1 / -3.2)",     "\\frac{-{1}}{-{3.2}}"), 
+			                  new QADataEntry("55",       "(-4.2 / (7 + 3))",  "\\frac{-{4.2}}{{7}+{3}}"), 
+			                  new QADataEntry("56",       "(5 * 3)",         "{5}\\ast{3}"), 
+			                  new QADataEntry("57",       "(3 * 4)",         "{3}\\ast{4}"), 
 			                  new QADataEntry("58",       "(-2 * 8)"), 
 			                  new QADataEntry("59",       "(2 * -3)"), 
 			                  new QADataEntry("60",       "(2 * +3)"), 
@@ -121,24 +130,27 @@ public class Test_QADataSet {
 						      new QADataEntry("sim_27",   "((20 + 3))"), 
 						      new QADataEntry("sim_28",   "(((1 + 2) + 3))"), 
 						      new QADataEntry("sim_29",   "((1 - 2))"), 
-						      new QADataEntry("sim_30",   "((2 * 3))"), 
-						      new QADataEntry("sim_31",   "((3 * 45))"), 
-						      new QADataEntry("sim_32",   "(((2 * 4)) ^ 6)"), 
-						      new QADataEntry("sim_33",   "(12 * 34)"),
-						      new QADataEntry("sim_34",   "(sqrt(16))"),
-						      new QADataEntry("sim_35",   "(sqrt(4))"),
-						      new QADataEntry("sim_36",   "(1 + (sqrt(243)))"),
-						      new QADataEntry("sim_37",   "(sqrt((5 - 3.8)))"), /* TODO: Fix it */
-						      new QADataEntry("sim_38",   "(sqrt((3 / 5)))"), /* TODO: Fix it */
-						      new QADataEntry("sim_39",   "(2 + (sqrt((1 / 6))))"),
-						      new QADataEntry("sim_40",   "(sqrt(((11 / 22) / 33)))"),
-			                  new QADataEntry("sim_41",   "(sqrt((7 + (1 / 12))))"),
+						      new QADataEntry("sim_30",   "((2 * 3))",              "\\left({2}\\times{3}\\right)"), 
+						      new QADataEntry("sim_31",   "((3 * 45))",             "\\left({3}\\ast{45}\\right)"), 
+						      new QADataEntry("sim_32",   "(((2 * 4)) ^ 6)",        "{\\left({2}\\times{4}\\right)}^{6}"), 
+						      new QADataEntry("sim_33",   "(12 * 34)",              "{12}\\ast{34}"),
+						      new QADataEntry("sim_34",   "(sqrt(16))",             "\\sqrt{16}"),
+						      new QADataEntry("sim_35",   "(sqrt(4))",              "\\sqrt{4}"),
+						      new QADataEntry("sim_36",   "(1 + (sqrt(243)))",      "{1}+{\\sqrt{243}}"),
+						      new QADataEntry("sim_37",   "(sqrt((5 - 3.8)))",      "\\sqrt{{5}-{3.8}}"),
+						      new QADataEntry("sim_38",   "(sqrt((3 / 5)))",        "\\sqrt{\\frac{3}{5}}"),
+						      new QADataEntry("sim_39",   "(2 + (sqrt((1 / 6))))",  "{2}+{\\sqrt{\\frac{1}{6}}}"),
+						      new QADataEntry("sim_40",   "(sqrt(((11 / 22) / 33)))", "\\sqrt{\\frac{\\frac{11}{22}}{33}}"),
+			                  new QADataEntry("sim_41",   "(sqrt((7 + (1 / 12))))",   "\\sqrt{{7}+{\\frac{1}{12}}}"),
 			                  new QADataEntry("sim_42",   "(sqrt(((3 - 4) + 5)))"), 
 			                  new QADataEntry("sim_43",   "((sqrt(2)) / 3)"),
-			                  new QADataEntry("sim_44",   "(sqrt((sqrt(2))))"),
-			                  new QADataEntry("sim_45",   "((sqrt((sqrt(21)))) / 8)"),
+			                  new QADataEntry("sim_44",   "(sqrt((sqrt(2))))",        "\\sqrt{\\sqrt{2}}"),
+			                  new QADataEntry("sim_45",   "((sqrt((sqrt(21)))) / 8)", "\\frac{\\sqrt{\\sqrt{21}}}{8}"),
 			                  new QADataEntry("sim_46",   "(sqrt((1 + (sqrt(4)))))"),
-			                  new QADataEntry("sim_47",   "(sqrt(((sqrt(4)) / ((sqrt(9)) + (sqrt(16))))))")
+			                  new QADataEntry("sim_47",   "(sqrt(((sqrt(4)) / ((sqrt(9)) + (sqrt(16))))))"), 
+			                  new QADataEntry("sim_48",   "gr_al",                    "\\alpha"),
+			                  new QADataEntry("sim_49",   "(gr_al*gr_be)",            "{\\alpha}{\\beta}"),
+			                  new QADataEntry("sim_50",   "(A ^ B)",                  "{A}^{B}")
 			                  };
 	/* ~Member variables */
 }

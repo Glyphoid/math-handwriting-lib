@@ -72,7 +72,7 @@ _EVAL_			n0
 EXPR_LV1
 VARIABLE
 _STRINGIZE_		n0
-_MATH_TEX_      GET_TEX_VAR_SYMBOL(n0)
+_MATH_TEX_      n0
 _EVAL_			n0
 
 --- # 10

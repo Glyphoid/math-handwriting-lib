@@ -1309,7 +1309,7 @@ public class GraphicalProduction {
 		throws Exception 
 	{		
 		final int expectedNumNonRhsLines = 4;
-		
+				
 		if ( strs.size() <= expectedNumNonRhsLines ) {
 			throw new RuntimeException("Incorrect number of lines (" + strs.size() 
 					                   + ") for creating new graphical production");
@@ -1362,7 +1362,7 @@ public class GraphicalProduction {
 				throw new Exception("Syntax error in line: \"" + headLine + "\"");
 			
 			t_lhs = headLine;
-		}
+		}		
 		
 		int t_nrhs = strs.size() - expectedNumNonRhsLines;
 		String [] t_rhs = new String[t_nrhs];
@@ -1453,8 +1453,8 @@ public class GraphicalProduction {
 			}
 		}
 		
-		t_mathTexInstr = new String[listItems.size()];
-		listItems.toArray(t_mathTexInstr);	
+		t_mathTexInstr = new String[mtListItems.size()];
+		mtListItems.toArray(t_mathTexInstr);	
 		
 		/* Parse evalInstr: evaluation instructions */
 		tline = strs.get(strs.size() - 1).trim();

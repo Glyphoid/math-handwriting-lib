@@ -22,7 +22,7 @@ public class Test_TokenSetParser {
 	public static final String errStr = ParseTreeStringizer.parsingErrString;
 	
 	private static final String RESOURCES_DIR = "resources";
-	private static final String TERMINALS_FILE_NAME = "terminals.txt";
+	private static final String TERMINALS_FILE_NAME = "terminals.json";
 	private static final String PRODUCTIONS_FILE_NAME = "productions.txt";
 	private static final String RESOURCES_CONFIG_DIR = "config";
 	
@@ -84,8 +84,8 @@ public class Test_TokenSetParser {
 		
 		TerminalSet termSet = null;
 		try {
-//			termSet = TerminalSet.createFromFile(termSetFN);
-			termSet = TerminalSet.createFromUrl(termSetFN);
+//			termSet = TerminalSet.createFromUrl(termSetFN);
+			termSet = TerminalSet.createFromJsonAtUrl(termSetFN);
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.err.flush();
@@ -112,6 +112,8 @@ public class Test_TokenSetParser {
 		ParseTreeStringizer stringizer = gpSet.genStringizer();
 		ParseTreeEvaluator evaluator = gpSet.genEvaluator();
 		
+		ParseTreeMathTexifier mathTexifier = new ParseTreeMathTexifier(gpSet, termSet);
+		
 		/* Create token set parser */
 		int nPass = 0;
 		int nTested = 0;
@@ -121,6 +123,7 @@ public class Test_TokenSetParser {
 			// for (int i = 0; i < tokenSetNums.length; ++i) {
 			String tokenSetFileName = qaDataSet.entries[i].tokenSetFileName;
 			String tokenSetTrueString = qaDataSet.entries[i].correctParseRes;
+			String tokenSetTrueMathTex = qaDataSet.entries[i].correctMathTex;
 
 			/* Single out option */
 			if (singleOutIdx != null && singleOutIdx.length > 0) {
@@ -158,16 +161,17 @@ public class Test_TokenSetParser {
 				try {
 					evalRes = evaluator.eval(parseRoot);
 				}
-				catch (Exception exc) {
-					fail("Failed due to evaluator exception");
+				catch (ParseTreeEvaluatorException exc) {
+					evalRes = "[Evaluator exception occurred]";
 				}
 				
-				if (!evalRes.getClass().equals(Double.class)) {
-					throw new RuntimeException(
-							"Unexpected return type from evaluator");
-				}
+//				if (!evalRes.getClass().equals(Double.class)) {
+//					throw new RuntimeException(
+//							"Unexpected return type from evaluator");
+//				}
 			}
 			
+			/* Check stringizer output */
 			if ( !stringized.equals(tokenSetTrueString) ) {
 				System.err.println("Mismatch: \"" + stringized + "\" != \"" + 
 			                       tokenSetTrueString + "\"");
@@ -175,16 +179,33 @@ public class Test_TokenSetParser {
 			assertEquals(stringized, tokenSetTrueString);
 
 			boolean checkResult = stringized.equals(tokenSetTrueString);
+					
+			/* Check Math TeXifier output */
+			String texOut = "";
+			if (tokenSetTrueMathTex != null) {
+				texOut = mathTexifier.texify(parseRoot);
+				
+				assertEquals(texOut, tokenSetTrueMathTex);
+				checkResult = checkResult && texOut.equals(tokenSetTrueMathTex);
+			}
+			
 			String checkResultStr = checkResult ? "PASS" : "FAIL";
 			nPass += checkResult ? 1 : 0;
 
 			String strPrint = "[" + checkResultStr + "] " + "(" + parsingTime
 					+ " ms) " + "File " + tokenSetFileName + ": " + "\""
-					+ stringized + "\"";
-			if (!checkResult)
+					+ stringized + "\"";			
+			if (!checkResult) {
 				strPrint += " <> " + " \"" + tokenSetTrueString + "\"";
+			}
 
 			strPrint += " {Value = " + evalRes + "}";
+			
+			if (tokenSetTrueMathTex != null) {
+				String mathTexMatch = checkResult ? "match" : "MISMATCH";
+				strPrint += "\n  Math TeX " + mathTexMatch  + ": " +
+						"(output | truth) = (\"" + texOut + "\" | \"" + tokenSetTrueMathTex + "\")";
+			}
 
 			if (checkResult) {
 				System.out.println(strPrint);
