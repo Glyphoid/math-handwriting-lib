@@ -43,7 +43,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	private float dotMaxHeight = 3;
 	private int dotTokenIndex = -1;
 	
-	private String [] hardCodedTokens; 
+	private String [] hardCodedTokens;
 	
 	/* Inner interface */
 	/* Inner interface: Progress bar updater */

@@ -1,10 +1,12 @@
 package me.scai.handwriting;
 
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ArrayList;
 import java.net.URL;
+
+import org.apache.commons.lang.ArrayUtils;
 
 import me.scai.handwriting.StrokeCuratorConfig;
 import me.scai.parsetree.GeometryHelper;
@@ -38,7 +40,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 	private List<CStroke> strokes = new LinkedList<CStroke>();
 	private List<CStroke> strokesUN = new LinkedList<CStroke>(); 	/* Unnormalized */ 
 	
-	private List<Integer> strokeStats = new LinkedList<Integer>();
+	private List<Integer> strokeStats = new LinkedList<Integer>();  /* Stroke status */
 	
 	TerminalSet termSet;
 	/* -1: unincorporated (unprocessed); >= 0: index to the containing token */
@@ -84,6 +86,12 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 //		tokenEngine = tokEngine;
 //	}
 	
+	/* Generate a new CWrittenToken from an existing token in the token set and an 
+	 * unincorporated stroke. 
+	 * Input arguments: 
+	 *     oldWrittenTokenIdx : Index to the existing token in the token set
+	 *     strokeUNIdx        : Index to the unincorporated stroke 
+	 */
 	private CWrittenToken generateMergedToken(int oldWrittenTokenIdx, int strokeUNIdx) {
 		CWrittenToken tmpWT = new CWrittenToken();
 		
@@ -128,6 +136,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 			strokeStats.set(strokeStats.size() - 1, oldWrittenTokenIdx);
 			
 			wtSet.deleteToken(oldWrittenTokenIdx);
+			tmpWT.setRecogWinner(newWinnerTokenName);
+			tmpWT.setRecogPs(newPs);
+			
 			wtSet.addToken(oldWrittenTokenIdx, tmpWT, newWinnerTokenName, newPs);
 			/* TODO: wtSet.addToken(wtIdx, wt, winnerTokenName, ps) */
 			
@@ -345,7 +356,232 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 ////		/* TODO: Re-recognize */
 ////		wtConstStrokeIdx.removeLast();
 //	}
+	
+	@Override
+	public List<int []> getWrittenTokenConstStrokeIndices() {
+		return wtConstStrokeIdx;
+	}
+	
+	/* Get the index of the owning token of a stroke */
+	private int getOwningTokenIndex(int strokeIdx) {
+		if (strokeIdx < 0 || strokeIdx >= strokes.size()) { /* Bound check on index */
+			return -1; /* -1 indicates that the stroke does not exist */
+		}
+				
+		for (int i = 0; i < wtConstStrokeIdx.size(); ++i) {
+			int [] constStrokeIndices = wtConstStrokeIdx.get(i);
+			
+			for (int j = 0; j < constStrokeIndices.length; ++j) {
+				if (constStrokeIndices[j] == strokeIdx) {
+					return i;
+				}
+			}
+		}
+		
+		return -1; /* Edge case in which the specified stroke does not have an out-of-bound index, but is somehow not included in any tokens */
+	}
+	
+	/* Remove tokens, without removing the constituent strokes */
+	private void removeTokens(int [] removedTokenIndices) {				
+		System.out.println("removeTokens: Removing " + removedTokenIndices.length + " token(s)"); //DEBUG
+		if (removedTokenIndices.length == 0) {
+			return;
+		}
+		
+		for (int i = 0; i < removedTokenIndices.length; ++i) { //DEBUG
+			System.out.println("  " + removedTokenIndices[i]); //DEBUG
+		}                                                      //DEBUG
+		
+		boolean [] toPreserve = new boolean[getNumTokens()];
+		for (int k = 0; k < toPreserve.length; ++k) {
+			toPreserve[k] = ! ( ArrayUtils.contains(removedTokenIndices, k) );
+			System.out.println("removeTokens: toPreserve[" + k + "] = " + toPreserve[k]); //DEBUG
+		}
+		
+		/* Copies of old data */
+		CWrittenTokenSet new_wtSet = new CWrittenTokenSet();
+		List<Float> new_wtCtrXs = new LinkedList<Float>(); 	/* Central X coordinate of the written tokens */
+		List<Float> new_wtCtrYs = new LinkedList<Float>(); 	/* Central X coordinate of the written tokens */		
+		List<String> new_wtRecogWinners = new LinkedList<String>();
+		List<double []> new_wtRecogPs = new LinkedList<double []>();
+		List<Double> new_wtRecogMaxPs = new LinkedList<Double>();
+		List<int []> new_wtConstStrokeIdx = new LinkedList<int []>();	/* Indices to constituents stroke indices */
+		
+		for (int k = 0; k < toPreserve.length; ++k) {
+			if (toPreserve[k]) {				
+				new_wtSet.addToken(wtSet.tokens.get(k), wtRecogWinners.get(k), wtRecogPs.get(k));
+				
+				new_wtCtrXs.add(wtCtrXs.get(k));
+				new_wtCtrYs.add(wtCtrYs.get(k));
+				new_wtRecogWinners.add(wtRecogWinners.get(k));
+				new_wtRecogPs.add(wtRecogPs.get(k));
+				new_wtRecogMaxPs.add(wtRecogMaxPs.get(k));
+				new_wtConstStrokeIdx.add(wtConstStrokeIdx.get(k));
+			}
+		}
+		
+		/* Update the references to the new data */
+		wtSet = new_wtSet;
+		wtCtrXs = new_wtCtrXs;
+		wtCtrYs = new_wtCtrYs;
+		wtRecogWinners = new_wtRecogWinners;
+		wtRecogPs = new_wtRecogPs;
+		wtRecogMaxPs = new_wtRecogMaxPs;
+		wtConstStrokeIdx = new_wtConstStrokeIdx;
+	}
+	
+	/* Pluck a list of tokens of strokes, while preserving the strokes. 
+	 *   "Plucking" means removing a subset of strokes from a token. */
+	public void pluckTokens(List<Integer> idxTokensToPluck, 
+			                List<int []> idxStrokeIndicesToPluck) {		
+		int numTokensToPluck = idxTokensToPluck.size();		
+		
+		for (int i = 0; i < numTokensToPluck; ++i) {
+			int tokenIdx = idxTokensToPluck.get(i);
+			int [] constIdx = wtConstStrokeIdx.get(tokenIdx);
+			int [] strokesToRemove = idxStrokeIndicesToPluck.get(i);
+			
+			CWrittenToken tmpWT = new CWrittenToken();
+			List<Integer> constIndices = new ArrayList<Integer>(); 
+			for (int j = 0; j < constIdx.length; ++j) {
+				if ( !Arrays.asList(strokesToRemove).contains(constIdx[j]) ) {
+					tmpWT.addStroke(new CStroke(strokesUN.get(constIdx[j])));
+					constIndices.add(constIdx[j]);
+				}
+			}			
+			tmpWT.normalizeAxes();
+			
+			/* Perform recognition on the new token */
+			double [] newPs = new double[tokenEngine.tokenNames.size()];
+			int newRecRes = tokenEngine.recognize(tmpWT, newPs);
+			
+			String newWinnerTokenName = tokenEngine.getTokenName(newRecRes); 
+			double newMaxP = newPs[newRecRes];
+			
+			tmpWT.setRecogWinner(newWinnerTokenName);
+			tmpWT.setRecogPs(newPs);
+			
+			wtSet.replaceToken(tokenIdx, tmpWT, newWinnerTokenName, newPs);
+			wtCtrXs.set(tokenIdx, tmpWT.getCentralX());
+			wtCtrYs.set(tokenIdx, tmpWT.getCentralY());
+			wtRecogWinners.set(tokenIdx, newWinnerTokenName);
+			wtRecogPs.set(tokenIdx, newPs);
+			wtRecogMaxPs.set(tokenIdx, newMaxP);
+			wtConstStrokeIdx.set(tokenIdx, MathHelper.listOfIntegers2ArrayOfInts(constIndices)); 		
+		}
+	}
 
+	/* Force the merging of specified strokes into a token. The strokes may already
+	 * belong to other tokens, in which case the other tokens need to be taken care of
+	 * accordingly. 
+	 */
+	@Override
+	public void mergeStrokesAsToken(int [] indices) {
+		/* TODO: Sanity check on indices: no repeats, no invalid indices */
+		
+		int nStrokes = indices.length;
+		
+		System.out.println("nStrokes = " + nStrokes); //DEBUG
+		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
+		
+		if (nStrokes == 0) { /* Edge case: no strokes to merge */
+			return;
+		}
+		
+		/* Determine the indices of the owning tokens */
+		int [] ownerIndices = new int[nStrokes];
+		List<Integer> idxTokensToRemove = new ArrayList<Integer>();
+		List<Integer> idxTokensToPluck = new ArrayList<Integer>();
+		List<int []> idxStrokeIndicesToPluck = new ArrayList<int []>();
+		
+		for (int i = 0; i < nStrokes; ++i) {
+			ownerIndices[i] = getOwningTokenIndex(indices[i]);
+			System.out.println("ownerIndices[" + i + "] = " + ownerIndices[i]); //DEBUG
+		}
+		
+		/* Determine tokens needs to be removed and which need to be plucked */
+		for (int i = 0; i < nStrokes; ++i) {
+			int [] constIndices = wtConstStrokeIdx.get(ownerIndices[i]); 
+			
+			int numConstStrokes = constIndices.length;	/* Number of strokes in the token */
+			int numOccurrences = MathHelper.countOccurrences(ownerIndices, ownerIndices[i]);
+			System.out.println("Number of occurrences for token " + ownerIndices[i] + " in ownerIndices = " + numOccurrences); //DEBUG
+
+			if (numConstStrokes == numOccurrences) {
+				if ( !idxTokensToRemove.contains(ownerIndices[i]) ) {	/* TODO: Replace with Set */
+					idxTokensToRemove.add(ownerIndices[i]);
+					System.out.println("Adding token " + ownerIndices[i] + " to list of tokens to be removed"); //DEBUG
+				}
+			}
+			else {
+				idxTokensToPluck.add(ownerIndices[i]);
+				idxStrokeIndicesToPluck.add(MathHelper.find(ownerIndices, indices[i]));
+				System.out.println("Adding token " + ownerIndices[i] + " to list of tokens to be plucked"); //DEBUG
+			}
+		}
+		
+		System.out.println("# of tokens to be removed = " + idxTokensToRemove.size()); //DEBUG
+		System.out.println("# of tokens to be plucked = " + idxTokensToPluck.size()); //DEBUG
+		
+		/* Remove the tokens that need to be removed (while preserving the strokes) */
+		System.out.println("About to call removeTokens()");
+		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
+		
+		int [] removedTokenIndices = MathHelper.listOfIntegers2ArrayOfInts(idxTokensToRemove);		
+		removeTokens(removedTokenIndices);
+		
+		System.out.println("Done calling removeTokens()"); //DEBUG
+		System.out.println("  getNumTokens() = " + this.getNumTokens()); //DEBUG
+		System.out.println("  getNuMStrokes() = " + this.getNumStrokes()); //DEBUG
+		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
+		
+		/* Pluck tokens that need to be plucked (while preserving the strokes */
+		System.out.println("idxTokensToPluck.size() = " + idxTokensToPluck.size()); //DEBUG
+		System.out.println("idxStrokeIndicesToPluck.size() = " + idxStrokeIndicesToPluck.size()); //DEBUG
+		
+		pluckTokens(idxTokensToPluck, idxStrokeIndicesToPluck);
+		
+		System.out.println("Done calling pluckTokens()"); //DEBUG
+		
+		/* Create a new token and add the strokes in */
+		CWrittenToken tmpWT = new CWrittenToken();		
+		for (int j = 0; j < indices.length; ++j) {
+			tmpWT.addStroke(new CStroke(strokesUN.get(indices[j])));
+		}
+		tmpWT.normalizeAxes();
+		
+		/* Perform recognition on the new token */
+		double [] newPs = new double[tokenEngine.tokenNames.size()];
+		int newRecRes = tokenEngine.recognize(tmpWT, newPs);
+		
+		String newWinnerTokenName = tokenEngine.getTokenName(newRecRes); 
+		double newMaxP = newPs[newRecRes];
+		
+		tmpWT.setRecogWinner(newWinnerTokenName); /* TODO: Refactor into tokenEngine.recognize() */
+		tmpWT.setRecogPs(newPs);
+		
+		System.out.println("Done calling tokenEngine.recognize()"); //DEBUG
+		System.out.println("  newWinnerTokenName = \"" + newWinnerTokenName + "\""); //DEBUG
+		System.out.println("  newMaxP = \"" + newMaxP + "\""); //DEBUG
+		
+		/* Add the new token */
+		System.out.println("About to call wtSet.addToken(): getNumTokens() = " + wtSet.getNumTokens()); //DEBUG
+		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
+		wtSet.addToken(wtSet.getNumTokens(), tmpWT, newWinnerTokenName, newPs);	
+		
+		/* Central X and Y coordinates of the token */
+		wtCtrXs.add(tmpWT.getCentralX());
+		wtCtrYs.add(tmpWT.getCentralY());
+		
+		/* Update recognition results */
+		wtRecogWinners.add(newWinnerTokenName);
+		wtRecogPs.add(newPs);
+		wtRecogMaxPs.add(newMaxP);		
+		
+		/* Update the wtConstStrokeIdx */
+		wtConstStrokeIdx.add(indices);
+		
+	}
 	
 	@Override
 	public void clear() {
@@ -387,10 +623,6 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 	}
 		
 	/* Private methods */
-	private void reRecognize() {
-		/* TODO */
-	}
-	
 	@Override
 	public CWrittenTokenSet getWrittenTokenSet() {
 		return wtSet;
@@ -405,6 +637,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 	public List<double []> getWrittenTokenRecogPs() {
 		return wtRecogPs;
 	}
+ 
 	
 	/* ~Methods */
 	

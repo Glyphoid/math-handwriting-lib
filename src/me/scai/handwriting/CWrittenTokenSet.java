@@ -34,7 +34,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	}
 	
 	/* Add a token at specified location: without any recognition results */
-	public void addToken(int i, CWrittenToken wt) {
+	private void addToken(int i, CWrittenToken wt) {
 		if ( !wt.bNormalized )
 			wt.normalizeAxes();
 		
@@ -52,6 +52,17 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		addOneToken();
 	}
 	
+	/* Replace a token at specified location: without any recognition result modifictions */
+	private void replaceToken(int i, CWrittenToken newToken) {
+		if ( !newToken.bNormalized ) {
+			newToken.normalizeAxes();
+		}
+		
+		tokens.set(i, newToken);
+		
+		calcBounds();
+	}
+	
 	/* Add a token at the end: with recognition results */
 	public void addToken(CWrittenToken wt, String t_recogWinner, double [] t_recogP) {
 		addToken(wt);
@@ -67,7 +78,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	/* Add recognition results for a token, at the end:
 	 * including the winner of the recognition and the detailed p-values.
 	 */
-	public void addTokenRecogRes(String t_recogWinner, double [] t_recogP) {
+	private void addTokenRecogRes(String t_recogWinner, double [] t_recogP) {
 		recogWinners.add(t_recogWinner);
 		recogPs.add(t_recogP);
 	}
@@ -75,11 +86,21 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	/* Add recognition results for a token, at the specified location: 
 	 * including the winner of the recognition and the detailed p-values.
 	 */
-	public void addTokenRecogRes(int i, String t_recogWinner, double [] t_recogP) {
+	private void addTokenRecogRes(int i, String t_recogWinner, double [] t_recogP) {
 		recogWinners.add(i, t_recogWinner);
 		recogPs.add(i, t_recogP);
 	}
 	
+	/* Replace a token at specified index, with recognition results */
+	public void replaceToken(int i, CWrittenToken wt, String t_recogWinner, double [] t_recogP) {
+		replaceToken(i, wt);
+		replaceTokenRecogRes(i, t_recogWinner, t_recogP);
+	}
+	
+	private void replaceTokenRecogRes(int i, String t_recogWinner, double [] t_recogP) {
+		recogWinners.set(i,  t_recogWinner);
+		recogPs.set(i, t_recogP);
+	}
 	
 	/* (Re-)calculate the bounds */
 	@Override

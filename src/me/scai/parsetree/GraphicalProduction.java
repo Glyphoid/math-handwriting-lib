@@ -992,6 +992,7 @@ public class GraphicalProduction {
 	/* Constants */
 	final static String strinigzationTag = "_STRINGIZE_";
 	final static String evalTag = "_EVAL_";
+	final static String mathTexTag = "_MATH_TEX_";
 	/* ~Constants */
 	
 	private final static String tokenRelSeparator = ":";
@@ -1027,7 +1028,9 @@ public class GraphicalProduction {
 	 */
 	
 	String [] stringizeInstr;		/* Instruction for stringization */
-	String [] evalInstr;				/* Instruction for evaluation */
+	String [] mathTexInstr;         /* Instruction for generating Math TeX */
+	String [] mathMlInstr;         /* Instruction for generating MathML */
+	String [] evalInstr;            /* Instruction for evaluation */
 	
 	/* ~Member variables */
 
@@ -1040,7 +1043,8 @@ public class GraphicalProduction {
 			                   GeometricRelation [][] t_geomRels, 
 			                   AssocType t_assocType,
 			                   String t_assocName, 
-			                   String [] t_stringizeInstr, 
+			                   String [] t_stringizeInstr,
+			                   String [] t_mathTexInstr,
 			                   String [] t_evalInstr) {
 		lhs = t_lhs;
 		rhs = t_rhs;
@@ -1074,6 +1078,7 @@ public class GraphicalProduction {
 		assocType = t_assocType;
 		assocName = t_assocName;
 		stringizeInstr = t_stringizeInstr;
+		mathTexInstr = t_mathTexInstr;
 		evalInstr = t_evalInstr;
 	}
 	
@@ -1302,10 +1307,13 @@ public class GraphicalProduction {
 	
 	public static GraphicalProduction genFromStrings(ArrayList<String> strs, TerminalSet termSet)
 		throws Exception 
-	{
-		if ( strs.size() < 4 )
-			throw new Exception("Two few (" + strs.size() 
-					            + ") lines for creating new graphical production");
+	{		
+		final int expectedNumNonRhsLines = 4;
+		
+		if ( strs.size() <= expectedNumNonRhsLines ) {
+			throw new RuntimeException("Incorrect number of lines (" + strs.size() 
+					                   + ") for creating new graphical production");
+		}
 		
 		String t_lhs;
 		AssocType t_assocType = AssocType.NoAssoc;
@@ -1356,13 +1364,13 @@ public class GraphicalProduction {
 			t_lhs = headLine;
 		}
 		
-		int t_nrhs = strs.size() - 3;
+		int t_nrhs = strs.size() - expectedNumNonRhsLines;
 		String [] t_rhs = new String[t_nrhs];
 		boolean [] t_bt = new boolean[t_nrhs];
 		GeometricRelation [][] t_geomRels = new GeometricRelation[t_nrhs][];
 		
-		
 		String [] t_stringizeInstr = null;
+		String [] t_mathTexInstr = null;
 		String [] t_evalInstr = null;
 		
 		for (int k = 0; k < t_nrhs; ++k) {
@@ -1404,7 +1412,7 @@ public class GraphicalProduction {
 //					if ( line.trim().equals(TerminalSet.epsString) )
 //						t_rhs[k] = TerminalSet.epsString;
 //					else
-					throw new Exception("Encountered a non-head node with no geometric relations specified");
+					throw new RuntimeException("Encountered a non-head node with no geometric relations specified");
 				}
 			}
 			
@@ -1414,9 +1422,10 @@ public class GraphicalProduction {
 		}
 		
 		/* Parse stringizeInst: stringization instructions */
-		String tline = strs.get(strs.size() - 2).trim();
-		if ( !tline.startsWith(strinigzationTag) )
-			throw new Exception("Cannot find stringization tag in line: \"" + tline + "\"");
+		String tline = strs.get(strs.size() - 3).trim();
+		if ( !tline.startsWith(strinigzationTag) ) {
+			throw new RuntimeException("Cannot find stringization tag in line: \"" + tline + "\"");
+		}
 		tline = tline.replace("\t", " ");
 		ArrayList<String> listItems = new ArrayList<String>();
 		String [] t_items = tline.split(" ");
@@ -1428,10 +1437,30 @@ public class GraphicalProduction {
 		t_stringizeInstr = new String[listItems.size()];
 		listItems.toArray(t_stringizeInstr);
 		
+		/* Parse mathTeX instructions */
+		tline = strs.get(strs.size() - 2).trim();
+		if ( !tline.startsWith(mathTexTag) ) {
+			throw new RuntimeException("Cannot find math TeX tag in line: \"" + tline + "\"");
+		}
+		tline = tline.replace("\t", " ");
+		
+		ArrayList<String> mtListItems = new ArrayList<String>();
+		String [] t_mtItems = tline.split(" ");
+		
+		for (int n = 1; n < t_mtItems.length; ++n) {
+			if ( t_mtItems[n].length() > 0 ) {
+				mtListItems.add(t_mtItems[n]);
+			}
+		}
+		
+		t_mathTexInstr = new String[listItems.size()];
+		listItems.toArray(t_mathTexInstr);	
+		
 		/* Parse evalInstr: evaluation instructions */
 		tline = strs.get(strs.size() - 1).trim();
-		if ( !tline.startsWith(evalTag) )
-			throw new Exception("Cannot find evaluation tag in line: \"" + tline + "\"");
+		if ( !tline.startsWith(evalTag) ) {
+			throw new RuntimeException("Cannot find evaluation tag in line: \"" + tline + "\"");
+		}
 		
 		String evalStr = tline.replace(evalTag, "").trim();
 		nLBs = TextHelper.numInstances(evalStr, "(");
@@ -1458,6 +1487,7 @@ public class GraphicalProduction {
 		
 		t_evalInstr = new String[evalItems.size()];
 		evalItems.toArray(t_evalInstr);
+			
 		
 		/* Sanity check for association types */
 		/* TODO */
@@ -1474,9 +1504,10 @@ public class GraphicalProduction {
 			if ( !t_rhs[1].equals(t_rhs[2]) )
 				throw new RuntimeException("Under the current association type, it is unacceptable that the 2nd and 3rd RHS items are different");
 		}
-		
+				
 		return new GraphicalProduction(t_lhs, t_rhs, t_bt, termSet, t_geomRels, 
-									   t_assocType, t_assocName, t_stringizeInstr, t_evalInstr);
+									   t_assocType, t_assocName, 
+									   t_stringizeInstr, t_mathTexInstr, t_evalInstr);
 	}
 	
 	public int getNumNonHeadTokens() {

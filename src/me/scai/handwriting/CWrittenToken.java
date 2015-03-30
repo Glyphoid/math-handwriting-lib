@@ -13,13 +13,18 @@ import me.scai.handwriting.CHandWritingTokenImageData;
 import me.scai.parsetree.TerminalSet;
 import me.scai.parsetree.MathHelper;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONException;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.util.logging.Logger;
 
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
 public class CWrittenToken {
 	/* Member variables */
+//	private final static Logger logger = Logger.getLogger(CWrittenToken.class.getName()); //DEBUG
+	
 	private LinkedList<CStroke> strokes = new LinkedList<>();
 	public boolean bNormalized = false;
 	private float min_x = Float.MAX_VALUE, max_x = Float.MIN_VALUE;
@@ -77,39 +82,43 @@ public class CWrittenToken {
 	 *                  (x and y data are assumed to follow the HTML canvas definition of coordinates)
 	 */
 	public CWrittenToken(String jsonStrokes) {
-		JSONObject jsonToken = null;
+		JsonObject jsonToken = null;
 		int numStrokes;
-		JSONObject strokes = null;
+		JsonObject strokes = null;
 		
+//		logger.info("Beginning to parse JSON");
 		try {
-			jsonToken = new JSONObject(jsonStrokes);
-			numStrokes = jsonToken.getInt("numStrokes");			
+			jsonToken = new JsonParser().parse(jsonStrokes).getAsJsonObject();
 			
-			strokes = jsonToken.getJSONObject("strokes");
+			numStrokes = jsonToken.getAsJsonPrimitive("numStrokes").getAsInt();
+			
+//			logger.info("jsonToken = " + jsonToken);
+//			logger.info("numStokes = " + numStrokes);
+			
+			strokes = jsonToken.getAsJsonObject("strokes");
 			for (int i = 0; i < numStrokes; ++i) {				
 				String key = String.format("%d", i);
 				
-				JSONObject tStroke = strokes.getJSONObject(key);
-				int numPoints = tStroke.getInt("numPoints");
+				JsonObject tStroke = strokes.getAsJsonObject(key);
+				int numPoints = tStroke.getAsJsonPrimitive("numPoints").getAsInt();
 				
-				JSONArray xs = tStroke.getJSONArray("x");
-				JSONArray ys = tStroke.getJSONArray("y");
+				JsonArray xs = tStroke.getAsJsonArray("x");
+				JsonArray ys = tStroke.getAsJsonArray("y");
 				
-				CStroke s = new CStroke((float) xs.getDouble(0), (float) ys.getDouble(0));
+				CStroke s = new CStroke(xs.get(0).getAsFloat(), ys.get(0).getAsFloat());
 				for (int j = 1; j < numPoints; ++j) {
-					s.addPoint((float) xs.getDouble(j), (float) ys.getDouble(j));
+					s.addPoint(xs.get(j).getAsFloat(), ys.get(j).getAsFloat());
 				}
 				
 				this.strokes.add(s);
 			}
 		}
-		catch (JSONException jsonE) {
-			throw new RuntimeException("JSONException occurred during parsing of JSON representation of written token" + jsonE.getMessage());
-		}
 		catch (IndexOutOfBoundsException oobE) {
 			throw new RuntimeException("Index exceeded bound(s) during parsing of JSON representation of written token");
 		}
-		
+		catch (Exception exc) {
+			throw new RuntimeException("JSONException occurred during parsing of JSON representation of written token" + exc.getMessage());
+		}
 
 		this.normalizeAxes();
 	}
@@ -477,8 +486,13 @@ public class CWrittenToken {
 	
 	/* Normalize axes */
 	public void normalizeAxes() {
-		if ( strokes.size() == 0 )
+		if ( bNormalized ) {
+			return;
+		}
+		
+		if ( strokes.size() == 0 ) {
 			System.err.println("EMPTY_STROKES_ERR: There are no storkes in this written token.");
+		}
 		
 		for (int i = 0; i < strokes.size(); ++i) {
 			if ( strokes.get(i).min_x < min_x ) min_x = strokes.get(i).min_x;
@@ -490,8 +504,9 @@ public class CWrittenToken {
 		width = max_x - min_x;
 		height = max_y - min_y;
 		
-		for (int i = 0; i < strokes.size(); ++i)
+		for (int i = 0; i < strokes.size(); ++i) {
 			strokes.get(i).normalizeAxes(min_x, max_x, min_y, max_y);
+		}
 		
 		bNormalized = true;
 	}

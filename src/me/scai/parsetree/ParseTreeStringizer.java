@@ -7,7 +7,7 @@ public class ParseTreeStringizer {
 	/* Constants */
 	public final static String parsingErrString = "[Parsing failed: Syntax error]";
 	
-	private HashMap<String, String []> sumString2InstrMap = new HashMap<String, String []>();
+	private HashMap<String, String []> sumString2InstrMap = new HashMap<String, String []>(); 		/* For stringization to plain computer math notation */	
 	private HashMap<String, String> specialStringMap = new HashMap<String, String>();
 	/* ~Member variables */
 	

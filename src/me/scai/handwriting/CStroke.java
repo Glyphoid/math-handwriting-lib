@@ -63,8 +63,19 @@ public class CStroke {
 		float rng_x = max_x - min_x;
 		float rng_y = max_y - min_y;
 		for (int i = 0; i < xs.size(); ++i) {
-			xs.set(i, (xs.get(i) - min_x) / rng_x);
-			ys.set(i, (ys.get(i) - min_y) / rng_y);
+			if (rng_x == 0.0f) {
+				xs.set(i, 0.0f); /* Edge case: Zero width */
+			}
+			else {
+				xs.set(i, (xs.get(i) - min_x) / rng_x);
+			}
+			
+			if (rng_y == 0.0f) {
+				ys.set(i, 0.0f); /* Edge case: Zero height */
+			}
+			else {
+				ys.set(i, (ys.get(i) - min_y) / rng_y);
+			}
 		}
 		
 		bNormalized = true;

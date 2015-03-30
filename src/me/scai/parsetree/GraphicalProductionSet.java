@@ -50,8 +50,12 @@ public class GraphicalProductionSet {
 		/* Remove the empty lines at the end */
 		lines = TextHelper.removeTrailingEmptyLines(lines);
 		
+//		System.out.println("Number of lines = " + lines.length); //DEBUG
 		while ( idxLine < lines.length ) {
-			assert(lines[idxLine].startsWith(separatorString));
+//			System.out.println("Line # = " + idxLine); //DEBUG
+//			System.out.println("Current line = \"" + lines[idxLine] + "\""); //DEBUG
+			
+			//assert(lines[idxLine].startsWith(separatorString));
 			idxLine++;
 			
 			ArrayList<String> pLines = new ArrayList<String>();

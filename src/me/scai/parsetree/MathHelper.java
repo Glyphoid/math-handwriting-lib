@@ -3,6 +3,8 @@ package me.scai.parsetree;
 import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.LinkedList;
 
 /* Helper class for sort */
 class PairedValueIndex implements Comparable<PairedValueIndex> {
@@ -289,4 +291,43 @@ public class MathHelper {
 		 
 		 return s;
 	 }
+	 
+	 /* Count occurrence of an integer in an array of integers */
+	 public static int countOccurrences(int [] ns, int n) {
+		 int oc = 0;
+		 
+		 for (int i = 0; i < ns.length; ++i) {
+			 if (ns[i] == n) {
+				 oc++;
+			 }
+		 }
+		 
+		 return oc;
+	 }
+	 
+	 /* Find all occurrences of an integer in an array of integers:
+	  * return all indices 
+	  */
+	 public static int [] find(int [] ns, int n) {
+		 List<Integer> idxsList = new LinkedList<Integer>();
+		 
+		 for (int i = 0; i < ns.length; ++i) {
+			 if (ns[i] == n) {
+				 idxsList.add(i);
+			 }
+		 }
+		 
+		 return listOfIntegers2ArrayOfInts(idxsList);
+	 }
+	 
+	 /* Convert a list of Integer to an array of int */
+	 public static int [] listOfIntegers2ArrayOfInts(List<Integer> xs) {
+		 int [] xa = new int[xs.size()];
+		 for (int i = 0; i < xa.length; ++i) {
+			 xa[i] = xs.get(i);
+		 }
+		 
+		 return xa;
+	 }
+	 
 }
