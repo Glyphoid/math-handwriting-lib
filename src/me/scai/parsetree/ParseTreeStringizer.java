@@ -36,16 +36,18 @@ public class ParseTreeStringizer {
 	/* Input: n: root of the parse tree */
 	/* Currently based on recursion. */
 	public String stringize(Node n) {
-		if ( n == null )
+		if ( n == null ) {
 			return parsingErrString;
+		}
 					
 		String s = "";
 			
 		String prodSumString = n.prodSumString;
 		String [] instr = sumString2InstrMap.get(prodSumString);
-		if ( instr == null )
+		if ( instr == null ) {
 			throw new RuntimeException("Cannot find the stringization instruction for: " 
 		                               + n.prodSumString);
+		}
 		
 		for (int i = 0; i < instr.length; ++i) {
 			if ( specialStringMap.containsKey(instr[i]) ) { /* Special string */
@@ -53,14 +55,18 @@ public class ParseTreeStringizer {
 			}
 			else if ( instr[i].startsWith("n") ) { /* String content from the children nodes */
 				int iNode = Integer.parseInt( instr[i].substring(1, instr[i].length()) );
-				if ( iNode < 0 || iNode >= n.nc )
+				if ( iNode < 0 || iNode >= n.nc ) {
 					throw new RuntimeException("Node index (" + iNode 
 							                   + ") exceeds number of children (" 
 							                   + n.nc + ")");
-				if ( n.ch[iNode].isTerminal() )
+				}
+				
+				if ( n.ch[iNode].isTerminal() ) {
 					s += n.ch[iNode].termName;
-				else
+				}
+				else {
 					s += stringize(n.ch[iNode]);
+				}
 			}
 			else {	/* Hard-coded string content */
 				s += instr[i];

@@ -332,28 +332,69 @@ _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_ASSIGN_OP(n0) { n2 }
 _EVAL_			VARIABLE_ASSIGN_VALUE(n1, n2);
 
---- $ 43
+--- # 43
+MATH_FUNCTION  # Elementary function: "ln"
+TERMINAL(l)
+TERMINAL(n)         : {AlignBottom(0), PositionEast(0)}
+_STRINGIZE_     n0 n1
+_MATH_TEX_      \ln
+_EVAL_          GET_MATH_FUNCTION_2CHAR_1ARG(n0, n1)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
+
+--- # 44
+MATH_FUNCTION  # Elementary function: "sin"
+TERMINAL(s)
+TERMINAL(i)         : {AlignBottom(0), PositionEast(0)}
+TERMINAL(n)         : {AlignBottom(1), PositionEast(1)}
+_STRINGIZE_     n0 n1 n2
+_MATH_TEX_      \sin
+_EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
+
+--- # 45
+MATH_FUNCTION  # Elementary function: "cos"
+TERMINAL(c)
+TERMINAL(o)         : {AlignBottom(0), PositionEast(0)}
+TERMINAL(s)         : {AlignBottom(1), PositionEast(1)}
+_STRINGIZE_     n0 n1 n2
+_MATH_TEX_      \cos
+_EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
+
+--- # 44
+EXPR_LV5 	   # Functions with arguments, e.g., "ln 3"
+MATH_FUNCTION
+EXPR_LV4                : {AlignMiddle(0), PositionEast(0)} # The argument of the function
+_STRINGIZE_     n0 ( n1 )
+_MATH_TEX_      n0 { n1 }
+_EVAL_          CALL_FUNCTION_1ARG(n0, n1) 
+
+--- $ 45
 VARIABLE
 VARIABLE_SYMBOL_WRAPPER
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			EVAL_VARIABLE(n0)
 
---- # 44
+--- # 46
 ROOT
 EXPR_LV4
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 45
+--- # 47
+ROOT 			# TODO: EXPR_LV5 should be allowed within EXPR_LV4
+EXPR_LV5
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+--- # 48
 ROOT
 ASSIGNMENT_STATEMENT
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 46
+--- # 49
 ROOT
 VARIABLE
 _STRINGIZE_		n0

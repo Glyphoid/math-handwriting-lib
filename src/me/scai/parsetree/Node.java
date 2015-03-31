@@ -62,7 +62,14 @@ public class Node {
 		lhs = t_lhs;
 		isTerminal = true; /* Will be set to false when addChild() is called */
 		prodSumString = t_prodSumString;
-		termName = t_termName;
+		
+		
+		if (TerminalSet.isTerminalNameType(t_termName)) {
+			termName = TerminalSet.getTerminalNameTypeTokenName(t_termName);
+		}
+		else {
+			termName = t_termName;
+		}
 		p = null;
 		nc = 0;
 		ch = null;

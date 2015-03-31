@@ -17,6 +17,9 @@ import com.google.gson.JsonArray;
 public class TerminalSet {
 	/* Constants */
 	public final static String commentString = "#";
+	
+	public final static String terminalNameTypePrefix = "TERMINAL(";
+	public final static String terminalNameTypeSuffix = ")";
 //	public final static String epsString = "EPS";
 	
 	/* Members */
@@ -142,8 +145,18 @@ public class TerminalSet {
 	public boolean isTypeTerminal(String type) {
 //		if ( type == epsString )
 //			return true; /* EPS is a terminal. */
-//		else
-		return type2TokenMap.keySet().contains(type);
+//		else			
+		if (type2TokenMap.keySet().contains(type)) {
+			return true;
+		}
+		else {
+			if (isTerminalNameType(type)) { /* TODO: Use regex */
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
 	}
 	
 	/* Test if a token belongs to a terminal type */
@@ -166,6 +179,52 @@ public class TerminalSet {
 		return ts;
 	}
 	
+	/* Determine whether a token matches a type. Normally, this just entails
+	 * a lookup for the type of the token. But a special case is where the 
+	 * type is something like "TERMINAL(l)"
+	 */
+	public boolean match(String tokenName, String typeName) {
+		if (isTerminalNameType(typeName)) {
+			return terminalNameTypeMatches(typeName, tokenName);
+		}
+		else {
+			String tTokenType = getTypeOfToken(tokenName);
+			return tTokenType.equals(typeName);
+		}
+	}
+	
+	public static boolean isTerminalNameType(String typeName) {
+		return typeName.startsWith(terminalNameTypePrefix) && 
+			   typeName.endsWith(terminalNameTypeSuffix);
+	}
+	
+	public static String getTerminalNameTypeTokenName(String typeName) {
+		return typeName.replace(terminalNameTypePrefix, "").replace(terminalNameTypeSuffix, "");
+	}
+	
+	public static boolean terminalNameTypeMatches(String terminalNameType, String tokenName) {
+		String tTokenName = terminalNameType.replace(terminalNameTypePrefix, "")
+				.replace(terminalNameTypeSuffix, "");
+		return tTokenName.equals(tokenName);
+	}
+	
+	
+	public boolean typeListContains(List<String> types, String tokenName) {
+		Iterator<String> typesIt = types.iterator();		
+		while (typesIt.hasNext()) {
+			String tType = typesIt.next();
+			
+			if (isTerminalNameType(tType)) {
+				if (terminalNameTypeMatches(tType, tokenName)) {
+					return true;
+				}
+			}
+		}
+		
+		String tTokenType = getTypeOfToken(tokenName);
+		return types.contains(tTokenType);
+	}
+	
 	/* Factory method: From a JSON file */
 	public static TerminalSet createFromJsonAtUrl(URL tsJsonFileUrl) 
 		throws Exception {
@@ -180,6 +239,7 @@ public class TerminalSet {
 		
 		return ts;
 	}
+		
 	
 	/* Testing routine */
 //	public static void main(String [] args) {

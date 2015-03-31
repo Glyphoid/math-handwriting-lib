@@ -61,19 +61,21 @@ public class ParseTreeEvaluator {
 		int nArgs = argIndices.length;
 		Object evalRes = null;
 
-		if (funcName == null || argIndices == null)
+		if (funcName == null || argIndices == null) {
 			throw new RuntimeException(
 					"Cannot find evaluation instruction for production: "
 							+ sumString);
+		}
 
 		@SuppressWarnings("rawtypes")
 		Class[] argTypes = new Class[nArgs];
-		for (int i = 0; i < nArgs; ++i)
+		for (int i = 0; i < nArgs; ++i) {
 			argTypes[i] = Object.class;
+		}
 
 		try {
-			Method m = this.getClass().getMethod(funcName.toLowerCase(),
-					argTypes);
+			String tFuncName = funcName.toLowerCase();			
+			Method m = this.getClass().getMethod(tFuncName, argTypes);
 
 			Object[] args = new Object[nArgs];
 			for (int j = 0; j < nArgs; ++j) {
@@ -87,7 +89,6 @@ public class ParseTreeEvaluator {
 			}
 
 			try {
-				// System.out.println("Invoking " + m.toString()); //DEBUG
 				evalRes = m.invoke(this, args);
 			} 
 			catch (InvocationTargetException iteExc) {
@@ -177,6 +178,69 @@ public class ParseTreeEvaluator {
 		double y = Math.sqrt(d_x);
 		return y;
 	}
+	
+	public double ln(Object x) throws LogarithmOfNonPositiveException {
+		double d_x = getDouble(x);
+		
+		if (d_x <= 0.0) {
+			throw new LogarithmOfNonPositiveException("Attempt to take the logarithm of non-positive number " + d_x);
+		}
+		
+		double y = Math.log(d_x);
+		return y;
+	}
+	
+	public double sin(Object x) {
+		double d_x = getDouble(x);
+		double y = Math.sin(d_x);
+		return y;
+	}
+	
+	public double cos(Object x) {
+		double d_x = getDouble(x);
+		double y = Math.cos(d_x);
+		return y;
+	}
+	
+	public Object call_function_1arg(Object methodObj, Object arg0)
+		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {		
+		Method method = (Method) methodObj;
+		
+		return method.invoke(this, arg0);
+	}
+	
+	public Method get_math_function_2char_1arg(Object nameObj0, Object nameObj1) 
+		throws NoSuchMethodException {
+		StringBuilder funcNameBuilder = new StringBuilder();
+		funcNameBuilder.append((String) nameObj0);
+		funcNameBuilder.append((String) nameObj1);
+		String funcName = funcNameBuilder.toString();
+		
+		Class [] argTypes = new Class[1];
+		for (int i = 0; i < argTypes.length; ++i) {
+			argTypes[i] = Object.class;
+		}
+		
+		Method method = this.getClass().getMethod(funcName, argTypes);
+		return method;
+	}
+	
+	public Method get_math_function_3char_1arg(Object nameObj0, Object nameObj1, Object nameObj2) 
+			throws NoSuchMethodException {
+			StringBuilder funcNameBuilder = new StringBuilder();
+			funcNameBuilder.append((String) nameObj0);
+			funcNameBuilder.append((String) nameObj1);
+			funcNameBuilder.append((String) nameObj2);
+			String funcName = funcNameBuilder.toString();
+			
+			Class [] argTypes = new Class[1];
+			for (int i = 0; i < argTypes.length; ++i) {
+				argTypes[i] = Object.class;
+			}
+			
+			Method method = this.getClass().getMethod(funcName, argTypes);
+			return method;
+		}
 
 	public String string(Object s) {
 		@SuppressWarnings("rawtypes")
