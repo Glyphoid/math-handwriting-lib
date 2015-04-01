@@ -62,7 +62,7 @@ _MATH_TEX_      { n0 } ^ { n1 }
 _EVAL_			EXPONENTIATION(n0, n1)
 
 --- # 8
-EXPR_LV1
+EXPR_LV1			# Nodes that can be the argument of a function
 DECIMAL_NUMBER
 _STRINGIZE_		n0
 _MATH_TEX_      n0
@@ -82,12 +82,26 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
+--- # 23
+EXPR_LV1
+MULTIPLICATION_VAR
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
 --- # 11
 EXPR_LV1
 FRACTION_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
+
+--- # 36
+EXPR_LV1
+SQROOT_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_ 			n0
 
 --- # 12
 EXPR_LV1			# Addition with brackets
@@ -99,7 +113,7 @@ _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
 
 --- # 13
-EXPR_LV1			# Addition with brackets
+EXPR_LV1			# Subtraction with brackets
 SUBTRACTION
 BRACKET_L : {AlignMiddle(0), PositionWest(0)}	# Left bracket
 BRACKET_R : {AlignMiddle(0), PositionEast(0)}	# Right bracket
@@ -180,13 +194,6 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 23
-EXPR_LV1
-MULTIPLICATION_VAR
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			n0
-
 --- # 24
 EXPR_LV2
 MULTIPLICATION
@@ -197,7 +204,7 @@ _EVAL_			n0
 --- # 25
 ADDITION	(ASSOC: ASSOC_LEFT_3B: ADDITION_SUBTRACTION)
 PLUS_OP
-EXPR_LV4 : {AlignMiddle(0), PositionWest(0)} # 1st number.
+EXPR_LV4 : {AlignMiddle(0), PositionWest(0)} # 1st number
 EXPR_LV4 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_PLUS_OP(n0) { n2 }
@@ -281,13 +288,6 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_ 			n0
 
---- # 36
-EXPR_LV3
-SQROOT_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_ 			n0
-
 --- # 37
 EXPR_LV4
 EXPR_LV1
@@ -316,8 +316,15 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
+--- # 
+EXPR_LV1
+MATH_FUNCTION_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
 --- # 41
-VARIABLE_SYMBOL_WRAPPER
+VARIABLE
 VARIABLE_SYMBOL
 _STRINGIZE_ 	n0
 _MATH_TEX_      n0
@@ -326,14 +333,14 @@ _EVAL_ 			STRING(n0)
 --- # 42
 ASSIGNMENT_STATEMENT
 ASSIGN_OP
-VARIABLE_SYMBOL_WRAPPER : {AlignMiddle(0), PositionWest(0)} # Variable symbol
+VARIABLE                : {AlignMiddle(0), PositionWest(0)} # Variable symbol
 EXPR_LV4                : {AlignMiddle(0), PositionEast(0)} # Value expression
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_ASSIGN_OP(n0) { n2 }
 _EVAL_			VARIABLE_ASSIGN_VALUE(n1, n2);
 
 --- # 43
-MATH_FUNCTION  # Elementary function: "ln"
+MATH_FUNCTION_NAME  # Elementary function: "ln"
 TERMINAL(l)
 TERMINAL(n)         : {AlignBottom(0), PositionEast(0)}
 _STRINGIZE_     n0 n1
@@ -341,7 +348,7 @@ _MATH_TEX_      \ln
 _EVAL_          GET_MATH_FUNCTION_2CHAR_1ARG(n0, n1)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
 
 --- # 44
-MATH_FUNCTION  # Elementary function: "sin"
+MATH_FUNCTION_NAME  # Elementary function: "sin"
 TERMINAL(s)
 TERMINAL(i)         : {AlignBottom(0), PositionEast(0)}
 TERMINAL(n)         : {AlignBottom(1), PositionEast(1)}
@@ -350,7 +357,7 @@ _MATH_TEX_      \sin
 _EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
 
 --- # 45
-MATH_FUNCTION  # Elementary function: "cos"
+MATH_FUNCTION_NAME  # Elementary function: "cos"
 TERMINAL(c)
 TERMINAL(o)         : {AlignBottom(0), PositionEast(0)}
 TERMINAL(s)         : {AlignBottom(1), PositionEast(1)}
@@ -359,30 +366,16 @@ _MATH_TEX_      \cos
 _EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
 
 --- # 44
-EXPR_LV5 	   # Functions with arguments, e.g., "ln 3"
-MATH_FUNCTION
-EXPR_LV4                : {AlignMiddle(0), PositionEast(0)} # The argument of the function
+MATH_FUNCTION_TERM # Functions with arguments, e.g., "ln 3"
+MATH_FUNCTION_NAME
+EXPR_LV1                : {AlignMiddle(0), PositionEast(0)} # The argument of the function
 _STRINGIZE_     n0 ( n1 )
 _MATH_TEX_      n0 { n1 }
 _EVAL_          CALL_FUNCTION_1ARG(n0, n1) 
 
---- $ 45
-VARIABLE
-VARIABLE_SYMBOL_WRAPPER
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			EVAL_VARIABLE(n0)
-
 --- # 46
 ROOT
 EXPR_LV4
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			n0
-
---- # 47
-ROOT 			# TODO: EXPR_LV5 should be allowed within EXPR_LV4
-EXPR_LV5
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0

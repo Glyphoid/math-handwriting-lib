@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Iterator;
 import java.net.URL;
+
+import me.scai.handwriting.TokenDegeneracy;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonElement;
@@ -27,55 +30,11 @@ public class TerminalSet {
 	HashMap<String, String>	token2TypeMap = new HashMap<String, String>();
 	HashMap<String, String> token2TexNotationMap = new HashMap<String, String>();
 	
+	private TokenDegeneracy tokenDegen;
+	
 	/* Constructor */
 	/* Default constructor */
 	public TerminalSet() {}
-	
-	public void readFromUrl(URL tsFileUrl) 
-			throws IOException {
-		String [] lines = null;
-		try {
-			lines = TextHelper.readLinesTrimmedNoCommentFromUrl(tsFileUrl, commentString);
-		}
-		catch ( Exception e ) {
-			throw new IOException("Failed to read terminal set from URL: \"" + tsFileUrl + "\"");
-		}
-		finally {
-			
-		}
-		
-		for (int k = 0; k < lines.length; ++k) {
-			if ( lines[k].length() == 0 )
-				continue;	/* Skip empty lines */
-			
-			String t_line = lines[k].replace("\t", " ");
-			String [] t_items = t_line.split(" ");
-						
-			String t_type = t_items[0];			
-			if ( t_items[0].length() == 0 ) {
-//				throw new IOException("Failed to read terminal set from file: " + tsFileName);
-				throw new IOException("Failed to read terminal set from URL: \"" + tsFileUrl + "\"");
-			}
-			
-			ArrayList<String> lst_tokens = new ArrayList<String>();
-			for (int j = 1; j < t_items.length; ++j) {
-				if ( t_items[j].length() > 0 ) {
-					lst_tokens.add(t_items[j]);
-				}
-			}
-			
-			String [] t_tokens = new String[lst_tokens.size()];
-			lst_tokens.toArray(t_tokens);
-			
-			/* Add to type-to-token map */
-			type2TokenMap.put(t_type, t_tokens);
-			
-			/* Add to token-to-type map */
-			for (int j = 0; j < t_tokens.length; ++j) {
-				token2TypeMap.put(t_tokens[j], t_type);
-			}
-		}
-	}
 	
 	public void readFromJsonAtUrl(URL tsFileUrl) 
 			throws IOException {
@@ -133,8 +92,10 @@ public class TerminalSet {
 			
 			token2TexNotationMap.put(termName, texNotation);
 		}
+		
+		tokenDegen = new TokenDegeneracy();
 	}
-	
+		
 	/* Get the type of a token */
 	public String getTypeOfToken(String token) {
 		return token2TypeMap.get(token);
@@ -164,21 +125,6 @@ public class TerminalSet {
 		 return token2TypeMap.keySet().contains(token);
 	}
 	
-	/* Factory method */
-	public static TerminalSet createFromUrl(URL tsFileUrl)
-		throws Exception {
-		TerminalSet ts = new TerminalSet();
-		
-		try {
-			ts.readFromUrl(tsFileUrl);
-		}
-		catch ( Exception e ) {
-			throw new Exception("Failed to create TerminalSet from URL: \"" + tsFileUrl + "\"");
-		}
-		
-		return ts;
-	}
-	
 	/* Determine whether a token matches a type. Normally, this just entails
 	 * a lookup for the type of the token. But a special case is where the 
 	 * type is something like "TERMINAL(l)"
@@ -202,10 +148,23 @@ public class TerminalSet {
 		return typeName.replace(terminalNameTypePrefix, "").replace(terminalNameTypeSuffix, "");
 	}
 	
-	public static boolean terminalNameTypeMatches(String terminalNameType, String tokenName) {
-		String tTokenName = terminalNameType.replace(terminalNameTypePrefix, "")
-				.replace(terminalNameTypeSuffix, "");
-		return tTokenName.equals(tokenName);
+	public boolean terminalNameTypeMatches(String terminalNameType, String tokenName) {
+		String tTokenName = getTerminalNameTypeTokenName(terminalNameType);
+				
+		if (tTokenName.equals(tokenName)) {
+			return true;
+		}
+		else {
+			/* Look up the degeneracy table to find alternatives, e.g., "o" for "0"*/
+			Set<String> altTokenNames = tokenDegen.getAlternatives(tokenName);
+			
+			if (altTokenNames != null) {
+				return altTokenNames != null && altTokenNames.contains(tTokenName);
+			}
+			else {
+				return false;
+			}
+		}
 	}
 	
 	

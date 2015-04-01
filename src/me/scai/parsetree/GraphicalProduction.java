@@ -602,7 +602,8 @@ public class GraphicalProduction {
 		    			CWrittenTokenSetNoStroke tTokenSet = a_rems[i][j];
 		    			int t_nTokens = tTokenSet.nTokens();
 		    			if ( t_nTokens != 1 ) {
-		    				throw new RuntimeException("Encountered unexpected value of t_nTokens: != 1");
+		    				t_geomScores[j] = 0.0f; //TODO: Think about whether throwing an exception makes more sense. MATH_FUNCTION_NAME has trouble with the exception paradigm
+//		    				throw new RuntimeException("Encountered unexpected value of t_nTokens: != 1");
 		    			}
 		    			
 		    			String tokenTermType = tTokenSet.tokens.get(0).tokenTermType;
