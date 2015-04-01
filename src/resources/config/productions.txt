@@ -139,10 +139,25 @@ _STRINGIZE_		( n1 _SPACE_ * _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_MULTIPLY_OP(n0) { n2 }
 _EVAL_			MULTIPLY(n1, n2)
 
+---
+VARIABLE_EXPONENTIATION    # The exponentiation of a variable, e.g., a^2, a^b, a^sqrt(a), a^(1/3) (without the brackets) 
+VARIABLE
+EXPR_LV4 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
+_STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
+_MATH_TEX_      { n0 } ^ { n1 }
+_EVAL_			EXPONENTIATION(n0, n1)
+
+---
+VARIABLE_EXPONENTIATION
+VARIABLE
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
-VARIABLE                                     # Left variable
-VARIABLE : {AlignMiddle(0), PositionEast(0)} # Right variable
+VARIABLE_EXPONENTIATION                                     # Left variable
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right variable
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -150,7 +165,7 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 17
 MULTIPLICATION_VAR		# Multiplication of a number and a variable without the multiply operator (e.g., "3c").
 DECIMAL_NUMBER                               # Left operand: A decimal number
-VARIABLE : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -158,7 +173,7 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 18
 MULTIPLICATION_VAR		# Multiplication of an exponentiation and a variable without the multiply operator
 EXPONENTIATION                               # Left operand: An exponentiation
-VARIABLE : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -166,7 +181,7 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 19
 MULTIPLICATION_VAR		# Multiplication of a fraction and a variable without the multiply operator
 FRACTION_TERM                                # Left operand: An fraction (or its negative)
-VARIABLE : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -174,15 +189,15 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 20
 MULTIPLICATION_VAR		# Multiplication of a (square-)root and a variable without the multiply operator
 SQROOT_TERM                                  # Left operand: An (square-)root (or its negative)
-VARIABLE : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
 
 --- # 21
-MULTIPLICATION_VAR
+MULTIPLICATION_VAR		# Infinite expansion for variable multiplication
 MULTIPLICATION_VAR                           # Left operand: A variable multiplication itself (effectively making it a left association)
-VARIABLE : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
 _STRINGIZE_     ( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)          
