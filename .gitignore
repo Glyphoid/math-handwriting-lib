@@ -29,6 +29,10 @@ proguard/
 .settings/
 
 # Backup files in graph_lang
-graph_lang/*_backup_*.txt
+graph_lang/*backup*
+
+target/
+
+jars/
 
 

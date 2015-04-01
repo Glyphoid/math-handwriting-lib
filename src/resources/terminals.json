@@ -1,0 +1,39 @@
+{
+  terminals : {
+    'DIGIT'            : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+    'POINT'            : ['.'],
+    'PLUS_OP'          : ['+'],
+    'MINUS_OP'         : ['-'], 
+    'MULT_OP'          : ['*', 'X'],
+    'ROOT_OP'          : ['root'],
+    'OBLIQUE_DIV_OP'   : ['/'],
+    'BRACKER_L'        : ['('], 
+    'BRACKER_R'        : [')'],
+    'VARIABLE_SYMBOL'  : ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'gr_al', 'gr_be', 'gr_ga', 'gr_de', 'gr_ep', 'gr_ze', 'gr_et', 'gr_th', 'gr_io', 'gr_ka', 'gr_la', 'gr_mu', 'gr_nu', 'gr_xi', 'gr_omicron', 'gr_pi', 'gr_rh', 'gr_si', 'gr_ta', 'gr_up', 'gr_ph', 'gr_ch', 'gr_omega'],
+    'ASSIGN_OP'        : ['=']    
+  },
+  texNotations : {
+  	'gr_al'       : '\\alpha',
+	'gr_be'       : '\\beta',	
+	'gr_ga'       : '\\gamma', 
+	'gr_de'       : '\\delta',
+	'gr_ep'       : '\\epsilon',
+	'gr_ze'       : '\\zeta',
+	'gr_et'       : '\\eta',
+	'gr_th'       : '\\theta',
+	'gr_io'       : '\\iota',
+	'gr_ka'       : '\\kappa',
+	'gr_la'       : '\\lambda',
+	'gr_mu'       : '\\mu',
+	'gr_nu'       : '\\nu',
+	'gr_xi'       : '\\xi',
+	'gr_pi'       : '\\pi',
+	'gr_rh'       : '\\rho',
+	'gr_si'       : '\\sigma',
+	'gr_ta'       : '\\tau',
+	'gr_up'       : '\\upsilon',
+	'gr_ph'       : '\\phi',
+	'gr_ch'       : '\\chi',
+	'gr_omega'    : '\\omega'
+  }
+}
