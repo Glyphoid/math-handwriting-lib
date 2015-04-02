@@ -95,7 +95,9 @@ public class PositionRelation extends GeometricRelation {
 			
 			if ( positionType == PositionType.PositionNorth ||
 				 positionType == PositionType.PositionGenNorth) { 
-				/* InRel is on the smaller side */
+//			if ( positionType == PositionType.PositionSouth ||
+//			     positionType == PositionType.PositionGenSouth) {
+				/* InRel is on the smaller side */	
 				lesserMoveBnds[0] = bndsInRel[1];
 				lesserMoveBnds[1] = bndsInRel[3];
 			

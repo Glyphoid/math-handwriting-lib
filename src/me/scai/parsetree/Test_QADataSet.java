@@ -170,6 +170,8 @@ public class Test_QADataSet {
 							  new QADataEntry("sim_65",   "(sqrt(sin(A)))",             "\\sqrt{\\sin{A}}"), 
 							  new QADataEntry("sim_66",   "((sqrt(sin(A))) / cos(A))",  "\\frac{\\sqrt{\\sin{A}}}{\\cos{A}}"),
 						      new QADataEntry("sim_67",   "cos(gr_al)",                 "\\cos{\\alpha}"),
+						      new QADataEntry("sim_70",   "[3; 4]",                     "\\begin{bmatrix}3\\\\4\\end{bmatrix}"), 
+						      new QADataEntry("sim_71",   "[sin(A); cos(A)]",           "\\begin{bmatrix}\\sin{A}\\\\\\cos{A}\\end{bmatrix}")
 			                  };
 	/* ~Member variables */
 }

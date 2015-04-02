@@ -1,7 +1,7 @@
 --- # 0 # TODO: Re-format as JSON
 DIGIT_STRING 		# LHS
 DIGIT  				# The first after LHS is always the head
-DIGIT_STRING : {AlignMiddle(0), PositionEast(0)}	# The second and following ones are the non-heads # The number in the brackets are the index to the parameter
+DIGIT_STRING : {AlignMiddle(0), PositionEast(0)}	# The second and following ones are the non-heads # The number in the parentheses are the index to the parameter
 _STRINGIZE_ 	n0 n1	# Stringization scheme. Node numbers are preceded by "n". Terminal nodes have their termName printed, whereas non terminals are subject to further stringization.
 _MATH_TEX_      n0 n1
 _EVAL_      	DIGIT_CONCAT(n0, n1)	# Calculation scheme: DIGIT_CONCAT is a special scheme that needs to be implemented by the evaluation routine.
@@ -104,19 +104,19 @@ _MATH_TEX_      n0
 _EVAL_ 			n0
 
 --- # 12
-EXPR_LV1			# Addition with brackets
+EXPR_LV1			# Addition with parentheses
 ADDITION
-BRACKET_L : {AlignMiddle(0), PositionWest(0)}	# Left bracket
-BRACKET_R : {AlignMiddle(0), PositionEast(0)}	# Right bracket
+PARENTHESIS_L : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
+PARENTHESIS_R : {AlignMiddle(0), PositionEast(0)}	# Right parenthesis
 _STRINGIZE_ 	( n0 )
 _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
 
 --- # 13
-EXPR_LV1			# Subtraction with brackets
+EXPR_LV1			# Subtraction with parentheses
 SUBTRACTION
-BRACKET_L : {AlignMiddle(0), PositionWest(0)}	# Left bracket
-BRACKET_R : {AlignMiddle(0), PositionEast(0)}	# Right bracket
+PARENTHESIS_L : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
+PARENTHESIS_R : {AlignMiddle(0), PositionEast(0)}	# Right parenthesis
 _STRINGIZE_ 	( n0 )
 _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
@@ -124,8 +124,8 @@ _EVAL_ 			n0
 --- # 14
 EXPR_LV0_5
 MULTIPLICATION
-BRACKET_L : {AlignMiddle(0), PositionWest(0)}	# Left bracket
-BRACKET_R : {AlignMiddle(0), PositionEast(0)}	# Right bracket
+PARENTHESIS_L : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
+PARENTHESIS_R : {AlignMiddle(0), PositionEast(0)}	# Right parenthesis
 _STRINGIZE_ 	( n0 )
 _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
@@ -140,7 +140,7 @@ _MATH_TEX_      { n1 } GET_TEX_MULTIPLY_OP(n0) { n2 }
 _EVAL_			MULTIPLY(n1, n2)
 
 ---
-VARIABLE_EXPONENTIATION    # The exponentiation of a variable, e.g., a^2, a^b, a^sqrt(a), a^(1/3) (without the brackets) 
+VARIABLE_EXPONENTIATION    # The exponentiation of a variable, e.g., a^2, a^b, a^sqrt(a), a^(1/3) (without the parentheses) 
 VARIABLE
 EXPR_LV4 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
 _STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
@@ -388,6 +388,30 @@ _STRINGIZE_     n0 ( n1 )
 _MATH_TEX_      n0 { n1 }
 _EVAL_          CALL_FUNCTION_1ARG(n0, n1) 
 
+--- #
+COLUMN_VECTOR_CONTENT
+EXPR_LV4
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+--- #
+COLUMN_VECTOR_CONTENT
+COLUMN_VECTOR_CONTENT
+EXPR_LV4		        : {AlignCenter(0), PositionNorth(0)} # The argument of the function
+_STRINGIZE_     n0 ; _SPACE_ n1
+_MATH_TEX_      n0 \\ n1
+_EVAL_          ADD(n0, n1)  	# TODO: Replace this placeholder
+
+--- # __ Matrix
+MATRIX
+COLUMN_VECTOR_CONTENT
+BRACKET_L      : {AlignMiddle(0), PositionWest(0)}
+BRACKET_R      : {AlignMiddle(0), PositionEast(0)}
+_STRINGIZE_		[ n0 ]    # MATLAB-style
+_MATH_TEX_      \begin{bmatrix} n0 \end{bmatrix}
+_EVAL_			n0 # TODO
+
 --- # 46
 ROOT
 EXPR_LV4
@@ -405,6 +429,13 @@ _EVAL_			n0
 --- # 49
 ROOT
 VARIABLE
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+--- # 50
+ROOT
+MATRIX
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
