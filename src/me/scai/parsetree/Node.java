@@ -1,20 +1,21 @@
 package me.scai.parsetree;
 
 public class Node {
-//	private float x_min = 0.0f, y_min = 0.0f, x_max = 0.0f, y_max = 0.0f; /* Location information */
-	
+//	private float x_min = 0.0f, y_min = 0.0f, x_max = 0.0f, y_max = 0.0f; /* Location information */	
 	private boolean isTerminal = true;
 	public String lhs;
 	public String prodSumString;	/* Production summary string. See GraphicalProduction.sumString */
-	public String termName = null; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
-	String [] rhsTypes = null;		/* Child types: applies only to non-terminal nodes */
+	public String termName; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
+	String [] rhsTypes;		        /* Child types: applies only to non-terminal nodes */
+	
+	private float [] bounds;        /* {x_min, y_min, x_max, y_max} */
 	
 	private float geometricScore = 0.0f;
 	
 	int nc = 0; 					/* Number of children */
 	
 	Node p = null;					/* Parent */
-	public Node [] ch = null;				/* Children */
+	public Node [] ch = null;		/* Children */
 	
 	/* Constructors */
 	/* Default constructor: terminal node */
@@ -58,11 +59,10 @@ public class Node {
 	}
 	
 	/* Terminal (T) node with production summary string specified */
-	public Node(String t_lhs, String t_prodSumString, String t_termName) {		
+	public Node(String t_lhs, String t_prodSumString, String t_termName, float [] t_bounds) {		
 		lhs = t_lhs;
 		isTerminal = true; /* Will be set to false when addChild() is called */
 		prodSumString = t_prodSumString;
-		
 		
 		if (TerminalSet.isTerminalNameType(t_termName)) {
 			termName = TerminalSet.getTerminalNameTypeTokenName(t_termName);
@@ -73,6 +73,8 @@ public class Node {
 		p = null;
 		nc = 0;
 		ch = null;
+		
+		bounds = t_bounds;
 	}
 	
 	/* Non-terminal (NT) node with production summary string and children specified */
@@ -146,6 +148,10 @@ public class Node {
 	
 	public float getGeometricScore() {
 		return geometricScore;
+	}
+	
+	public float [] getBounds() {
+		return bounds;
 	}
 }
 	

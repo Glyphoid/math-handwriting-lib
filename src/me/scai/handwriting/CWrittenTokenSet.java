@@ -249,5 +249,8 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		return bnds;
 	}
 	
-	
+	@Override
+	public String getTokenTermType(int i) {
+		return tokens.get(i).tokenTermType;
+	}
 }

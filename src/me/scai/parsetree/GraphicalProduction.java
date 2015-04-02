@@ -12,6 +12,7 @@ import me.scai.parsetree.geometry.PositionRelation.PositionType;
 import me.scai.parsetree.geometry.AlignRelation;
 import me.scai.parsetree.geometry.HeightRelation;
 import me.scai.parsetree.geometry.WidthRelation;
+import me.scai.parsetree.geometry.SpacingRelation;
 
 /* Class GeometricShortcut 
  * Detects short cut for dividing non-head tokens into sets for parsing 
@@ -454,7 +455,7 @@ public class GraphicalProduction {
 		}
 	}
 	
-	private void createHeadChild(Node n) {
+	private void createHeadChild(Node n, float [] bounds) {
 		/* Create head child node */
 		if ( n != null && 
 	         rhs.length > 0 ) {
@@ -464,7 +465,7 @@ public class GraphicalProduction {
 			 * hc also needs to be expanded if it is an NT. 
 			 */
 			
-			Node hc = new Node(lhs, rhs[0], rhs[0]); /* TODO: Second input argument is erroneous? */
+			Node hc = new Node(lhs, rhs[0], rhs[0], bounds); /* TODO: Second input argument is erroneous? */
 			n.setChild(0, hc);
 //			n.addChild(hc);
 		}
@@ -484,11 +485,6 @@ public class GraphicalProduction {
 			            int [] iHead,
 			            CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
 			            float [] maxGeomScore) {
-		if (this.lhs.equals("MATH_FUNCTION")) { //DEBUG
-			this.lhs = this.lhs.substring(0, this.lhs.length());  //DEBUG
-		}
-		
-		
 		if ( iHead.length == 0 ) {
 			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
 		}
@@ -504,7 +500,7 @@ public class GraphicalProduction {
 			maxGeomScore[0] = 0.0f;
 			Node n = new Node(lhs, sumString, rhs);
 			
-			createHeadChild(n);
+			createHeadChild(n, null);
 			
 			return n;
 		}		
@@ -674,7 +670,7 @@ public class GraphicalProduction {
 	    
 	    Node n = new Node(lhs, sumString, rhs);
 	    
-	    createHeadChild(n);
+	    createHeadChild(n, headTokenSet.getSetBounds()); /* TODO */
 	    
 	    return n;
 	}
@@ -771,16 +767,24 @@ public class GraphicalProduction {
 					t_geomRels[k] = new GeometricRelation[relItems.length];
 					for (int j = 0; j < relItems.length; ++j) {
 						String relStr = relItems[j].trim();
-						if ( relStr.startsWith("Align") )
+						if ( relStr.startsWith("Align") ) {
 							t_geomRels[k][j] = AlignRelation.createFromString(relStr, k);
-						else if ( relStr.startsWith("Position") )
+						}
+						else if ( relStr.startsWith("Position") ) {
 							t_geomRels[k][j] = PositionRelation.createFromString(relStr, k);
-						else if ( relStr.startsWith("Height") )
+						}
+						else if ( relStr.startsWith("Height") ) {
 							t_geomRels[k][j] = HeightRelation.createFromString(relStr, k);
-						else if ( relStr.startsWith("Width") )
+						}
+						else if ( relStr.startsWith("Width") ) {
 							t_geomRels[k][j] = WidthRelation.createFromString(relStr, k);
-						else 
-							throw new Exception("Unrecognized geometric relation string: " + relStr); 
+						}
+						else if ( relStr.startsWith("Spacing") ) {
+							t_geomRels[k][j] = SpacingRelation.createFromString(relStr, k, termSet);
+						}						
+						else { 
+							throw new Exception("Unrecognized geometric relation string: " + relStr);
+						}
 					}
 				}
 				else {

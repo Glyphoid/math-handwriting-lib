@@ -2,7 +2,7 @@ package me.scai.parsetree.geometry;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.parsetree.geometry.GeometricRelation;
-import me.scai.parsetree.GeometryHelper;
+import me.scai.parsetree.geometry.GeometryHelper;
 
 /* PositionRelation */
 public class PositionRelation extends GeometricRelation {
@@ -149,24 +149,7 @@ public class PositionRelation extends GeometricRelation {
 	public void parseString(String str, int t_idxTested) {
 		String [] items = splitInputString(str);
 		
-		if ( items[0].equals("PositionWest") )
-			positionType = PositionType.PositionWest;
-		else if ( items[0].equals("PositionEast") )
-			positionType = PositionType.PositionEast;
-		else if ( items[0].equals("PositionSouth") )
-			positionType = PositionType.PositionSouth;
-		else if ( items[0].equals("PositionNorth") )
-			positionType = PositionType.PositionNorth;
-		else if ( items[0].equals("PositionGenWest") )
-			positionType = PositionType.PositionGenWest;
-		else if ( items[0].equals("PositionGenEast") )
-			positionType = PositionType.PositionGenEast;
-		else if ( items[0].equals("PositionGenSouth") )
-			positionType = PositionType.PositionGenSouth;
-		else if ( items[0].equals("PositionGenNorth") )
-			positionType = PositionType.PositionGenNorth;
-		else
-			throw new RuntimeException("Unrecognized PositionType: " + items[0]);
+		positionType = PositionType.valueOf(items[0]);
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;

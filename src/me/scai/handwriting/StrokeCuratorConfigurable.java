@@ -9,7 +9,7 @@ import java.net.URL;
 import org.apache.commons.lang.ArrayUtils;
 
 import me.scai.handwriting.StrokeCuratorConfig;
-import me.scai.parsetree.GeometryHelper;
+import me.scai.parsetree.geometry.GeometryHelper;
 import me.scai.parsetree.MathHelper;
 import me.scai.parsetree.TerminalSet;
 import me.scai.parsetree.TextHelper;

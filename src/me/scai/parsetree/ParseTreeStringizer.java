@@ -62,7 +62,8 @@ public class ParseTreeStringizer {
 				}
 				
 				if ( n.ch[iNode].isTerminal() ) {
-					s += n.ch[iNode].termName;
+					Node chNode = n.ch[iNode];
+					s += chNode.termName;
 				}
 				else {
 					s += stringize(n.ch[iNode]);

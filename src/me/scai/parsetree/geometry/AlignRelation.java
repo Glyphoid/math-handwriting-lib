@@ -177,32 +177,33 @@ public class AlignRelation extends GeometricRelation {
 	public void parseString(String str, int t_idxTested) {
 		String [] items = splitInputString(str);
 		
-		if ( items[0].equals("AlignBottom") )	/* TODO: Replace with valueOf() */
-			alignType = AlignType.AlignBottom;
-		else if ( items[0].equals("AlignTop") )
-			alignType = AlignType.AlignTop;
-		else if ( items[0].equals("AlignMiddle") )
-			alignType = AlignType.AlignMiddle;
-		else if ( items[0].equals("AlignHeightInclusion") )
-			alignType = AlignType.AlignHeightInclusion;
-		else if ( items[0].equals("AlignLeft") )
-			alignType = AlignType.AlignLeft;
-		else if ( items[0].equals("AlignRight") )
-			alignType = AlignType.AlignRight;
-		else if ( items[0].equals("AlignLeftWithin") )
-			alignType = AlignType.AlignLeftWithin;
-		else if ( items[0].equals("AlignRightWithin") )
-			alignType = AlignType.AlignRightWithin;
-		else if ( items[0].equals("AlignCenter") )
-			alignType = AlignType.AlignCenter;
-		else if ( items[0].equals("AlignWidthInclusion") )
-			alignType = AlignType.AlignWidthInclusion;
-		else if ( items[0].equals("AlignBottomNorthPastMiddle") )
-			alignType = AlignType.AlignBottomNorthPastMiddle;
-		else if ( items[0].equals("AlignTopNorthPastTop") )
-			alignType = AlignType.AlignTopNorthPastTop;		
-		else
-			throw new RuntimeException("Unrecognized AlignRelation type: " + items[0]);
+		alignType = AlignType.valueOf(items[0]);
+//		if ( items[0].equals("AlignBottom") )	/* TODO: Replace with valueOf() */
+//			alignType = AlignType.AlignBottom;
+//		else if ( items[0].equals("AlignTop") )
+//			alignType = AlignType.AlignTop;
+//		else if ( items[0].equals("AlignMiddle") )
+//			alignType = AlignType.AlignMiddle;
+//		else if ( items[0].equals("AlignHeightInclusion") )
+//			alignType = AlignType.AlignHeightInclusion;
+//		else if ( items[0].equals("AlignLeft") )
+//			alignType = AlignType.AlignLeft;
+//		else if ( items[0].equals("AlignRight") )
+//			alignType = AlignType.AlignRight;
+//		else if ( items[0].equals("AlignLeftWithin") )
+//			alignType = AlignType.AlignLeftWithin;
+//		else if ( items[0].equals("AlignRightWithin") )
+//			alignType = AlignType.AlignRightWithin;
+//		else if ( items[0].equals("AlignCenter") )
+//			alignType = AlignType.AlignCenter;
+//		else if ( items[0].equals("AlignWidthInclusion") )
+//			alignType = AlignType.AlignWidthInclusion;
+//		else if ( items[0].equals("AlignBottomNorthPastMiddle") )
+//			alignType = AlignType.AlignBottomNorthPastMiddle;
+//		else if ( items[0].equals("AlignTopNorthPastTop") )
+//			alignType = AlignType.AlignTopNorthPastTop;		
+//		else
+//			throw new RuntimeException("Unrecognized AlignRelation type: " + items[0]);
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;

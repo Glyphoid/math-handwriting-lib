@@ -1,7 +1,7 @@
 --- # 0 # TODO: Re-format as JSON
 DIGIT_STRING 		# LHS
 DIGIT  				# The first after LHS is always the head
-DIGIT_STRING : {AlignMiddle(0), PositionEast(0)}	# The second and following ones are the non-heads # The number in the parentheses are the index to the parameter
+DIGIT_STRING : {AlignMiddle(0), PositionEast(0), SpacingHorizontalBelowMeanMaxMajorTokenWidth(0)}	# The second and following ones are the non-heads # The number in the parentheses are the index to the parameter
 _STRINGIZE_ 	n0 n1	# Stringization scheme. Node numbers are preceded by "n". Terminal nodes have their termName printed, whereas non terminals are subject to further stringization.
 _MATH_TEX_      n0 n1
 _EVAL_      	DIGIT_CONCAT(n0, n1)	# Calculation scheme: DIGIT_CONCAT is a special scheme that needs to be implemented by the evaluation routine.
@@ -157,7 +157,7 @@ _EVAL_			n0
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
 VARIABLE_EXPONENTIATION                                     # Left variable
-VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right variable
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0), SpacingHorizontalBelowMeanMaxMajorTokenWidth(0)} # Right variable
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -165,7 +165,7 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 17
 MULTIPLICATION_VAR		# Multiplication of a number and a variable without the multiply operator (e.g., "3c").
 DECIMAL_NUMBER                               # Left operand: A decimal number
-VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0), SpacingHorizontalBelowMeanMaxMajorTokenWidth(0)} # Right operand
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -173,7 +173,7 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 18
 MULTIPLICATION_VAR		# Multiplication of an exponentiation and a variable without the multiply operator
 EXPONENTIATION                               # Left operand: An exponentiation
-VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0), SpacingHorizontalBelowMeanMaxMajorTokenWidth(0)} # Right operand
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -181,7 +181,7 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 19
 MULTIPLICATION_VAR		# Multiplication of a fraction and a variable without the multiply operator
 FRACTION_TERM                                # Left operand: An fraction (or its negative)
-VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0), SpacingHorizontalBelowMeanMaxMajorTokenWidth(0)} # Right operand
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -189,7 +189,7 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 20
 MULTIPLICATION_VAR		# Multiplication of a (square-)root and a variable without the multiply operator
 SQROOT_TERM                                  # Left operand: An (square-)root (or its negative)
-VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0), SpacingHorizontalBelowMeanMaxMajorTokenWidth(0)} # Right operand
 _STRINGIZE_		( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)
@@ -197,7 +197,7 @@ _EVAL_			MULTIPLY(n0, n1)
 --- # 21
 MULTIPLICATION_VAR		# Infinite expansion for variable multiplication
 MULTIPLICATION_VAR                           # Left operand: A variable multiplication itself (effectively making it a left association)
-VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0)} # Right operand
+VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0), SpacingHorizontalBelowMeanMaxMajorTokenWidth(0)} # Right operand
 _STRINGIZE_     ( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
 _EVAL_			MULTIPLY(n0, n1)          
@@ -389,23 +389,38 @@ _MATH_TEX_      n0 { n1 }
 _EVAL_          CALL_FUNCTION_1ARG(n0, n1) 
 
 --- #
-COLUMN_VECTOR_CONTENT
+ROW_CONTENT
 EXPR_LV4
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
 --- #
-COLUMN_VECTOR_CONTENT
-COLUMN_VECTOR_CONTENT
-EXPR_LV4		        : {AlignCenter(0), PositionNorth(0)} # The argument of the function
+ROW_CONTENT
+ROW_CONTENT
+EXPR_LV4		        : {AlignMiddle(0), PositionEast(0), SpacingHorizontalExceedsMeanMaxMajorTokenWidth(0)} # The argument of the function
+_STRINGIZE_     n0 , _SPACE_ n1
+_MATH_TEX_      n0 & n1
+_EVAL_          ADD(n0, n1)  	# TODO: Replace this placeholder
+
+--- #
+COLUMN_CONTENT
+ROW_CONTENT
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+--- #
+COLUMN_CONTENT
+COLUMN_CONTENT
+ROW_CONTENT		        : {AlignCenter(0), PositionNorth(0)} # The argument of the function
 _STRINGIZE_     n0 ; _SPACE_ n1
 _MATH_TEX_      n0 \\ n1
 _EVAL_          ADD(n0, n1)  	# TODO: Replace this placeholder
 
 --- # __ Matrix
 MATRIX
-COLUMN_VECTOR_CONTENT
+COLUMN_CONTENT
 BRACKET_L      : {AlignMiddle(0), PositionWest(0)}
 BRACKET_R      : {AlignMiddle(0), PositionEast(0)}
 _STRINGIZE_		[ n0 ]    # MATLAB-style

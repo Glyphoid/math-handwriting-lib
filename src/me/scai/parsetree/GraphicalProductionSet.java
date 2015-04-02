@@ -473,7 +473,6 @@ public class GraphicalProductionSet {
 						}
 					}
 				}
-				 
 			}
 		}
 		

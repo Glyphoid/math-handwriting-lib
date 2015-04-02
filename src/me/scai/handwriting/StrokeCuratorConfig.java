@@ -6,7 +6,7 @@ import java.util.List;
 import java.net.URL;
 import com.google.gson.Gson;
 import me.scai.parsetree.TextHelper;
-import me.scai.parsetree.GeometryHelper;
+import me.scai.parsetree.geometry.GeometryHelper;
 
 /* Class tokenPairRule */
 class TokenPairRule {

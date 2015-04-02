@@ -636,15 +636,13 @@ public class TokenSetParser implements ITokenSetParser {
 						continue;
 					}
 
-					boolean bNodeIsTerminal = termSet
-							.isTypeTerminal(nStackTop.rhsTypes[k]);
+					boolean bNodeIsTerminal = termSet.isTypeTerminal(nStackTop.rhsTypes[k]);
 					// if ( bNodeIsTerminal ) // DEBUG
 					// System.out.println("Stack operation: encountered termianl non-head node");
 					// // DEBUG
 
-					if (!bNodeIsTerminal) { /* This node is NT */
-						CWrittenTokenSetNoStroke t_remSet = remSets[k];
-
+					CWrittenTokenSetNoStroke t_remSet = remSets[k];
+					if (!bNodeIsTerminal) { /* This node is NT */						
 						if (t_remSet == null)
 							return null;
 
@@ -683,8 +681,9 @@ public class TokenSetParser implements ITokenSetParser {
 					} else { /* This node is T */
 						rsStack.push(null); /* No need to parse */
 
-						Node tNode = new Node(nStackTop.lhs,
-								nStackTop.prodSumString, nStackTop.rhsTypes[k]);
+						float [] tBounds = t_remSet.getSetBounds();
+						
+						Node tNode = new Node(nStackTop.lhs, nStackTop.prodSumString, nStackTop.rhsTypes[k], tBounds);
 
 						nStack.push(tNode);
 						bParsedStack.push(true);

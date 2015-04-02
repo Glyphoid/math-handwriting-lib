@@ -66,15 +66,8 @@ public class HeightRelation extends GeometricRelation {
 	public void parseString(String str, int t_idxTested) {
 		String [] items = splitInputString(str);
 		
-		if ( items[0].equals("HeightRelationLess") )
-			heightRelationType = HeightRelationType.HeightRelationLess;
-		else if ( items[0].equals("HeightRelationEqual") )
-			heightRelationType = HeightRelationType.HeightRelationEqual;
-		else if ( items[0].equals("HeightRelationGreater") )
-			heightRelationType = HeightRelationType.HeightRelationGreater;
-		else
-			throw new RuntimeException("Unrecognized HeightRelation: " + items[0]);
-			
+		heightRelationType = HeightRelationType.valueOf(items[0]);
+		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;
 		

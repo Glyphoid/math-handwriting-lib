@@ -105,5 +105,6 @@ public abstract class CAbstractWrittenTokenSet {
 	public abstract float [] getTokenBounds(int [] is);
 	public abstract String getStringBrief();
 
+	public abstract String getTokenTermType(int i);
 	
 }

@@ -66,14 +66,7 @@ public class WidthRelation extends GeometricRelation {
 	public void parseString(String str, int t_idxTested) {
 		String [] items = splitInputString(str);
 		
-		if ( items[0].equals("WidthRelationLess") )
-			widthRelationType = WidthRelationType.WidthRelationLess;
-		else if ( items[0].equals("WidthRelationEqual") )
-			widthRelationType = WidthRelationType.WidthRelationEqual;
-		else if ( items[0].equals("WidthRelationGreater") )
-			widthRelationType = WidthRelationType.WidthRelationGreater;
-		else
-			throw new RuntimeException("Unrecognized WidthRelationType: " + items[0]);
+		widthRelationType = WidthRelationType.valueOf(items[0]);
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;

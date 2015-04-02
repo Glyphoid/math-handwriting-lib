@@ -1,5 +1,6 @@
-package me.scai.parsetree;
+package me.scai.parsetree.geometry;
 
+import me.scai.parsetree.MathHelper;
 import java.util.List;
 
 public class GeometryHelper {

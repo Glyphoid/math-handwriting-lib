@@ -11,12 +11,14 @@ import java.util.List;
 import java.net.URL;
 
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
+//import me.scai.parsetree.geometry.NodeInternalGeometry; //DEBUG
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 
 public class Test_TokenSetParser {
 	public static final String errStr = ParseTreeStringizer.parsingErrString;
@@ -107,6 +109,8 @@ public class Test_TokenSetParser {
 					"Error occurred during the creation of graphical production set from file: File I/O exception");
 		}
 		
+//		NodeInternalGeometry nodeInternalGeom = new NodeInternalGeometry(termSet); //DEBUG
+		
 		TokenSetParser tokenSetParser = new TokenSetParser(termSet, gpSet,
 				0.90f);
 		ParseTreeStringizer stringizer = gpSet.genStringizer();
@@ -154,6 +158,9 @@ public class Test_TokenSetParser {
 
 			long parsingTime = millis_1 - millis_0;
 			totalParsingTime_ms += parsingTime;
+			
+//			List<float []> allBounds = nodeInternalGeom.getMajorTokenBounds(parseRoot); //DEBUG
+//			float maxTokenWidth = nodeInternalGeom.getMaxMajorTokenWidth(parseRoot);
 
 			String stringized = stringizer.stringize(parseRoot);
 			Object evalRes = null;
