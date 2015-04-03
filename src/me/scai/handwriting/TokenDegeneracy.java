@@ -14,9 +14,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class TokenDegeneracy {
-	private static final String RESOURCES_DIR = "resources";
-	private static final String RESOURCES_CONFIG_DIR = "config";
-	private static final String TOKEN_DEGENERACY_CONFIG_FN = "token_degeneracy.json";	                                                         
+//	private static final String RESOURCES_DIR = "resources";
+//	private static final String RESOURCES_CONFIG_DIR = "config";
+//	private static final String TOKEN_DEGENERACY_CONFIG_FN = "token_degeneracy.json";	                                                         
 	
 	private static final Gson gson = new Gson();
 	
@@ -24,24 +24,26 @@ public class TokenDegeneracy {
 	private Map<String, Set<String> > altMap = new HashMap<>(); /* Full map of alternatives */
 	
 	/* Constructor */
-	public TokenDegeneracy() {
-		URL tokenDegeneracyFileUrl =  Thread.currentThread().getContextClassLoader().getResource(File.separator + RESOURCES_DIR +  
-                File.separator + RESOURCES_CONFIG_DIR + 
-                File.separator + TOKEN_DEGENERACY_CONFIG_FN);
+	public TokenDegeneracy(JsonObject obj) {
+//		URL tokenDegeneracyFileUrl =  Thread.currentThread().getContextClassLoader().getResource(File.separator + RESOURCES_DIR +  
+//                File.separator + RESOURCES_CONFIG_DIR + 
+//                File.separator + TOKEN_DEGENERACY_CONFIG_FN);
 		
 		/* Load the degeneracy table from resource JSON file */
-		String lines;
-		try {
-			lines = TextHelper.readTextFileAtUrl(tokenDegeneracyFileUrl);
-		}
-		catch ( Exception e ) {
-			throw new RuntimeException("Failed to read token degeneracy data from URL: \"" + tokenDegeneracyFileUrl + "\"");
-		}
-		finally {
-			
-		}
+//		String lines;
+//		try {
+//			lines = TextHelper.readTextFileAtUrl(tokenDegeneracyFileUrl);
+//		}
+//		catch ( Exception e ) {
+//			throw new RuntimeException("Failed to read token degeneracy data from URL: \"" + tokenDegeneracyFileUrl + "\"");
+//		}
+//		finally {
+//			
+//		}
 		
-		JsonObject obj = gson.fromJson(lines, JsonObject.class);
+//		JsonObject obj = gson.fromJson(lines, JsonObject.class);
+		
+		System.out.println("TokenDegeneracy constructor: obj = " + obj); //DEBUG
 		for (Map.Entry<String, JsonElement> kv : obj.entrySet()) {
 			String tokenName = kv.getKey();
 			String substituteTokenName = kv.getValue().getAsString();

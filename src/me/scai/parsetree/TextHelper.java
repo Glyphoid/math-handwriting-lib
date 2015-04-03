@@ -24,7 +24,7 @@ public class TextHelper {
 		return new String(data, "UTF-8");
 	}
 	
-	public static String readTextFileAtUrl(URL url) 
+	public static String readTextFileAtUrl(final URL url) 
 		throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
 		StringBuilder sb = new StringBuilder();

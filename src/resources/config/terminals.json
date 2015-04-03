@@ -51,5 +51,12 @@
 	'gr_ph'       : '\\phi',
 	'gr_ch'       : '\\chi',
 	'gr_omega'    : '\\omega'
+  }, 
+  'tokenDegeneracy' : {
+	'C' : 'c',
+	'O' : '0',
+	'o' : '0',
+	'S' : 's',
+	'Z' : 'z'
   }
 }

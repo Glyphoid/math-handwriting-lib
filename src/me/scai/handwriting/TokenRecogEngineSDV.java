@@ -30,7 +30,11 @@ import org.encog.neural.networks.training.propagation.resilient.ResilientPropaga
 import org.encog.util.Format;
 import org.encog.util.simple.EncogUtility;
 
+import com.google.gson.JsonParser;
+import com.google.gson.JsonObject;
+
 import me.scai.parsetree.MathHelper;
+import me.scai.parsetree.TextHelper;
 
 public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -70,8 +74,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		useTanh = false;		
 	}
 	
-	public void loadTokenDegeneracy() {
-		tokenDegen = new TokenDegeneracy();
+	public void loadTokenDegeneracy(JsonObject tokenDegenObj) {
+		tokenDegen = new TokenDegeneracy(tokenDegenObj);
 	}
 	
 	public void setHardCodedTokens(String [] tHardCodedTokens) {
@@ -723,7 +727,26 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 					hiddenLayerSize2, 
 					trainMaxIter, 
 					trainThreshErr);
-			tokEngine.loadTokenDegeneracy(); /* TODO: Make more elegant */
+			
+			/* Load token degeneracy */
+			final String RESOURCES_DIR = "resources";
+			final String RESOURCES_CONFIG_DIR = "config";
+			final String TERMINAL_CONFIG_FN = "terminals.json";	
+			final URL terminalConfigFN =  Thread.currentThread().getContextClassLoader().getResource(File.separator + RESOURCES_DIR +  
+				        File.separator + RESOURCES_CONFIG_DIR + 
+			        	File.separator + TERMINAL_CONFIG_FN);
+			
+			String lines;
+			try {
+				lines = TextHelper.readTextFileAtUrl(terminalConfigFN);
+			}
+			catch ( Exception e ) {
+				throw new RuntimeException("Failed to read token degeneracy data from URL: \"" + terminalConfigFN + "\"");
+			}
+			
+			JsonObject tokenDegenObj = new JsonParser().parse(lines).getAsJsonObject().get("tokenDegeneracy").getAsJsonObject();						
+			tokEngine.loadTokenDegeneracy(tokenDegenObj); /* TODO: Make more elegant */
+			/* ~Load token degeneracy */
 			
 			String [] hardCodedTokens = {"."};
 			tokEngine.setHardCodedTokens(hardCodedTokens);
