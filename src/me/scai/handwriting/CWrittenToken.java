@@ -13,12 +13,9 @@ import me.scai.handwriting.CHandWritingTokenImageData;
 import me.scai.parsetree.TerminalSet;
 import me.scai.parsetree.MathHelper;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import java.util.logging.Logger;
 
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
 public class CWrittenToken {

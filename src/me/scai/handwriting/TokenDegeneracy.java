@@ -1,13 +1,9 @@
 package me.scai.handwriting;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-
-import me.scai.parsetree.TextHelper;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -25,24 +21,6 @@ public class TokenDegeneracy {
 	
 	/* Constructor */
 	public TokenDegeneracy(JsonObject obj) {
-//		URL tokenDegeneracyFileUrl =  Thread.currentThread().getContextClassLoader().getResource(File.separator + RESOURCES_DIR +  
-//                File.separator + RESOURCES_CONFIG_DIR + 
-//                File.separator + TOKEN_DEGENERACY_CONFIG_FN);
-		
-		/* Load the degeneracy table from resource JSON file */
-//		String lines;
-//		try {
-//			lines = TextHelper.readTextFileAtUrl(tokenDegeneracyFileUrl);
-//		}
-//		catch ( Exception e ) {
-//			throw new RuntimeException("Failed to read token degeneracy data from URL: \"" + tokenDegeneracyFileUrl + "\"");
-//		}
-//		finally {
-//			
-//		}
-		
-//		JsonObject obj = gson.fromJson(lines, JsonObject.class);
-		
 		System.out.println("TokenDegeneracy constructor: obj = " + obj); //DEBUG
 		for (Map.Entry<String, JsonElement> kv : obj.entrySet()) {
 			String tokenName = kv.getKey();

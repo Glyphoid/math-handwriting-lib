@@ -47,8 +47,8 @@ public class TerminalSet {
 			throw new IOException("Failed to read terminal set from URL: \"" + tsFileUrl + "\"");
 		}
 		
-		System.out.println("Done calling readLinesTrimmedNoCommentFromUrl()"); //DEBUG
-		System.out.println("lines.length = " + lines.length); //DEBUG
+//		System.out.println("Done calling readLinesTrimmedNoCommentFromUrl()"); //DEBUG
+//		System.out.println("lines.length = " + lines.length); //DEBUG
 		
 		/* Concatenate the lines to a single string */
 		StringBuilder sb = new StringBuilder();
@@ -57,15 +57,15 @@ public class TerminalSet {
 			sb.append("\n");
 		}
 		
-		System.out.println("Done concatenating string"); //DEBUG
+//		System.out.println("Done concatenating string"); //DEBUG
 		
 		JsonObject obj = new JsonParser().parse(sb.toString()).getAsJsonObject();
 		
-		System.out.println("Done calling JsonParser.parse()"); //DEBUG
+//		System.out.println("Done calling JsonParser.parse()"); //DEBUG
 		
 		/* Read the terminals and their types */
 		JsonObject termsObj = obj.get("terminals").getAsJsonObject();	
-		System.out.println("termsObj = " + termsObj); //DEBUG
+//		System.out.println("termsObj = " + termsObj); //DEBUG
 		for (Map.Entry<String, JsonElement> entry : termsObj.entrySet()) {
 			String typeName = (String) entry.getKey();
 			
@@ -88,7 +88,7 @@ public class TerminalSet {
 				token2TypeMap.put(terms[j], typeName);
 			}
 		}
-		System.out.println("Done extracting terminal types"); //DEBUG
+//		System.out.println("Done extracting terminal types"); //DEBUG
 		
 		/* Read the TeX notations */
 		JsonObject texObj = obj.get("texNotations").getAsJsonObject();		
@@ -98,14 +98,14 @@ public class TerminalSet {
 			
 			token2TexNotationMap.put(termName, texNotation);
 		}
-		System.out.println("Done reading terminal Math TeX notations"); //DEBUG
+//		System.out.println("Done reading terminal Math TeX notations"); //DEBUG
 		
-		System.out.println("Obtaining tokenDegenObj"); //DEBUG
+//		System.out.println("Obtaining tokenDegenObj"); //DEBUG
 		JsonObject tokenDegenObj = obj.get("tokenDegeneracy").getAsJsonObject();
 		System.out.println("tokenDegenObj = " + tokenDegenObj);
 		tokenDegen = new TokenDegeneracy(tokenDegenObj);
 		
-		System.out.println("Done creating new TokenDegeneracy instance"); //DEBUG
+//		System.out.println("Done creating new TokenDegeneracy instance"); //DEBUG
 	}
 		
 	/* Get the type of a token */
