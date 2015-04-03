@@ -163,13 +163,13 @@ public class Test_TokenSetParser {
 //			float maxTokenWidth = nodeInternalGeom.getMaxMajorTokenWidth(parseRoot);
 
 			String stringized = stringizer.stringize(parseRoot);
-			Object evalRes = null;
+			String evalResStr = null;
 			if (!stringized.contains(errStr)) {
 				try {
-					evalRes = evaluator.eval(parseRoot);
+					evalResStr = evaluator.eval2String(parseRoot);
 				}
 				catch (ParseTreeEvaluatorException exc) {
-					evalRes = "[Evaluator exception occurred]";
+					evalResStr = "[Evaluator exception occurred]";
 				}
 				
 //				if (!evalRes.getClass().equals(Double.class)) {
@@ -206,7 +206,7 @@ public class Test_TokenSetParser {
 				strPrint += " <> " + " \"" + tokenSetTrueString + "\"";
 			}
 
-			strPrint += " {Value = " + evalRes + "}";
+			strPrint += " {Value = " + evalResStr + "}";
 			
 			if (tokenSetTrueMathTex != null) {
 				String mathTexMatch = checkResult ? "match" : "MISMATCH";

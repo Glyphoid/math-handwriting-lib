@@ -6,6 +6,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.IllegalAccessException;
 
+import java.io.StringWriter;
+import java.io.PrintWriter;
+
+import Jama.Matrix;
+
 public class ParseTreeEvaluator {
 	/* Member variables */
 	/* Constants */
@@ -53,6 +58,44 @@ public class ParseTreeEvaluator {
 		}
 	}
 
+	public String eval2String(Node n) throws ParseTreeEvaluatorException {
+		Object evalRes = eval(n);
+		
+		String evalResStr = "";
+		if (evalRes.getClass().equals(Matrix.class)) {
+			evalResStr = matrix2String((Matrix) evalRes);
+		}
+		else {
+			evalResStr = evalRes.toString();
+		}
+		
+		return evalResStr;
+	}
+	
+	/* Convert a matrix to a string */
+	private String matrix2String(Matrix m) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		
+		int nr = m.getRowDimension();
+		int nc = m.getColumnDimension();
+		for (int i = 0; i < nr; ++i) {
+			for (int j = 0; j < nc; ++j) {
+				sb.append("" + m.get(i, j));
+				if (j < nc - 1) {
+					sb.append(", ");
+				}
+			}
+			
+			if (i < nr - 1) {
+				sb.append("; ");
+			}
+		}
+	
+		sb.append("]");
+		return sb.toString();
+	}
+	
 	/* Main method: eval: evaluate a parse tree */
 	public Object eval(Node n) throws ParseTreeEvaluatorException {
 		String sumString = n.prodSumString;
@@ -89,6 +132,10 @@ public class ParseTreeEvaluator {
 			}
 
 			try {
+				if (tFuncName.equals("eval_variable")) {
+					tFuncName = tFuncName.substring(0, tFuncName.length());
+				}
+				
 				evalRes = m.invoke(this, args);
 			} 
 			catch (InvocationTargetException iteExc) {
@@ -118,12 +165,17 @@ public class ParseTreeEvaluator {
 		}
 	}
 
-	public double pass(Object x) {
+	public Object pass(Object x) {
 		if (x.getClass().equals(String.class)) {
 			return Double.parseDouble((String) x);
-		} else if (x.getClass().equals(Double.class)) {
+		} 
+		else if (x.getClass().equals(Double.class)) {
 			return (Double) x;
-		} else {
+		}
+		else if (x.getClass().equals(Matrix.class)) {
+			return (Matrix) x;
+		}
+		else {
 			throw new RuntimeException("Unexpected input type: " + x.getClass());
 		}
 
@@ -314,5 +366,70 @@ public class ParseTreeEvaluator {
 		}
 	}
 
+	/* Matrix operations */
+	
+	/* Generate a 1x1 matrix */
+	public Matrix matrix_1x1(Object v) {
+		double d_x = getDouble(v);
+		
+		double [][] arr = new double[1][1];
+		arr[0][0] = d_x;
+		
+		return new Matrix(arr);
+	}
+	
+	/* Matrix row concatenation. Expect: 
+	 *   1st input argument: rvec, a row vector (in Matrix type);
+	 *   2nd input argument: num, a number (Double) 
+	 */
+	public Matrix matrix_row_concat(Object rvec, Object num) {
+		Matrix rVector = (Matrix) rvec;
+		
+		int nr = rVector.getRowDimension();
+		int nc = rVector.getColumnDimension();
+		
+		if (nr != 1) {
+			throw new RuntimeException("Input matrix does not have a row dimension of 1 (" + 
+		                               nr + ") instead");
+		}
+		
+		double [][] arr = new double[nr][nc + 1];
+		Matrix out = new Matrix(arr);
+		out.setMatrix(0, nr - 1, 0, nc - 1, rVector);
+		
+		double d_x = getDouble(num);
+		out.set(0, nc, d_x);
+		
+		return out;
+	}
+	
+	/* Matrix column concatenation. Expect
+	 *   1st input argument: mat0: a matrix
+	 *   2nd input argument: rvec: a row vector (in Matrix type)
+	 */
+	public Matrix matrix_col_concat(Object mat0, Object mat1) {
+		Matrix matrix0 = (Matrix) mat0;
+		Matrix matrix1 = (Matrix) mat1;
+		
+		int nr0 = matrix0.getRowDimension();
+		int nc0 = matrix0.getColumnDimension();
+		int nr1 = matrix1.getRowDimension();
+		int nc1 = matrix1.getColumnDimension();
+		
+		if (nc0 != nc1) {
+			throw new RuntimeException("Input matrices do not have equal number of rows (" + 
+		                               nc0 + " != " + nc1 + ")");
+		}
+		
+		double [][] arr = new double[nr0 + nr1][nc0];
+		Matrix out = new Matrix(arr);
+//		out.setMatrix(0, 0, nr0 - 1, nc0 - 1, matrix0);
+		out.setMatrix(0, nr0 - 1, 0, nc0 - 1, matrix0);
+//		out.setMatrix(nr0, nc0, nr0 + nr1 - 1, nc0 + nc1 - 1, matrix1);
+		out.setMatrix(nr0, nr0 + nr1 - 1, 0, nc0 - 1, matrix1);
+		
+		return out;
+	}
+	
 	/* ~Methods */
 }

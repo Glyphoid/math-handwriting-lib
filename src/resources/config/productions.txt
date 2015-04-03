@@ -70,10 +70,10 @@ _EVAL_			n0
 
 --- # 9
 EXPR_LV1
-VARIABLE
+VARIABLE_EVALUATED
 _STRINGIZE_		n0
 _MATH_TEX_      n0
-_EVAL_			EVAL_VARIABLE(n0)
+_EVAL_			n0
 
 --- # 10
 EXPR_LV1
@@ -141,18 +141,18 @@ _EVAL_			MULTIPLY(n1, n2)
 
 ---
 VARIABLE_EXPONENTIATION    # The exponentiation of a variable, e.g., a^2, a^b, a^sqrt(a), a^(1/3) (without the parentheses) 
-VARIABLE
+VARIABLE_EVALUATED
 EXPR_LV4 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
 _STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
 _MATH_TEX_      { n0 } ^ { n1 }
-_EVAL_			EXPONENTIATION(n0, n1)
+_EVAL_			EXPONENTIATION(n0, n1) 		# TODO: Fix bug
 
 ---
 VARIABLE_EXPONENTIATION
-VARIABLE
+VARIABLE_EVALUATED
 _STRINGIZE_		n0
 _MATH_TEX_      n0
-_EVAL_			EVAL_VARIABLE(n0)
+_EVAL_			n0
 
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
@@ -345,6 +345,13 @@ _STRINGIZE_ 	n0
 _MATH_TEX_      n0
 _EVAL_ 			STRING(n0)
 
+---
+VARIABLE_EVALUATED
+VARIABLE
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVAL_VARIABLE(n0)
+
 --- # 42
 ASSIGNMENT_STATEMENT
 ASSIGN_OP
@@ -393,7 +400,7 @@ ROW_CONTENT
 EXPR_LV4
 _STRINGIZE_		n0
 _MATH_TEX_      n0
-_EVAL_			n0
+_EVAL_			MATRIX_1x1(n0)
 
 --- #
 ROW_CONTENT
@@ -401,7 +408,7 @@ ROW_CONTENT
 EXPR_LV4		        : {AlignMiddle(0), PositionEast(0), SpacingHorizontalExceedsMeanMaxMajorTokenWidth(0)} # The argument of the function
 _STRINGIZE_     n0 , _SPACE_ n1
 _MATH_TEX_      n0 & n1
-_EVAL_          ADD(n0, n1)  	# TODO: Replace this placeholder
+_EVAL_          MATRIX_ROW_CONCAT(n0, n1)  	# TODO: Replace this placeholder
 
 --- #
 COLUMN_CONTENT
@@ -416,7 +423,7 @@ COLUMN_CONTENT
 ROW_CONTENT		        : {AlignCenter(0), PositionNorth(0)} # The argument of the function
 _STRINGIZE_     n0 ; _SPACE_ n1
 _MATH_TEX_      n0 \\ n1
-_EVAL_          ADD(n0, n1)  	# TODO: Replace this placeholder
+_EVAL_          MATRIX_COL_CONCAT(n0, n1)  	# TODO: Replace this placeholder
 
 --- # __ Matrix
 MATRIX
