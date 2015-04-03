@@ -152,7 +152,7 @@ VARIABLE_EXPONENTIATION
 VARIABLE
 _STRINGIZE_		n0
 _MATH_TEX_      n0
-_EVAL_			n0
+_EVAL_			EVAL_VARIABLE(n0)
 
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
