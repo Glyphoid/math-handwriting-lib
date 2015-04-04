@@ -195,6 +195,14 @@ public class Test_QADataSet {
 			// new QADataEntry("sim_94", "[(x ^ 2); (y ^ 3)]"), //TODO
 			new QADataEntry("sim_95", "(A = [1, 2; 3, 4])", "{A}={\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}}"),  // Assignment of matrix value
 			new QADataEntry("sim_96", "(B = 2)", "{B}={2}"), // Assignment of double value
+			new QADataEntry("sim_97", "A", "A"),    // STATEFUL EVAL
+			new QADataEntry("sim_98", "(B + A)"),   // STATEFUL EVAL
+			new QADataEntry("sim_99", "(A + B)"),   // STATEFUL EVAL
+			new QADataEntry("sim_100", "((A + B) + A)"),   // STATEFUL EVAL
+			new QADataEntry("sim_101", "(3*A)"),    // STATEFUL EVAL
+			new QADataEntry("sim_102", "(A - B)"),  // STATEFUL EVAL
+			new QADataEntry("sim_103", "(B - A)"),  // STATEFUL EVAL
+			new QADataEntry("sim_104", "(A*B)"),    // STATEFUL EVAL
 	};
 	/* ~Member variables */
 }

@@ -227,16 +227,116 @@ public class ParseTreeEvaluator {
 		return -1.0 * getDouble(x);
 	}
 
-	public double add(Object x, Object y) {
-		return getDouble(x) + getDouble(y);
+	public Object add(Object x, Object y) {
+		boolean xIsNum = x.getClass().equals(Double.class) || x.getClass().equals(String.class);
+		boolean yIsNum = y.getClass().equals(Double.class) || y.getClass().equals(String.class);
+		
+		if (xIsNum && yIsNum) {
+			return getDouble(x) + getDouble(y);
+		}
+		else if (xIsNum && y.getClass().equals(Matrix.class)) {
+			double dx = getDouble(x);
+			Matrix my = (Matrix) y;
+			
+			Matrix mOut = matrixScalarAdd(my, dx);
+			return mOut;
+		}
+		else if (x.getClass().equals(Matrix.class) && yIsNum) {
+			Matrix mx = (Matrix) x;
+			double dy = getDouble(y);
+			
+			Matrix mOut = matrixScalarAdd(mx, dy);
+			return mOut;
+		}
+		else if (x.getClass().equals(Matrix.class) && 
+				 y.getClass().equals(Matrix.class)) {
+			Matrix mx = (Matrix) x;
+			Matrix my = (Matrix) y;
+			
+			return mx.plus(my);
+		}
+		else {
+			throw new RuntimeException("Unsupport types scenario for method \"add\"");
+		}
+	
+	}
+	
+	private Matrix matrixScalarAdd(Matrix mx, double dy) {
+		int nr = mx.getRowDimension();
+		int nc = mx.getColumnDimension();
+		
+		Matrix my = mx.copy();
+		for (int i = 0; i < nr; ++i) {
+			for (int j = 0; j < nc; ++j) {
+				my.set(i, j, my.get(i, j) + dy);
+			}
+		}
+		
+		return my;
+	}
+	
+	public Object subtract(Object x, Object y) {
+		boolean xIsNum = x.getClass().equals(Double.class) || x.getClass().equals(String.class);
+		boolean yIsNum = y.getClass().equals(Double.class) || y.getClass().equals(String.class);
+		
+		if (xIsNum && yIsNum) {
+			return getDouble(x) - getDouble(y);
+		}
+		else if (xIsNum && y.getClass().equals(Matrix.class)) {
+			double dx = getDouble(x);
+			Matrix my = (Matrix) y;
+			
+			Matrix mOut = matrixScalarAdd(my.times(-1.0), dx);
+			return mOut;
+		}
+		else if (x.getClass().equals(Matrix.class) && yIsNum) {
+			Matrix mx = (Matrix) x;
+			double dy = getDouble(y);
+			
+			Matrix mOut = matrixScalarAdd(mx, -dy);
+			return mOut;
+		}
+		else if (x.getClass().equals(Matrix.class) && 
+				 y.getClass().equals(Matrix.class)) {
+			Matrix mx = (Matrix) x;
+			Matrix my = (Matrix) y;
+			
+			return mx.minus(my);
+		}
+		else {
+			throw new RuntimeException("Unsupport types scenario for method \"subtract\"");
+		}
 	}
 
-	public double subtract(Object x, Object y) {
-		return getDouble(x) - getDouble(y);
-	}
-
-	public double multiply(Object x, Object y) {
-		return getDouble(x) * getDouble(y);
+	public Object multiply(Object x, Object y) {
+		boolean xIsNum = x.getClass().equals(Double.class) || x.getClass().equals(String.class);
+		boolean yIsNum = y.getClass().equals(Double.class) || y.getClass().equals(String.class);
+		
+		if (xIsNum && yIsNum) {
+			return getDouble(x) * getDouble(y);
+		}
+		else if (xIsNum && y.getClass().equals(Matrix.class)) {
+			double dx = getDouble(x);
+			Matrix my = (Matrix) y;
+			
+			return my.times(dx);
+		}
+		else if (x.getClass().equals(Matrix.class) && yIsNum) {
+			Matrix mx = (Matrix) x;
+			double dy = getDouble(y);
+			
+			return mx.times(dy);
+		}
+		else if (x.getClass().equals(Matrix.class) && 
+				 y.getClass().equals(Matrix.class)) {
+			Matrix mx = (Matrix) x;
+			Matrix my = (Matrix) y;
+			
+			return mx.times(my);
+		}
+		else {
+			throw new RuntimeException("Unsupport types scenario for method \"multiply\"");
+		}
 	}
 
 	public double divide(Object numer, Object denom)
