@@ -21,7 +21,7 @@ public class TokenDegeneracy {
 	
 	/* Constructor */
 	public TokenDegeneracy(JsonObject obj) {
-		System.out.println("TokenDegeneracy constructor: obj = " + obj); //DEBUG
+//		System.out.println("TokenDegeneracy constructor: obj = " + obj); //DEBUG
 		for (Map.Entry<String, JsonElement> kv : obj.entrySet()) {
 			String tokenName = kv.getKey();
 			String substituteTokenName = kv.getValue().getAsString();
@@ -41,7 +41,7 @@ public class TokenDegeneracy {
 		String degen = tab.get(tokenName);
 		
 		if (degen != null) {
-			System.out.println("\"" + tokenName + "\" --> \"" + degen + "\"");
+//			System.out.println("\"" + tokenName + "\" --> \"" + degen + "\"");
 		}
 	
 		return (degen == null) ? tokenName : degen;

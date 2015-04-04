@@ -7,7 +7,8 @@ import me.scai.parsetree.TerminalSet;
 public class SpacingRelation extends GeometricRelation {
 	public enum SpacingRelationType {
 		SpacingHorizontalExceedsMeanMaxMajorTokenWidth,
-		SpacingHorizontalBelowMeanMaxMajorTokenWidth
+		SpacingHorizontalBelowMeanMaxMajorTokenWidth,
+		SpacingVerticalExceedsMeanMaxMajorTokenHeight
 	}
 	
 	/* Member variables */
@@ -51,6 +52,24 @@ public class SpacingRelation extends GeometricRelation {
 		return maxWidth;
 	}
 	
+	private float getMaxMajorTokenHeight(CAbstractWrittenTokenSet wts) {
+		float maxHeight = 0.0f;
+		for (int i = 0; i < wts.getNumTokens(); ++i) {						
+			String tokenTermType = wts.getTokenTermType(i);
+			
+			if (nodeInternalGeom.isTerminalTypeMajor(tokenTermType)) {
+				float [] bnds = wts.getTokenBounds(i);
+				float h = bnds[3] - bnds[1];
+				
+				if (h > maxHeight) {
+					maxHeight = h; 
+				}
+			}
+		}
+		
+		return maxHeight;
+	}
+	
 	
 	@Override
 	public float verify(CAbstractWrittenTokenSet wtsTested,  float [] bndsInRel) {
@@ -68,12 +87,23 @@ public class SpacingRelation extends GeometricRelation {
 		xBoundsInRel[0] = bndsInRel[0];
 		xBoundsInRel[1] = bndsInRel[2];
 		
+		float [] yBoundsTested = new float[2];	/* x-bounds of tested token */
+		float [] yBoundsInRel = new float[2];   /* x-bounds of in-relation-to token */		
+		yBoundsTested[0] = bndsTested[1];
+		yBoundsTested[1] = bndsTested[3];
+		yBoundsInRel[0] = bndsInRel[1];
+		yBoundsInRel[1] = bndsInRel[3];
+		
 		float maxWidth = getMaxMajorTokenWidth(wtsTested);
 		float meanMaxWidth = maxWidth; /* TODO: Count the in-relation-to token set */
+		float maxHeight = getMaxMajorTokenHeight(wtsTested);
+		float meanMaxHeight = maxHeight; /* TODO: Count the in-relation-to token set */
 		
-		float overlap = GeometryHelper.pctOverlap(xBoundsTested, xBoundsInRel);
+		float overlapWidth = GeometryHelper.pctOverlap(xBoundsTested, xBoundsInRel);
+		float overlapHeight = GeometryHelper.pctOverlap(yBoundsTested, yBoundsInRel);
+		
 		if ( spacingRelationType == SpacingRelationType.SpacingHorizontalExceedsMeanMaxMajorTokenWidth ) {
-			if (overlap > 0.0f) {
+			if (overlapWidth > 0.0f) {
 				v = 0.0f;
 			}
 			else {
@@ -89,8 +119,25 @@ public class SpacingRelation extends GeometricRelation {
 				}
 			}
 		}
+		else if ( spacingRelationType == SpacingRelationType.SpacingVerticalExceedsMeanMaxMajorTokenHeight ) {
+			if (overlapHeight > 0.0f) {
+				v = 0.0f;
+			}
+			else {
+				if (meanMaxHeight <= 0.0f) {
+					v = 0.0f;
+				}
+				else {
+					float verticalSpacing = (yBoundsTested[0] > yBoundsInRel[1]) ? 
+						                    (yBoundsTested[0] - yBoundsInRel[1]) :
+						                  	(yBoundsInRel[0] - yBoundsTested[1]);
+                  	float spacingToHeightRatio = verticalSpacing / meanMaxHeight;
+                  	v = 2.5f * (spacingToHeightRatio - 1.0f); /* TODO: Hardcoding warning */
+				}
+			}
+		}
 		else if ( spacingRelationType == SpacingRelationType.SpacingHorizontalBelowMeanMaxMajorTokenWidth ) {
-			if (overlap > 0.0f) {
+			if (overlapWidth > 0.0f) {
 				v = 1.0f;
 			}
 			else {

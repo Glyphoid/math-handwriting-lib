@@ -105,8 +105,9 @@ public class MathHelper {
 	 * Output: length-2 array of int. 1st element: 1st index.
 	 */
 	public static int [] indexMax2D(float [][] xs) {
-		if ( xs == null || xs.length == 0 )
-			throw new IllegalArgumentException("Input to mean() is an empty array");
+		if ( xs == null || xs.length == 0 ) {
+			throw new IllegalArgumentException("Input to indexMax2D() is an empty array");
+		}
 		
 		float [] max1 = new float[xs.length];
 		int [] idxMax1 = new int[xs.length];

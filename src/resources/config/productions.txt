@@ -154,6 +154,13 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
+---
+VARIABLE_EXPONENTIATION
+MATH_FUNCTION_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
 VARIABLE_EXPONENTIATION                                     # Left variable
@@ -353,10 +360,19 @@ _MATH_TEX_      n0
 _EVAL_			EVAL_VARIABLE(n0)
 
 --- # 42
-ASSIGNMENT_STATEMENT
+ASSIGNMENT_STATEMENT	# Assign numeric value to variable symbol
 ASSIGN_OP
 VARIABLE                : {AlignMiddle(0), PositionWest(0)} # Variable symbol
 EXPR_LV4                : {AlignMiddle(0), PositionEast(0)} # Value expression
+_STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
+_MATH_TEX_      { n1 } GET_TEX_ASSIGN_OP(n0) { n2 }
+_EVAL_			VARIABLE_ASSIGN_VALUE(n1, n2);
+
+--- # 42
+ASSIGNMENT_STATEMENT	# Assign matrix value to variable symbol
+ASSIGN_OP
+VARIABLE                : {AlignMiddle(0), PositionWest(0)} # Variable symbol
+MATRIX                  : {AlignMiddle(0), PositionEast(0)} # Value expression
 _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_ASSIGN_OP(n0) { n2 }
 _EVAL_			VARIABLE_ASSIGN_VALUE(n1, n2);
@@ -388,9 +404,26 @@ _MATH_TEX_      \cos
 _EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
 
 --- # 44
-MATH_FUNCTION_TERM # Functions with arguments, e.g., "ln 3"
+MATH_FUNCTION_TERM # Functions with arguments, without parentheses around the argument, e.g., "ln 3" 
 MATH_FUNCTION_NAME
 EXPR_LV1                : {AlignMiddle(0), PositionEast(0)} # The argument of the function
+_STRINGIZE_     n0 ( n1 )
+_MATH_TEX_      n0 { n1 }
+_EVAL_          CALL_FUNCTION_1ARG(n0, n1) 
+
+--- #
+MATH_FUNCTION_ARG 
+EXPR_LV1 
+PARENTHESIS_L           : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
+PARENTHESIS_R           : {AlignMiddle(0), PositionEast(0)}	# Right parenthesis
+_STRINGIZE_     n0
+_MATH_TEX_      \left( n0 \right)
+_EVAL_          n0
+
+--- # 44
+MATH_FUNCTION_TERM # Functions with arguments, with parentheses around the argument, e.g., "sin (A)" 
+MATH_FUNCTION_NAME
+MATH_FUNCTION_ARG       : {AlignMiddle(0), PositionEast(0)} # The argument of the function
 _STRINGIZE_     n0 ( n1 )
 _MATH_TEX_      n0 { n1 }
 _EVAL_          CALL_FUNCTION_1ARG(n0, n1) 
@@ -420,7 +453,7 @@ _EVAL_			n0
 --- #
 COLUMN_CONTENT
 COLUMN_CONTENT
-ROW_CONTENT		        : {AlignCenter(0), PositionNorth(0)} # The argument of the function
+ROW_CONTENT		        : {AlignCenter(0), PositionNorth(0)} # The argument of the function TODO: Add , SpacingVerticalExceedsMeanMaxMajorTokenHeight(0)
 _STRINGIZE_     n0 ; _SPACE_ n1
 _MATH_TEX_      n0 \\ n1
 _EVAL_          MATRIX_COL_CONCAT(n0, n1)  	# TODO: Replace this placeholder

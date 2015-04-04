@@ -102,7 +102,7 @@ public class TerminalSet {
 		
 //		System.out.println("Obtaining tokenDegenObj"); //DEBUG
 		JsonObject tokenDegenObj = obj.get("tokenDegeneracy").getAsJsonObject();
-		System.out.println("tokenDegenObj = " + tokenDegenObj);
+//		System.out.println("tokenDegenObj = " + tokenDegenObj); //DEBUG
 		tokenDegen = new TokenDegeneracy(tokenDegenObj);
 		
 //		System.out.println("Done creating new TokenDegeneracy instance"); //DEBUG

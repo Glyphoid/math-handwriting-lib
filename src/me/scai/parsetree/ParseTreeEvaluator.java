@@ -11,6 +11,48 @@ import java.io.PrintWriter;
 
 import Jama.Matrix;
 
+class ValueUnion {
+	public enum ValueType {
+		Double, 
+		Matrix
+	}
+	
+	private ValueType valueType;	
+	private Object value;
+	
+	/* Constructors */
+	public ValueUnion(double dv) {
+		valueType = ValueType.Double;
+		value = dv;
+	}
+	
+	public ValueUnion(Matrix mv) {
+		valueType = ValueType.Matrix;
+		value = mv;
+	}
+	
+	/* Value getters */
+	public Object get() {
+		return value;
+	}
+	
+	public double getDouble() {
+		if (valueType != ValueType.Double) {
+			throw new RuntimeException("Incorrect value type");
+		}
+		
+		return (Double) value;
+	}
+	
+	public Matrix getMatrix() {
+		if (valueType != ValueType.Matrix) {
+			throw new RuntimeException("Incorrect value type");
+		}
+		
+		return (Matrix) value;
+	}
+}
+
 public class ParseTreeEvaluator {
 	/* Member variables */
 	/* Constants */
@@ -19,7 +61,7 @@ public class ParseTreeEvaluator {
 	Map<String, String> sumString2FuncNameMap = new HashMap<>();
 	Map<String, int[]> sumString2NodeIdxMap = new HashMap<>();
 
-	Map<String, Double> varMap = new HashMap<>(); 
+	Map<String, ValueUnion> varMap = new HashMap<>(); 
 	
 	/* ~Member variables */
 
@@ -132,10 +174,6 @@ public class ParseTreeEvaluator {
 			}
 
 			try {
-				if (tFuncName.equals("eval_variable")) {
-					tFuncName = tFuncName.substring(0, tFuncName.length());
-				}
-				
 				evalRes = m.invoke(this, args);
 			} 
 			catch (InvocationTargetException iteExc) {
@@ -166,8 +204,12 @@ public class ParseTreeEvaluator {
 	}
 
 	public Object pass(Object x) {
+		if (x.getClass().equals(ValueUnion.class)) {
+			return ((ValueUnion) x).get();
+		}
 		if (x.getClass().equals(String.class)) {
-			return Double.parseDouble((String) x);
+//			return Double.parseDouble((String) x);
+			return x;
 		} 
 		else if (x.getClass().equals(Double.class)) {
 			return (Double) x;
@@ -328,7 +370,40 @@ public class ParseTreeEvaluator {
 				+ (String) b));
 	}
 
-	public double variable_assign_value(Object a, Object b) {
+	/* Assign double value to variable */
+	public String variable_assign_value(Object a, Object b) {
+		/* Get the variable name */
+		if (!a.getClass().equals(String.class)) {
+			throw new RuntimeException("Variable symbol name must be a String");
+		}
+		String varName = (String) a;
+		
+		/* Get the value; Enter the variable name and value  */
+		String s = ""; /* TODO: Non-double type right hand side */
+		if (b.getClass().equals(Matrix.class)) {
+			varMap.put(varName, new ValueUnion((Matrix) b));
+			s = matrix2String((Matrix) b);
+		}
+		else if (b.getClass().equals(String.class)) {
+			varMap.put(varName, new ValueUnion(Double.parseDouble((String) b)));
+			s = (String) b;
+		} 
+		else if (b.getClass().equals(Double.class)) {
+			varMap.put(varName, new ValueUnion((Double) b));
+			s = String.format("%f", (Double) b);
+		} 
+		else {
+			throw new RuntimeException("Unexpected value argument type: " + b.getClass());
+		}
+		
+		
+		
+		
+		return s;
+	}
+	
+	/* Assign double value to variable */
+	public Matrix variable_assign_matrix(Object a, Object b) {
 		/* Get the variable name */
 		if (!a.getClass().equals(String.class)) {
 			throw new RuntimeException("Variable symbol name must be a String");
@@ -336,22 +411,20 @@ public class ParseTreeEvaluator {
 		String varName = (String) a;
 		
 		/* Get the value */
-		double val = 0.0; /* TODO: Non-double type right hand side */
-		if (b.getClass().equals(String.class)) {
-			val = Double.parseDouble((String) b);
-		} else if (b.getClass().equals(Double.class)) {
-			val = (Double) b;
+		Matrix val = null;
+		if (b.getClass().equals(Matrix.class)) {
+			val = (Matrix) b;
 		} else {
 			throw new RuntimeException("Unexpected value argument type: " + b.getClass());
 		}
 		
 		/* Enter the variable name and value */
-		varMap.put(varName, val);
+		varMap.put(varName, new ValueUnion(val));
 		
 		return val;
 	}
 
-	public double eval_variable(Object v) {
+	public ValueUnion eval_variable(Object v) {
 		/* Get the variable name */
 		if (!v.getClass().equals(String.class)) {
 			throw new RuntimeException("Variable symbol name must be a String");
@@ -362,7 +435,7 @@ public class ParseTreeEvaluator {
 			return varMap.get(varName);
 		}
 		else {
-			return 0.0; /* TODO: Throw an error? */
+			return new ValueUnion(0.0); /* TODO: Throw an error? */
 		}
 	}
 

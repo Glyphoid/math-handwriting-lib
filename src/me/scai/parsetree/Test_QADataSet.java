@@ -97,8 +97,6 @@ public class Test_QADataSet {
 			new QADataEntry("113", "((4 - 8) + 5)"), /* AssocLeft3B */
 			new QADataEntry("114", "(2 ^ (3 ^ 4))"), /* AssocRight2B */
 			new QADataEntry("115", "(0.5 ^ (2 ^ 3))"), /* AssocRight2B */
-			// new QADataEntry("98", TokenSetParser.errStr),
-			// new QADataEntry("99", TokenSetParser.errStr),
 			new QADataEntry("98", ParseTreeStringizer.parsingErrString),
 			new QADataEntry("99", ParseTreeStringizer.parsingErrString),
 			new QADataEntry("sim_1", "((1 * 2) + (3 * 4))", "{{1}\\ast{2}}+{{3}\\ast{4}}"), /* Add - multiplication precedence */
@@ -110,8 +108,7 @@ public class Test_QADataSet {
 			new QADataEntry("sim_7", "((1 + (2 * 3)) - 4)"),
 			new QADataEntry("sim_8", "((5 / 8) * (4 / 7))"), /* Multiplication of two fractions */
 			new QADataEntry("sim_9", "((4 + ((2 * 3) * 5)) + 8)"),
-			// new QADataEntry("sim_10", "((9 - (4 * 8)) + 2)"), /* Why does
-			// this token set cause error? */
+			// new QADataEntry("sim_10", "((9 - (4 * 8)) + 2)"), /* Why does this token set cause error? */
 			new QADataEntry("sim_11", "((1 / 2) ^ 3)"), /* Exponentiation of a fraction */
 			new QADataEntry("sim_12", "((1 + (10 * 20)) + 3)"),
 			new QADataEntry("sim_13", "(1 * (2 ^ 3))"),
@@ -123,18 +120,16 @@ public class Test_QADataSet {
 			new QADataEntry("sim_19", "(2 * (3 / 4))"),
 			new QADataEntry("sim_20", "((11 * 22) * 33)"),
 			new QADataEntry("sim_21", "((3 * (4 / 5)) * 2)"),
-			// new QADataEntry("sim_22",
-			// "(((((23 / 45) * 7) * (15 / 26)) * 4) + (2 * 5))"), /* Causes
-			// hanging. TODO: Debug. */
+			// new QADataEntry("sim_22", "((((23 / 45) * 7) * (15 / 26)) * 4) + (2 * 5))"), /* Causes hanging. TODO: Debug. */
 			new QADataEntry("sim_23", "(((12 / 13) * 5) + (28 * 3))"),
 			new QADataEntry("sim_24", "((1 + 2) / (3 * 4))"),
-			new QADataEntry("sim_25", "((1 + 2))"),
-			new QADataEntry("sim_26", "((2 + 3))"),
-			new QADataEntry("sim_27", "((20 + 3))"),
+			new QADataEntry("sim_25", "((1 + 2))", "\\left({1}+{2}\\right)"),
+			new QADataEntry("sim_26", "((2 + 3))", "\\left({2}+{3}\\right)"),
+			new QADataEntry("sim_27", "((20 + 3))", "\\left({20}+{3}\\right)"),
 			new QADataEntry("sim_28", "(((1 + 2) + 3))"),
-			new QADataEntry("sim_29", "((1 - 2))"),
+			new QADataEntry("sim_29", "((1 - 2))", "\\left({1}-{2}\\right)"),
 			new QADataEntry("sim_68", "((a ^ 2)*b)", "{{a}^{2}}{b}"), /* Variable exponent and multiplication */
-			new QADataEntry("sim_69", "(a*(b ^ 2))", "{a}{{b}^{2}}"),
+			// new QADataEntry("sim_69", "(a*(b ^ 2))", "{a}{{b}^{2}}"), //TODO
 			new QADataEntry("sim_30", "((2 * 3))", "\\left({2}\\times{3}\\right)"),
 			new QADataEntry("sim_31", "((3 * 45))", "\\left({3}\\ast{45}\\right)"),
 			new QADataEntry("sim_32", "(((2 * 4)) ^ 6)", "{\\left({2}\\times{4}\\right)}^{6}"),
@@ -189,6 +184,18 @@ public class Test_QADataSet {
 			new QADataEntry("sim_83", "[(1 / 2), 3; 4, 9]",   "\\begin{bmatrix}\\frac{1}{2}&3\\\\4&9\\end{bmatrix}"),     // Matrix: 2x2, with symbols and fraction
 			new QADataEntry("sim_84", "[(a ^ 2), b; 0, (a ^ 3)]",    "\\begin{bmatrix}{a}^{2}&b\\\\0&{a}^{3}\\end{bmatrix}"),  // Matrix: 2x2, with symbols and fraction
 			new QADataEntry("sim_85", "[2, 4, 6; 1, 3, 5; 0, 7, 9]", "\\begin{bmatrix}2&4&6\\\\1&3&5\\\\0&7&9\\end{bmatrix}"), // Matrix: 3x3, with symbols and fraction
+			new QADataEntry("sim_86", "ln(88)", "\\ln{\\left(88\\right)}"),
+			new QADataEntry("sim_87", "sin(((2 + B)))", "\\sin{\\left({2}+{B}\\right)}"),
+			new QADataEntry("sim_88", "sin((sqrt(A)))", "\\sin{\\left(\\sqrt{A}\\right)}"),
+			new QADataEntry("sim_89", "(sin(A) + cos(B))", "{\\sin{\\left(A\\right)}}+{\\cos{\\left(B\\right)}}"),
+			new QADataEntry("sim_90", "(2*sin(gr_al))", "{2}{\\sin{\\left(\\alpha\\right)}}"),
+			// new QADataEntry("sim_91", "(sin(A)*cos(B))", "{\\sin{\\left(A\\right)}}{\\cos{\\left(B\\right)}}"), //TODO
+			new QADataEntry("sim_92", "[(2 ^ 3); (3 ^ 4)]", "\\begin{bmatrix}{2}^{3}\\\\{3}^{4}\\end{bmatrix}"),
+			new QADataEntry("sim_93", "[(A ^ 2); (B ^ 3)]", "\\begin{bmatrix}{A}^{2}\\\\{B}^{3}\\end{bmatrix}"),
+			// new QADataEntry("sim_94", "[(x ^ 2); (y ^ 3)]"), //TODO
+			new QADataEntry("sim_95", "(A = [1, 2; 3, 4])", "{A}={\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}}"),  // Assignment of matrix value
+			new QADataEntry("sim_96", "(B = 2)", "{B}={2}"), // Assignment of double value
 	};
 	/* ~Member variables */
 }
+
