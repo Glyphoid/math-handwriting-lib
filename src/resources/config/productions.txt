@@ -403,13 +403,41 @@ _STRINGIZE_     n0 n1 n2
 _MATH_TEX_      \cos
 _EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
 
+--- # 45
+MATH_FUNCTION_NAME  # Matrix function: "det"
+TERMINAL(d)
+TERMINAL(e)         : {AlignBottom(0), PositionEast(0)}
+TERMINAL(t)         : {AlignBottom(1), PositionEast(1)}
+_STRINGIZE_     n0 n1 n2
+_MATH_TEX_      \det
+_EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
+
+--- # 45
+MATH_FUNCTION_NAME  # Matrix function: "det"
+TERMINAL(d)
+TERMINAL(e)         : {AlignBottom(0), PositionEast(0)}
+TERMINAL(t)         : {AlignBottom(1), PositionEast(1)}
+_STRINGIZE_     n0 n1 n2
+_MATH_TEX_      \det
+_EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
+
+--- # 45
+MATH_FUNCTION_NAME  # Matrix function: "rank"
+TERMINAL(r)
+TERMINAL(a)         : {AlignBottom(0), PositionEast(0)}
+TERMINAL(n)         : {AlignBottom(1), PositionEast(1)}
+TERMINAL(k)         : {AlignBottom(2), PositionEast(2)}
+_STRINGIZE_     n0 n1 n2 n3
+_MATH_TEX_      \rank
+_EVAL_          GET_MATH_FUNCTION_4CHAR_1ARG(n0, n1, n2, n3)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
+
 --- # 44
 MATH_FUNCTION_TERM # Functions with arguments, without parentheses around the argument, e.g., "ln 3" 
 MATH_FUNCTION_NAME
 EXPR_LV1                : {AlignMiddle(0), PositionEast(0)} # The argument of the function
 _STRINGIZE_     n0 ( n1 )
 _MATH_TEX_      n0 { n1 }
-_EVAL_          CALL_FUNCTION_1ARG(n0, n1) 
+_EVAL_          CALL_FUNCTION_1ARG(n0, n1)
 
 --- #
 MATH_FUNCTION_ARG 

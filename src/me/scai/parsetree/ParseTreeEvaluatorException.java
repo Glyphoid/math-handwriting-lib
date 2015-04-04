@@ -43,4 +43,10 @@ class LogarithmOfNonPositiveException extends ParseTreeMathException {
 	public LogarithmOfNonPositiveException(String msg) { super(msg); }
 }
 
+class InvalidArgumentForMatrixOperation extends ParseTreeMathException {
+	private static final long serialVersionUID = 1L;
+	
+	public InvalidArgumentForMatrixOperation(String msg) { super(msg); }
+}
+
 /* ~Exception classes */

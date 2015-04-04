@@ -396,6 +396,22 @@ public class ParseTreeEvaluator {
 		return y;
 	}
 	
+	public double det(Object x) throws InvalidArgumentForMatrixOperation {
+		if ( !x.getClass().equals(Matrix.class) ) {
+			throw new InvalidArgumentForMatrixOperation("Invalid argument type for matrix operation");
+		}
+		
+		return ((Matrix) x).det();
+	}
+	
+	public double rank(Object x) throws InvalidArgumentForMatrixOperation {
+		if ( !x.getClass().equals(Matrix.class) ) {
+			throw new InvalidArgumentForMatrixOperation("Invalid argument type for matrix operation");
+		}
+		
+		return ((Matrix) x).rank();
+	}
+	
 	public Object call_function_1arg(Object methodObj, Object arg0)
 		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {		
 		Method method = (Method) methodObj;
@@ -408,6 +424,24 @@ public class ParseTreeEvaluator {
 		StringBuilder funcNameBuilder = new StringBuilder();
 		funcNameBuilder.append((String) nameObj0);
 		funcNameBuilder.append((String) nameObj1);
+		String funcName = funcNameBuilder.toString();
+		
+		Class [] argTypes = new Class[1];
+		for (int i = 0; i < argTypes.length; ++i) {
+			argTypes[i] = Object.class;
+		}
+		
+		Method method = this.getClass().getMethod(funcName, argTypes);
+		return method;
+	}
+	
+	public Method get_math_function_4char_1arg(Object nameObj0, Object nameObj1, Object nameObj2, Object nameObj3) 
+		throws NoSuchMethodException {
+		StringBuilder funcNameBuilder = new StringBuilder();
+		funcNameBuilder.append((String) nameObj0);
+		funcNameBuilder.append((String) nameObj1);
+		funcNameBuilder.append((String) nameObj2);
+		funcNameBuilder.append((String) nameObj3);
 		String funcName = funcNameBuilder.toString();
 		
 		Class [] argTypes = new Class[1];
