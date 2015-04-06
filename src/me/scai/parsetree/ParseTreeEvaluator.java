@@ -1,74 +1,270 @@
 package me.scai.parsetree;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.IllegalAccessException;
 
-import java.io.StringWriter;
-import java.io.PrintWriter;
-
 import Jama.Matrix;
 
 class ValueUnion {
 	public enum ValueType {
-		Double, 
-		Matrix
+		Double, Matrix, UserFunction
 	}
-	
-	private ValueType valueType;	
+
+	private ValueType valueType;
 	private Object value;
-	
+
 	/* Constructors */
 	public ValueUnion(double dv) {
 		valueType = ValueType.Double;
 		value = dv;
 	}
-	
+
 	public ValueUnion(Matrix mv) {
 		valueType = ValueType.Matrix;
 		value = mv;
 	}
 	
+	public ValueUnion(FunctionTerm funcTerm) {
+		valueType = ValueType.UserFunction;
+		value = funcTerm;
+	}
+
 	/* Value getters */
 	public Object get() {
 		return value;
 	}
-	
+
 	public double getDouble() {
 		if (valueType != ValueType.Double) {
 			throw new RuntimeException("Incorrect value type");
 		}
-		
+
 		return (Double) value;
 	}
-	
+
 	public Matrix getMatrix() {
 		if (valueType != ValueType.Matrix) {
 			throw new RuntimeException("Incorrect value type");
 		}
-		
+
 		return (Matrix) value;
 	}
+	
+	public FunctionTerm getUserFunction() {
+		if (valueType != ValueType.UserFunction) {
+			throw new RuntimeException("Incorrect value type");
+		}
+		
+		return (FunctionTerm) value;
+	}
+}
+
+class FunctionArgumentList {
+	/* enums */
+	public enum ArgumentType {
+		Symbol, Value
+	}
+
+	/* ~enums */
+
+	/* Member variables */
+	List<Object> args = new ArrayList<Object>();
+	List<ArgumentType> argTypes = new ArrayList<ArgumentType>();
+
+	/* ~Member variables */
+
+	/* Constructors */
+	public FunctionArgumentList(Object arg) {
+		append(arg); 
+	}
+
+	public void append(Object arg) {
+		if (arg.getClass().equals(String.class)) {
+			args.add(arg);
+			argTypes.add(ArgumentType.Symbol);
+		} 
+		else if (arg.getClass().equals(Double.class) ||
+				   arg.getClass().equals(Matrix.class) ) { /* TODO: equals function class */
+			if (arg.getClass().equals(Double.class)) {
+				args.add((Double) arg);
+			}
+			else {
+				args.add((Matrix) arg);
+			}
+			argTypes.add(ArgumentType.Value);
+		} else {
+			throw new RuntimeException("Unsupport argument type: "
+					+ arg.getClass());
+		}
+	}
+
+	public int numArgs() {
+		return args.size();
+	}
+
+	public Object get(int i) {
+		return args.get(i);
+	}
+
+	public ArgumentType getType(int i) {
+		return argTypes.get(i);
+	}
+
+	public boolean allSymbols() {
+		for (ArgumentType argType : argTypes) {
+			if (argType != ArgumentType.Symbol) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public boolean allValues() {
+		for (ArgumentType argType : argTypes) {
+			if (argType != ArgumentType.Value) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public List<String> getSymbolNames() {
+		if (!allSymbols()) {
+			throw new RuntimeException("Not all items in the argument list are symbols"); /* Throw an error ? */
+		} else {
+			List<String> argNames = new ArrayList<String>();
+
+			for (Object arg : args) {
+				argNames.add((String) arg);
+			}
+
+			return argNames;
+		}
+	}
+}
+
+class FunctionTerm {
+	/* Member variables */
+	private String functionName;
+	private FunctionArgumentList argList;
+	private List<String> argNames;
+
+	Node body; /* Function body */
+
+	/* ~Member variables */
+
+	/* Constructor */
+	public FunctionTerm(String tFunctionName, FunctionArgumentList tArgList) {
+		functionName = tFunctionName;
+		argList = tArgList; /* TODO: Check to see if allSymbols() is true */
+		
+		if ( argList.allSymbols() ) {
+			argNames = argList.getSymbolNames();
+		}
+//		argNames.clear();
+//		for (int i = 0; i < nArgs; ++i) {
+//			argNames.add();
+//		}
+	}
+
+	public void defineBody(Node tBody) {
+		body = tBody;
+	}
+
+	public boolean isDefined() {
+		return (body != null);
+	}
+
+	public Object evaluate(ParseTreeEvaluator evaluator, FunctionArgumentList argValueList) 
+			throws ParseTreeEvaluatorException {
+		if ( !isDefined() ) {
+			throw new RuntimeException("The body of this function is not defined");      /* TODO: More specific exception type */
+		}
+		
+		if (!argValueList.allValues()) {
+			throw new RuntimeException("Not all items in the argument list are values"); /* TODO: More specific exception type */
+		}
+
+		if (argValueList.numArgs() != argList.numArgs()) {
+			throw new RuntimeException("Argument list length mismatch");                 /* TODO: More specific exception type */
+		}
+
+		int numArgs = argList.numArgs();
+		List<String> argSymbols = argList.getSymbolNames();	/* TODO: Use escape arg names such as _arg_1 */
+
+		/* Set the values of the arguments */
+		for (int i = 0; i < numArgs; ++i) {
+			String argSymbol = argSymbols.get(i);
+			Object argValue = argValueList.get(i);
+			
+			evaluator.variable_assign_value(argSymbol, argValue); /* TODO: Assign matrix values */
+		}
+		
+		Object out = evaluator.eval(body);
+		
+		return out;
+	}
+	
+	public String getFunctionName() {
+		return functionName;
+	}
+	
+	public FunctionArgumentList getArgumentList() {
+		return argList;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("function: ");
+		sb.append(functionName);
+		sb.append("(");
+		
+		int nArgs = argNames.size();
+		for (int i = 0; i < nArgs; ++i) {
+			sb.append(argNames.get(i));
+			if (i < nArgs - 1) {
+				sb.append(", ");
+			}
+		}
+		sb.append(")");
+		
+		return sb.toString();
+	}
+
 }
 
 public class ParseTreeEvaluator {
 	/* Member variables */
 	/* Constants */
 	// final static String passFuncName = "PASS";
+	private GraphicalProductionSet prodSet;
 
 	Map<String, String> sumString2FuncNameMap = new HashMap<>();
 	Map<String, int[]> sumString2NodeIdxMap = new HashMap<>();
 
-	Map<String, ValueUnion> varMap = new HashMap<>(); 
+	Map<String, ValueUnion> varMap = new HashMap<>();
 	
+	private LinkedList<String> lhsStack = new LinkedList<String>();
+	private LinkedList<String []> rhsStack = new LinkedList<String []>();
+
 	/* ~Member variables */
 
 	/* Methods */
 
 	/* Constructor */
 	public ParseTreeEvaluator(GraphicalProductionSet gpSet) {
+		prodSet = gpSet;
+		
 		for (int n = 0; n < gpSet.prods.size(); ++n) {
 			GraphicalProduction gp = gpSet.prods.get(n);
 			String sumString = gp.sumString;
@@ -91,7 +287,9 @@ public class ParseTreeEvaluator {
 				int nodeIdx = Integer.parseInt(gp.evalInstr[m].substring(1,
 						gp.evalInstr[m].length()));
 				if (nodeIdx < 0 || nodeIdx >= gp.rhs.length)
-					throw new RuntimeException("In evaluation instruction: \"" + gp.evalInstr[0] + "\", a node index exceeds valid range");
+					throw new RuntimeException("In evaluation instruction: \""
+							+ gp.evalInstr[0]
+							+ "\", a node index exceeds valid range");
 
 				nodeIndices[m - 1] = nodeIdx;
 			}
@@ -103,22 +301,29 @@ public class ParseTreeEvaluator {
 	public String eval2String(Node n) throws ParseTreeEvaluatorException {
 		Object evalRes = eval(n);
 		
+		lhsStack.clear();
+		rhsStack.clear();
+
 		String evalResStr = "";
 		if (evalRes.getClass().equals(Matrix.class)) {
 			evalResStr = matrix2String((Matrix) evalRes);
+		} 
+		else if (evalRes.getClass().equals(FunctionTerm.class)) {
+			evalResStr = ((FunctionTerm) evalRes).toString();
 		}
 		else {
 			evalResStr = evalRes.toString();
 		}
-		
+		 
+
 		return evalResStr;
 	}
-	
+
 	/* Convert a matrix to a string */
 	private String matrix2String(Matrix m) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
-		
+
 		int nr = m.getRowDimension();
 		int nc = m.getColumnDimension();
 		for (int i = 0; i < nr; ++i) {
@@ -128,19 +333,58 @@ public class ParseTreeEvaluator {
 					sb.append(", ");
 				}
 			}
-			
+
 			if (i < nr - 1) {
 				sb.append("; ");
 			}
 		}
-	
+
 		sb.append("]");
 		return sb.toString();
+	}
+
+	/* Trace direct ancestor and see if a certain production is included in it */
+	private boolean hasDirectAncestor(String targProd) {
+		Iterator<String> lhsIt = lhsStack.iterator();
+		Iterator<String []> rhsIt = rhsStack.iterator();
+		
+		if ( !rhsIt.hasNext() ) {
+			return false;
+		}
+		rhsIt.next();
+		
+		String prod = lhsStack.getFirst();
+		while (lhsIt.hasNext()) {
+			String lhs = lhsIt.next();
+			if (lhs.equals(targProd)) {
+				return true;
+			}
+			
+			if ( !rhsIt.hasNext() ) {
+				return false;
+			}
+			String [] rhs = rhsIt.next();
+			
+			if ( !Arrays.asList(rhs).contains(lhs) ) {
+				return false;
+			}
+			
+		}
+		
+		return false;
+	}
+	
+	/* Peek lhs stack top */
+	private String lhsStackTop() {
+		return lhsStack.peekFirst();
 	}
 	
 	/* Main method: eval: evaluate a parse tree */
 	public Object eval(Node n) throws ParseTreeEvaluatorException {
-		String sumString = n.prodSumString;
+		String sumString = n.prodSumString;		
+		lhsStack.push(n.lhs);
+		rhsStack.push(n.rhsTypes);
+		
 		String funcName = sumString2FuncNameMap.get(sumString);
 		int[] argIndices = sumString2NodeIdxMap.get(sumString);
 		int nArgs = argIndices.length;
@@ -159,40 +403,46 @@ public class ParseTreeEvaluator {
 		}
 
 		try {
-			String tFuncName = funcName.toLowerCase();			
+			String tFuncName = funcName.toLowerCase();
 			Method m = this.getClass().getMethod(tFuncName, argTypes);
 
 			Object[] args = new Object[nArgs];
 			for (int j = 0; j < nArgs; ++j) {
 				int chIdx = argIndices[j];
 
-				if (n.ch[argIndices[j]].isTerminal()) {					
-					args[j] = n.ch[chIdx].termName;
-				} else {
-					args[j] = eval(n.ch[chIdx]);
+				if (lhsStackTop().equals("USER_FUNCTION_DEF") && j == 1) {	
+					/* Special case for function body definition */
+					/* TODO: Do not hard code this */
+					args[j] = n.ch[chIdx];
+				}
+				else {
+					if (n.ch[argIndices[j]].isTerminal()) {
+						args[j] = n.ch[chIdx].termName;
+					} else {
+						args[j] = eval(n.ch[chIdx]);
+					}
 				}
 			}
 
 			try {
 				evalRes = m.invoke(this, args);
-			} 
-			catch (InvocationTargetException iteExc) {
+			} catch (InvocationTargetException iteExc) {
 				throw new ParseTreeEvaluatorException("Evaluation failed due to InvocationTargetException");
-			}
-			catch (IllegalAccessException iaeExc) {
+			} catch (IllegalAccessException iaeExc) {
 				throw new ParseTreeEvaluatorException("Evaluation failed due to IllegalAccessExcpetion");
 			}
-			
-			
+
 		} catch (NoSuchMethodException nsme) {
 			throw new ParseTreeEvaluatorException(
 					"Cannot find evaluation function named \"" + funcName
 							+ "\" and with " + argTypes.length + " arguments");
 		}
 
+		lhsStack.pop();
+		rhsStack.pop();
 		return evalRes;
 	}
-	
+
 	public double getDouble(Object x) {
 		if (x.getClass().equals(Double.class)) {
 			return ((Double) x);
@@ -207,15 +457,21 @@ public class ParseTreeEvaluator {
 		if (x.getClass().equals(ValueUnion.class)) {
 			return ((ValueUnion) x).get();
 		}
-		if (x.getClass().equals(String.class)) {
-//			return Double.parseDouble((String) x);
+		else if (x.getClass().equals(String.class)) {
+			// return Double.parseDouble((String) x);
 			return x;
 		} 
 		else if (x.getClass().equals(Double.class)) {
 			return (Double) x;
-		}
+		} 
 		else if (x.getClass().equals(Matrix.class)) {
 			return (Matrix) x;
+		}
+		else if (x.getClass().equals(FunctionArgumentList.class)) {
+			return (FunctionArgumentList) x;
+		}
+		else if (x.getClass().equals(FunctionTerm.class)) {
+			return (FunctionTerm) x;
 		}
 		else {
 			throw new RuntimeException("Unexpected input type: " + x.getClass());
@@ -228,114 +484,111 @@ public class ParseTreeEvaluator {
 	}
 
 	public Object add(Object x, Object y) {
-		boolean xIsNum = x.getClass().equals(Double.class) || x.getClass().equals(String.class);
-		boolean yIsNum = y.getClass().equals(Double.class) || y.getClass().equals(String.class);
-		
+		boolean xIsNum = x.getClass().equals(Double.class)
+				|| x.getClass().equals(String.class);
+		boolean yIsNum = y.getClass().equals(Double.class)
+				|| y.getClass().equals(String.class);
+
 		if (xIsNum && yIsNum) {
 			return getDouble(x) + getDouble(y);
-		}
-		else if (xIsNum && y.getClass().equals(Matrix.class)) {
+		} else if (xIsNum && y.getClass().equals(Matrix.class)) {
 			double dx = getDouble(x);
 			Matrix my = (Matrix) y;
-			
+
 			Matrix mOut = matrixScalarAdd(my, dx);
 			return mOut;
-		}
-		else if (x.getClass().equals(Matrix.class) && yIsNum) {
+		} else if (x.getClass().equals(Matrix.class) && yIsNum) {
 			Matrix mx = (Matrix) x;
 			double dy = getDouble(y);
-			
+
 			Matrix mOut = matrixScalarAdd(mx, dy);
 			return mOut;
-		}
-		else if (x.getClass().equals(Matrix.class) && 
-				 y.getClass().equals(Matrix.class)) {
+		} else if (x.getClass().equals(Matrix.class)
+				&& y.getClass().equals(Matrix.class)) {
 			Matrix mx = (Matrix) x;
 			Matrix my = (Matrix) y;
-			
+
 			return mx.plus(my);
+		} else {
+			throw new RuntimeException(
+					"Unsupport types scenario for method \"add\"");
 		}
-		else {
-			throw new RuntimeException("Unsupport types scenario for method \"add\"");
-		}
-	
+
 	}
-	
+
 	private Matrix matrixScalarAdd(Matrix mx, double dy) {
 		int nr = mx.getRowDimension();
 		int nc = mx.getColumnDimension();
-		
+
 		Matrix my = mx.copy();
 		for (int i = 0; i < nr; ++i) {
 			for (int j = 0; j < nc; ++j) {
 				my.set(i, j, my.get(i, j) + dy);
 			}
 		}
-		
+
 		return my;
 	}
-	
+
 	public Object subtract(Object x, Object y) {
-		boolean xIsNum = x.getClass().equals(Double.class) || x.getClass().equals(String.class);
-		boolean yIsNum = y.getClass().equals(Double.class) || y.getClass().equals(String.class);
-		
+		boolean xIsNum = x.getClass().equals(Double.class)
+				|| x.getClass().equals(String.class);
+		boolean yIsNum = y.getClass().equals(Double.class)
+				|| y.getClass().equals(String.class);
+
 		if (xIsNum && yIsNum) {
 			return getDouble(x) - getDouble(y);
-		}
-		else if (xIsNum && y.getClass().equals(Matrix.class)) {
+		} else if (xIsNum && y.getClass().equals(Matrix.class)) {
 			double dx = getDouble(x);
 			Matrix my = (Matrix) y;
-			
+
 			Matrix mOut = matrixScalarAdd(my.times(-1.0), dx);
 			return mOut;
-		}
-		else if (x.getClass().equals(Matrix.class) && yIsNum) {
+		} else if (x.getClass().equals(Matrix.class) && yIsNum) {
 			Matrix mx = (Matrix) x;
 			double dy = getDouble(y);
-			
+
 			Matrix mOut = matrixScalarAdd(mx, -dy);
 			return mOut;
-		}
-		else if (x.getClass().equals(Matrix.class) && 
-				 y.getClass().equals(Matrix.class)) {
+		} else if (x.getClass().equals(Matrix.class)
+				&& y.getClass().equals(Matrix.class)) {
 			Matrix mx = (Matrix) x;
 			Matrix my = (Matrix) y;
-			
+
 			return mx.minus(my);
-		}
-		else {
-			throw new RuntimeException("Unsupport types scenario for method \"subtract\"");
+		} else {
+			throw new RuntimeException(
+					"Unsupport types scenario for method \"subtract\"");
 		}
 	}
 
 	public Object multiply(Object x, Object y) {
-		boolean xIsNum = x.getClass().equals(Double.class) || x.getClass().equals(String.class);
-		boolean yIsNum = y.getClass().equals(Double.class) || y.getClass().equals(String.class);
-		
+		boolean xIsNum = x.getClass().equals(Double.class)
+				|| x.getClass().equals(String.class);
+		boolean yIsNum = y.getClass().equals(Double.class)
+				|| y.getClass().equals(String.class);
+
 		if (xIsNum && yIsNum) {
 			return getDouble(x) * getDouble(y);
-		}
-		else if (xIsNum && y.getClass().equals(Matrix.class)) {
+		} else if (xIsNum && y.getClass().equals(Matrix.class)) {
 			double dx = getDouble(x);
 			Matrix my = (Matrix) y;
-			
+
 			return my.times(dx);
-		}
-		else if (x.getClass().equals(Matrix.class) && yIsNum) {
+		} else if (x.getClass().equals(Matrix.class) && yIsNum) {
 			Matrix mx = (Matrix) x;
 			double dy = getDouble(y);
-			
+
 			return mx.times(dy);
-		}
-		else if (x.getClass().equals(Matrix.class) && 
-				 y.getClass().equals(Matrix.class)) {
+		} else if (x.getClass().equals(Matrix.class)
+				&& y.getClass().equals(Matrix.class)) {
 			Matrix mx = (Matrix) x;
 			Matrix my = (Matrix) y;
-			
+
 			return mx.times(my);
-		}
-		else {
-			throw new RuntimeException("Unsupport types scenario for method \"multiply\"");
+		} else {
+			throw new RuntimeException(
+					"Unsupport types scenario for method \"multiply\"");
 		}
 	}
 
@@ -361,121 +614,129 @@ public class ParseTreeEvaluator {
 
 		return Math.pow(d_base, d_exp);
 	}
-	
+
 	public double sqrt(Object x) throws SquareRootOfNegativeException {
 		double d_x = getDouble(x);
-		
+
 		if (d_x < 0.0) {
-			throw new SquareRootOfNegativeException("Attempt to get the square root of negative number " + d_x);
+			throw new SquareRootOfNegativeException(
+					"Attempt to get the square root of negative number " + d_x);
 		}
-		
+
 		double y = Math.sqrt(d_x);
 		return y;
 	}
-	
+
 	public double ln(Object x) throws LogarithmOfNonPositiveException {
 		double d_x = getDouble(x);
-		
+
 		if (d_x <= 0.0) {
-			throw new LogarithmOfNonPositiveException("Attempt to take the logarithm of non-positive number " + d_x);
+			throw new LogarithmOfNonPositiveException(
+					"Attempt to take the logarithm of non-positive number "
+							+ d_x);
 		}
-		
+
 		double y = Math.log(d_x);
 		return y;
 	}
-	
+
 	public double sin(Object x) {
 		double d_x = getDouble(x);
 		double y = Math.sin(d_x);
 		return y;
 	}
-	
+
 	public double cos(Object x) {
 		double d_x = getDouble(x);
 		double y = Math.cos(d_x);
 		return y;
 	}
-	
+
 	public double det(Object x) throws InvalidArgumentForMatrixOperation {
-		if ( !x.getClass().equals(Matrix.class) ) {
-			throw new InvalidArgumentForMatrixOperation("Invalid argument type for matrix operation");
+		if (!x.getClass().equals(Matrix.class)) {
+			throw new InvalidArgumentForMatrixOperation(
+					"Invalid argument type for matrix operation");
 		}
-		
+
 		return ((Matrix) x).det();
 	}
-	
+
 	public double rank(Object x) throws InvalidArgumentForMatrixOperation {
-		if ( !x.getClass().equals(Matrix.class) ) {
-			throw new InvalidArgumentForMatrixOperation("Invalid argument type for matrix operation");
+		if (!x.getClass().equals(Matrix.class)) {
+			throw new InvalidArgumentForMatrixOperation(
+					"Invalid argument type for matrix operation");
 		}
-		
+
 		return ((Matrix) x).rank();
 	}
-	
+
 	public Object call_function_1arg(Object methodObj, Object arg0)
-		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {		
+			throws NoSuchMethodException, InvocationTargetException,
+			IllegalAccessException {
 		Method method = (Method) methodObj;
-		
+
 		return method.invoke(this, arg0);
 	}
-	
-	public Method get_math_function_2char_1arg(Object nameObj0, Object nameObj1) 
-		throws NoSuchMethodException {
+
+	public Method get_math_function_2char_1arg(Object nameObj0, Object nameObj1)
+			throws NoSuchMethodException {
 		StringBuilder funcNameBuilder = new StringBuilder();
 		funcNameBuilder.append((String) nameObj0);
 		funcNameBuilder.append((String) nameObj1);
 		String funcName = funcNameBuilder.toString();
-		
-		Class [] argTypes = new Class[1];
+
+		Class[] argTypes = new Class[1];
 		for (int i = 0; i < argTypes.length; ++i) {
 			argTypes[i] = Object.class;
 		}
-		
+
 		Method method = this.getClass().getMethod(funcName, argTypes);
 		return method;
 	}
-	
-	public Method get_math_function_4char_1arg(Object nameObj0, Object nameObj1, Object nameObj2, Object nameObj3) 
-		throws NoSuchMethodException {
+
+	public Method get_math_function_4char_1arg(Object nameObj0,
+			Object nameObj1, Object nameObj2, Object nameObj3)
+			throws NoSuchMethodException {
 		StringBuilder funcNameBuilder = new StringBuilder();
 		funcNameBuilder.append((String) nameObj0);
 		funcNameBuilder.append((String) nameObj1);
 		funcNameBuilder.append((String) nameObj2);
 		funcNameBuilder.append((String) nameObj3);
 		String funcName = funcNameBuilder.toString();
-		
-		Class [] argTypes = new Class[1];
+
+		Class[] argTypes = new Class[1];
 		for (int i = 0; i < argTypes.length; ++i) {
 			argTypes[i] = Object.class;
 		}
-		
+
 		Method method = this.getClass().getMethod(funcName, argTypes);
 		return method;
 	}
-	
-	public Method get_math_function_3char_1arg(Object nameObj0, Object nameObj1, Object nameObj2) 
-			throws NoSuchMethodException {
-			StringBuilder funcNameBuilder = new StringBuilder();
-			funcNameBuilder.append((String) nameObj0);
-			funcNameBuilder.append((String) nameObj1);
-			funcNameBuilder.append((String) nameObj2);
-			String funcName = funcNameBuilder.toString();
-			
-			Class [] argTypes = new Class[1];
-			for (int i = 0; i < argTypes.length; ++i) {
-				argTypes[i] = Object.class;
-			}
-			
-			Method method = this.getClass().getMethod(funcName, argTypes);
-			return method;
+
+	public Method get_math_function_3char_1arg(Object nameObj0,
+			Object nameObj1, Object nameObj2) throws NoSuchMethodException {
+		StringBuilder funcNameBuilder = new StringBuilder();
+		funcNameBuilder.append((String) nameObj0);
+		funcNameBuilder.append((String) nameObj1);
+		funcNameBuilder.append((String) nameObj2);
+		String funcName = funcNameBuilder.toString();
+
+		Class[] argTypes = new Class[1];
+		for (int i = 0; i < argTypes.length; ++i) {
+			argTypes[i] = Object.class;
 		}
+
+		Method method = this.getClass().getMethod(funcName, argTypes);
+		return method;
+	}
 
 	public String string(Object s) {
 		@SuppressWarnings("rawtypes")
 		Class sClass = s.getClass();
-		if (!sClass.equals(String.class))
+		if (!sClass.equals(String.class)) {
 			throw new RuntimeException(
 					"Input argument to string() is not a String type");
+		}
 
 		return (String) s;
 	}
@@ -511,31 +772,26 @@ public class ParseTreeEvaluator {
 			throw new RuntimeException("Variable symbol name must be a String");
 		}
 		String varName = (String) a;
-		
-		/* Get the value; Enter the variable name and value  */
+
+		/* Get the value; Enter the variable name and value */
 		String s = ""; /* TODO: Non-double type right hand side */
 		if (b.getClass().equals(Matrix.class)) {
 			varMap.put(varName, new ValueUnion((Matrix) b));
 			s = matrix2String((Matrix) b);
-		}
-		else if (b.getClass().equals(String.class)) {
+		} else if (b.getClass().equals(String.class)) {
 			varMap.put(varName, new ValueUnion(Double.parseDouble((String) b)));
 			s = (String) b;
-		} 
-		else if (b.getClass().equals(Double.class)) {
+		} else if (b.getClass().equals(Double.class)) {
 			varMap.put(varName, new ValueUnion((Double) b));
 			s = String.format("%f", (Double) b);
-		} 
-		else {
-			throw new RuntimeException("Unexpected value argument type: " + b.getClass());
+		} else {
+			throw new RuntimeException("Unexpected value argument type: "
+					+ b.getClass());
 		}
-		
-		
-		
-		
+
 		return s;
 	}
-	
+
 	/* Assign double value to variable */
 	public Matrix variable_assign_matrix(Object a, Object b) {
 		/* Get the variable name */
@@ -543,100 +799,172 @@ public class ParseTreeEvaluator {
 			throw new RuntimeException("Variable symbol name must be a String");
 		}
 		String varName = (String) a;
-		
+
 		/* Get the value */
 		Matrix val = null;
 		if (b.getClass().equals(Matrix.class)) {
 			val = (Matrix) b;
 		} else {
-			throw new RuntimeException("Unexpected value argument type: " + b.getClass());
+			throw new RuntimeException("Unexpected value argument type: "
+					+ b.getClass());
 		}
-		
+
 		/* Enter the variable name and value */
 		varMap.put(varName, new ValueUnion(val));
 		
 		return val;
 	}
 
-	public ValueUnion eval_variable(Object v) {
+	public Object eval_variable(Object v) {
 		/* Get the variable name */
 		if (!v.getClass().equals(String.class)) {
 			throw new RuntimeException("Variable symbol name must be a String");
 		}
 		String varName = (String) v;
 		
+		if (hasDirectAncestor("USER_FUNCTION_ARGS") && /* Special case for customer function definition */
+			hasDirectAncestor("USER_FUNCTION_DEF")) {
+			return varName;
+		}
+
 		if (varMap.containsKey(varName)) {
 			return varMap.get(varName);
-		}
-		else {
+		} else {
 			return new ValueUnion(0.0); /* TODO: Throw an error? */
 		}
 	}
 
 	/* Matrix operations */
-	
+
 	/* Generate a 1x1 matrix */
 	public Matrix matrix_1x1(Object v) {
 		double d_x = getDouble(v);
-		
-		double [][] arr = new double[1][1];
+
+		double[][] arr = new double[1][1];
 		arr[0][0] = d_x;
-		
+
 		return new Matrix(arr);
 	}
-	
-	/* Matrix row concatenation. Expect: 
-	 *   1st input argument: rvec, a row vector (in Matrix type);
-	 *   2nd input argument: num, a number (Double) 
+
+	/*
+	 * Matrix row concatenation. Expect: 1st input argument: rvec, a row vector
+	 * (in Matrix type); 2nd input argument: num, a number (Double)
 	 */
 	public Matrix matrix_row_concat(Object rvec, Object num) {
 		Matrix rVector = (Matrix) rvec;
-		
+
 		int nr = rVector.getRowDimension();
 		int nc = rVector.getColumnDimension();
-		
+
 		if (nr != 1) {
-			throw new RuntimeException("Input matrix does not have a row dimension of 1 (" + 
-		                               nr + ") instead");
+			throw new RuntimeException(
+					"Input matrix does not have a row dimension of 1 (" + nr
+							+ ") instead");
 		}
-		
-		double [][] arr = new double[nr][nc + 1];
+
+		double[][] arr = new double[nr][nc + 1];
 		Matrix out = new Matrix(arr);
 		out.setMatrix(0, nr - 1, 0, nc - 1, rVector);
-		
+
 		double d_x = getDouble(num);
 		out.set(0, nc, d_x);
-		
+
 		return out;
 	}
-	
-	/* Matrix column concatenation. Expect
-	 *   1st input argument: mat0: a matrix
-	 *   2nd input argument: rvec: a row vector (in Matrix type)
+
+	/*
+	 * Matrix column concatenation. Expect 1st input argument: mat0: a matrix
+	 * 2nd input argument: rvec: a row vector (in Matrix type)
 	 */
 	public Matrix matrix_col_concat(Object mat0, Object mat1) {
 		Matrix matrix0 = (Matrix) mat0;
 		Matrix matrix1 = (Matrix) mat1;
-		
+
 		int nr0 = matrix0.getRowDimension();
 		int nc0 = matrix0.getColumnDimension();
 		int nr1 = matrix1.getRowDimension();
 		int nc1 = matrix1.getColumnDimension();
-		
+
 		if (nc0 != nc1) {
-			throw new RuntimeException("Input matrices do not have equal number of rows (" + 
-		                               nc0 + " != " + nc1 + ")");
+			throw new RuntimeException(
+					"Input matrices do not have equal number of rows (" + nc0
+							+ " != " + nc1 + ")");
 		}
-		
-		double [][] arr = new double[nr0 + nr1][nc0];
+
+		double[][] arr = new double[nr0 + nr1][nc0];
 		Matrix out = new Matrix(arr);
-//		out.setMatrix(0, 0, nr0 - 1, nc0 - 1, matrix0);
+		// out.setMatrix(0, 0, nr0 - 1, nc0 - 1, matrix0);
 		out.setMatrix(0, nr0 - 1, 0, nc0 - 1, matrix0);
-//		out.setMatrix(nr0, nc0, nr0 + nr1 - 1, nc0 + nc1 - 1, matrix1);
+		// out.setMatrix(nr0, nc0, nr0 + nr1 - 1, nc0 + nc1 - 1, matrix1);
 		out.setMatrix(nr0, nr0 + nr1 - 1, 0, nc0 - 1, matrix1);
-		
+
 		return out;
 	}
+
+	/* Methods for user-defined functions */
+	public FunctionArgumentList function_arg_list(Object obj) {
+		if (obj.getClass().equals(String.class)) {
+			String argStr = (String) obj;
+			
+			String tokenType = prodSet.terminalSet.getTypeOfToken(argStr);
+			if ( tokenType != null && tokenType.equals("VARIABLE_SYMBOL") ) {
+			    return new FunctionArgumentList(argStr);
+			}
+			else {
+				return new FunctionArgumentList(getDouble(argStr)); /* TODO: Matrix types? */
+			}
+		}
+		
+		return new FunctionArgumentList(obj);
+	}
+
+	public FunctionArgumentList append_function_arg_list(Object argListObj,
+			Object obj) {
+		FunctionArgumentList argList = (FunctionArgumentList) argListObj;
+
+		argList.append(obj);
+		return argList;
+	}
+
+	public FunctionTerm user_function_term(Object functionNameObj, Object functionArgumentListObj) {
+		String functionName = (String) functionNameObj;
+		FunctionArgumentList functionArgumentList = (FunctionArgumentList) functionArgumentListObj;
+		
+		FunctionTerm funcTerm = new FunctionTerm(functionName, functionArgumentList);
+		return funcTerm;
+	}
 	
+	public FunctionTerm define_user_function(Object funcTermObj, Object nodeObj) {
+		FunctionTerm funcTerm = (FunctionTerm) funcTermObj;
+		
+//		System.out.println("Type of nodeObj = " + nodeObj.getClass());
+		Node node = (Node) nodeObj;
+		funcTerm.defineBody(node);
+		
+		/* Register the function */
+		varMap.put(funcTerm.getFunctionName(), new ValueUnion(funcTerm));
+		
+		return funcTerm;
+	}
+	
+	public Object evaluate_user_function(Object funcTermObj) throws ParseTreeEvaluatorException {		
+		FunctionTerm funcTermInput = (FunctionTerm) funcTermObj;
+		String functionName = funcTermInput.getFunctionName();
+		ValueUnion funcTermStoredVal = varMap.get(functionName);
+		if (funcTermStoredVal == null) {
+			throw new UndefinedFunctionException("Undefined function: \"" + functionName + "\"");
+		}
+		
+		FunctionTerm funcTermStored = funcTermStoredVal.getUserFunction(); /* TODO: check if function exists */
+		/* TODO: Function overloading by arguments */
+		
+		
+
+		ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
+		
+		Object retVal = funcTermStored.evaluate(evaluator, funcTermInput.getArgumentList());
+		
+		return retVal; /* TODO */
+	}
 	/* ~Methods */
 }

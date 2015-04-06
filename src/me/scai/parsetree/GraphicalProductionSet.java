@@ -21,6 +21,7 @@ public class GraphicalProductionSet {
 //	protected ArrayList<String []> terminalTypes = new ArrayList<String []>();
 	protected String [][] terminalTypes;
 	
+	public TerminalSet terminalSet;
 	private int [] searchIdx = null;
 	/* The array of possible terminal type for each production. 
 	 * Calculated by the private method: calcTermTypes() */
@@ -47,8 +48,10 @@ public class GraphicalProductionSet {
 	
 	
 	private void readProductionsFromLines(String [] lines, TerminalSet termSet) {
-		int idxLine = 0;
+		terminalSet = termSet;
 		
+		int idxLine = 0;
+	
 		/* Remove the empty lines at the end */
 		lines = TextHelper.removeTrailingEmptyLines(lines);
 		
@@ -132,7 +135,7 @@ public class GraphicalProductionSet {
 	 *             Contain indices to the possible heads. */
 	public int [][] getIdxValidProds(CWrittenTokenSetNoStroke tokenSet,
 			                         int [] searchSubsetIdx, 
-			                         TerminalSet termSet, 	
+			                         TerminalSet termSet, 
 			                         String lhs,
 			                         ArrayList<int [][]> idxPossibleHead, 
 			                         boolean bDebug) {

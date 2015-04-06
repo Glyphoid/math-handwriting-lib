@@ -7,6 +7,12 @@ public class ParseTreeEvaluatorException extends Exception {
 	public ParseTreeEvaluatorException(String msg) { super(msg); } 
 }
 
+class UndefinedFunctionException extends ParseTreeEvaluatorException {
+	private static final long serialVersionUID = 1L;
+	
+	public UndefinedFunctionException(String msg) { super(msg); }
+}
+
 class UnexpectedTypeException extends ParseTreeEvaluatorException {
 	private static final long serialVersionUID = 1L;
 	
