@@ -215,6 +215,11 @@ public class Test_QADataSet {
 			new QADataEntry("sim_113", "f((3 + 2))", "f{\\left({3}+{2}\\right)}"), // Evaluation of custom function
 			new QADataEntry("sim_114", "f(-0.5)", "f{\\left(-{0.5}\\right)}"),      // Evaluation of custom function
 			new QADataEntry("sim_116", "f((sqrt(3)))", "f{\\left(\\sqrt{3}\\right)}"),             // Evaluation of custom function
+			new QADataEntry("sim_117", "(f(4) + 2)", "{f{\\left(4\\right)}}+{2}"),  // Custom function term as level-1 expression
+			new QADataEntry("sim_118", "(1 / f((2 + 3)))", "\\frac{1}{f{\\left({2}+{3}\\right)}}"),  // Custom function term as level-1 expression
+			new QADataEntry("sim_119", "(3*f(9))", "{3}{f{\\left(9\\right)}}"),  					 // Custom function term as level-1 expression
+			new QADataEntry("sim_120", "(f(1)*g(0))", "{f{\\left(1\\right)}}{g{\\left(0\\right)}}"), // Custom function term as level-1 expression
+			new QADataEntry("sim_121", "((2*f(3)) + (4*g(5)))", "{{2}{f{\\left(3\\right)}}}+{{4}{g{\\left(5\\right)}}}"), // Custom function term as level-1 expression
 	};
 	/* ~Member variables */
 }

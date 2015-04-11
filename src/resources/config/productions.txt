@@ -103,6 +103,13 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_ 			n0
 
+--- #
+EXPR_LV1
+USER_FUNCTION_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_USER_FUNCTION(n0)
+
 --- # 12
 EXPR_LV1			# Addition with parentheses
 ADDITION
@@ -160,6 +167,13 @@ MATH_FUNCTION_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
+
+---
+VARIABLE_EXPONENTIATION
+USER_FUNCTION_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_USER_FUNCTION(n0)
 
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
@@ -578,10 +592,3 @@ USER_FUNCTION_DEF
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
-
---- #
-ROOT 
-USER_FUNCTION_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			EVALUATE_USER_FUNCTION(n0)
