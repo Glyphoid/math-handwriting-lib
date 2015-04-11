@@ -1,4 +1,4 @@
-package me.scai.parsetree;
+package me.scai.parsetree.evaluation;
 
 /* Exception classes */
 public class ParseTreeEvaluatorException extends Exception {

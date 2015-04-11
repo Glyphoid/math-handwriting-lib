@@ -365,14 +365,14 @@ public class GraphicalProduction {
 	
 	//int level;		/* Level: 0 is the lowest: numbers */
 	private int nrhs; 	   	/* Number of right-hand side tokens, e.g., 2 */
-	String [] rhs;
+	public String [] rhs;
 	boolean [] rhsIsTerminal;
 	/* Right-hand side items: can be a list of terminal (T) and non-terminal (NT) items.
 	 * E.g., {DIGIT, DIGIT_STRING} */
 	
 	boolean [] bt; 	/* Boolean flags for terminals (T), e.g., {true, false} */
 	
-	String sumString; 
+	public String sumString; 
 	/* Production summary string that does not contain geometric information, e.g.,
 	 * "DIGIT_STRING --> DIGIT DIGIT_STRING" 
 	 */
@@ -390,7 +390,7 @@ public class GraphicalProduction {
 	String [] stringizeInstr;		/* Instruction for stringization */
 	String [] mathTexInstr;         /* Instruction for generating Math TeX */
 	String [] mathMlInstr;         /* Instruction for generating MathML */
-	String [] evalInstr;            /* Instruction for evaluation */
+	public String [] evalInstr;            /* Instruction for evaluation */
 	
 	/* ~Member variables */
 
@@ -431,11 +431,6 @@ public class GraphicalProduction {
 		
 		/* Generate geometric shortcut, if any. 
 		 * If there is no shortcut, shortcutType will be noShortcut. */
-		if (t_lhs.startsWith("ASSIGNMENT_")) {
-			int i = 0; 
-			i += 0;
-		}
-		
 		geomShortcut = new GeometricShortcut(this, terminalSet);
 		
 		assocType = t_assocType;
@@ -602,7 +597,7 @@ public class GraphicalProduction {
 //		    				throw new RuntimeException("Encountered unexpected value of t_nTokens: != 1");
 		    			}
 		    			
-		    			String tokenTermType = tTokenSet.tokens.get(0).tokenTermType;
+//		    			String tokenTermType = tTokenSet.tokens.get(0).tokenTermType;
 		    			/* TODO: Accommodate terminal name types (e.g., "TERMINAL(s)") */
 		    			if ( terminalSet.match(tTokenSet.tokens.get(0).getRecogWinner(), this.rhs[j + 1]) ) {
 //		    			if ( tokenTermType.equals(this.rhs[j + 1]) ) {	

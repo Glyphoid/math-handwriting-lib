@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.net.URL;
 
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
+import me.scai.parsetree.evaluation.ParseTreeEvaluator;
 
 public class GraphicalProductionSet {
 	private static final String commentString = "#";
@@ -175,16 +176,11 @@ public class GraphicalProductionSet {
 			String [] possibleTermTypes = terminalTypes[prodIdx];
 			List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
 			
-			if (possibleTermTypesList.contains("TERMINAL(l)")) {
-				String s = "s";
-				s += "b";
-			}
-			
 			for (int k = 0; k < tokenSet.nTokens(); ++k) {
 //				String tokenType = termSet.getTypeOfToken(tokenSet.recogWinners.get(k));
 				String tokenName = tokenSet.tokens.get(k).getRecogWinner();
 				
-				String tokenType = termSet.getTypeOfToken(tokenName);
+//				String tokenType = termSet.getTypeOfToken(tokenName);
 				if ( !termSet.typeListContains(possibleTermTypesList, tokenName) ) { //
 //			    if ( !possibleTermTypesList.contains(tokenType) ) { 
 					bExclude = true;

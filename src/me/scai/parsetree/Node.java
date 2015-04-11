@@ -6,7 +6,7 @@ public class Node {
 	public String lhs;
 	public String prodSumString;	/* Production summary string. See GraphicalProduction.sumString */
 	public String termName; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
-	String [] rhsTypes;		        /* Child types: applies only to non-terminal nodes */
+	public String [] rhsTypes;		        /* Child types: applies only to non-terminal nodes */
 	
 	private float [] bounds;        /* {x_min, y_min, x_max, y_max} */
 	

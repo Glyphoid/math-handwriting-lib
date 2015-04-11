@@ -319,8 +319,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		}
 		
 		/* Print summary */
-		if ( bDebug )
+		if ( bDebug ) {
 			System.out.println("All tokens: nTrainTotal = " + nTrainTotal + "; nTestTotal = " + nTestTotal);
+		}
 	}
 	
 	/* Form MLData with CHandWritingTokenImageData */

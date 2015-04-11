@@ -12,6 +12,8 @@ import java.net.URL;
 
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 //import me.scai.parsetree.geometry.NodeInternalGeometry; //DEBUG
+import me.scai.parsetree.evaluation.ParseTreeEvaluator;
+import me.scai.parsetree.evaluation.ParseTreeEvaluatorException;
 
 import org.junit.After;
 import org.junit.AfterClass;
