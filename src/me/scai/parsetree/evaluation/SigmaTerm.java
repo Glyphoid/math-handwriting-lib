@@ -14,20 +14,11 @@ class SigmaTerm extends SigmaPiTerm {
 			throws ParseTreeEvaluatorException {
 		if (!isDefined()) {
 			throw new RuntimeException(
-					"The body of this function is not defined"); /*
-																 * TODO: More
-																 * specific
-																 * exception
-																 * type
-																 */
+					"The body of this function is not defined"); /* TODO: More specific exception type */
 		}
 
 		int numArgs = argList.numArgs();
-		List<String> argSymbols = argList.getSymbolNames(); /*
-															 * TODO: Use escape
-															 * arg names such as
-															 * _arg_1
-															 */
+		List<String> argSymbols = argList.getSymbolNames(); /* TODO: Use escape arg names such as _arg_1 */
 		double sum = 0.0;
 
 		/* Obtain the value lists for all arguments */
@@ -35,7 +26,7 @@ class SigmaTerm extends SigmaPiTerm {
 		allArgVals.ensureCapacity(numArgs);
 
 		for (int i = 0; i < numArgs; ++i) {
-			allArgVals.set(i, argumentRanges.get(i).getValues());
+			allArgVals.add(argumentRanges.get(i).getValues());
 		}
 
 		int numVals = allArgVals.get(0).size();

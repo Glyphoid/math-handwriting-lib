@@ -668,6 +668,9 @@ public class TokenSetParser implements ITokenSetParser {
 						Node[][] t_c_nodes = this.evalGeom2NodesMap
 								.get(tHashKey2);
 
+						if (t_c_scores == null) {
+							return null;
+						}
 						int[] t_c_idxMax2 = MathHelper.indexMax2D(t_c_scores);
 						Node t_c_node = t_c_nodes[t_c_idxMax2[0]][t_c_idxMax2[1]];
 						CWrittenTokenSetNoStroke[] t_c_remSets = this.evalGeom2RemSetsMap

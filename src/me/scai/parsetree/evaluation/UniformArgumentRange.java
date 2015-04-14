@@ -36,6 +36,7 @@ class UniformArgumentRange implements ArgumentRange {
 		while ((interval > 0.0) && v <= maxVal || (interval < 0.0)
 				&& v >= maxVal) {
 			vs.add(v);
+			v += interval;
 		}
 
 		return vs;

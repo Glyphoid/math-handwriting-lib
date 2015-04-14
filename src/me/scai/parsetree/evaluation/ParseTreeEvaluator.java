@@ -3,6 +3,8 @@ package me.scai.parsetree.evaluation;
 import java.util.Arrays;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
@@ -180,14 +182,19 @@ public class ParseTreeEvaluator {
 			for (int j = 0; j < nArgs; ++j) {
 				int chIdx = argIndices[j];
 
-				if (lhsStackTop().equals("USER_FUNCTION_DEF") && j == 1) {
+				if (lhsStackTop().equals("USER_FUNCTION_DEF") && j == 1 || 
+				        lhsStackTop().equals("SIGMA_TERM") && j == 0 ||
+				        lhsStackTop().equals("SIGMA_TERM") && j == 2) {
 					/* Special case for function body definition */
 					/* TODO: Do not hard code this */
 					args[j] = n.ch[chIdx];
-				} else {
+				} 
+				
+				else {
 					if (n.ch[argIndices[j]].isTerminal()) {
 						args[j] = n.ch[chIdx].termName;
-					} else {
+					} 
+					else {
 						args[j] = eval(n.ch[chIdx]);
 					}
 				}
@@ -195,15 +202,18 @@ public class ParseTreeEvaluator {
 
 			try {
 				evalRes = m.invoke(this, args);
-			} catch (InvocationTargetException iteExc) {
+			} 
+			catch (InvocationTargetException iteExc) {
 				throw new ParseTreeEvaluatorException(
 						"Evaluation failed due to InvocationTargetException");
-			} catch (IllegalAccessException iaeExc) {
+			} 
+			catch (IllegalAccessException iaeExc) {
 				throw new ParseTreeEvaluatorException(
 						"Evaluation failed due to IllegalAccessExcpetion");
 			}
 
-		} catch (NoSuchMethodException nsme) {
+		} 
+		catch (NoSuchMethodException nsme) {
 			throw new ParseTreeEvaluatorException(
 					"Cannot find evaluation function named \"" + funcName
 							+ "\" and with " + argTypes.length + " arguments");
@@ -679,11 +689,7 @@ public class ParseTreeEvaluator {
 			if (tokenType != null && tokenType.equals("VARIABLE_SYMBOL")) {
 				return new FunctionArgumentList(argStr);
 			} else {
-				return new FunctionArgumentList(getDouble(argStr)); /*
-																	 * TODO:
-																	 * Matrix
-																	 * types?
-																	 */
+				return new FunctionArgumentList(getDouble(argStr)); /* TODO: Matrix types? */
 			}
 		}
 
@@ -731,21 +737,50 @@ public class ParseTreeEvaluator {
 					+ functionName + "\"");
 		}
 
-		FunctionTerm funcTermStored = funcTermStoredVal.getUserFunction(); /*
-																			 * TODO:
-																			 * check
-																			 * if
-																			 * function
-																			 * exists
-																			 */
+		FunctionTerm funcTermStored = funcTermStoredVal.getUserFunction(); /* TODO: check if function exists */
 		/* TODO: Function overloading by arguments */
 
 		ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
 
 		Object retVal = funcTermStored.evaluate(evaluator,
 				funcTermInput.getArgumentList());
-
-		return retVal; /* TODO */
+		return retVal;
 	}
+	
+	public Object def_sigma_term(Object assignStatementObj, Object upperLimitObj, Object bodyObj) 
+	    throws ParseTreeEvaluatorException {
+	    Node assignStatement = (Node) assignStatementObj;
+	    Node argNameNode = assignStatement.ch[1].ch[0]; /* TODO: Get rid of grammar dependency */
+	    FunctionArgumentList argList = new FunctionArgumentList(argNameNode.termName);
+	    
+	    Node lowerLimitNode = assignStatement.ch[2];	/* TODO: Get rid of grammar dependency */	    
+	    double lowerLimit = getDouble(this.eval(lowerLimitNode));
+	    
+	    double upperLimit = getDouble(upperLimitObj);
+	    
+	    ArgumentRange argRange = new UniformArgumentRange(lowerLimit, 1.0, upperLimit);
+	    List<ArgumentRange> argRanges = new ArrayList<>();
+	    argRanges.add(argRange);
+	    
+	    SigmaTerm sigmaTerm = new SigmaTerm("_sigma_term_", argList, argRanges); /* TODO: name that makes more sense */
+	    	    
+	    /* Define the body */
+	    sigmaTerm.defineBody((Node) bodyObj);
+	    
+	    return sigmaTerm; /* TODO */
+	}
+	
+	public Object evaluate_sigma_term(Object sigmaTermObj)
+            throws ParseTreeEvaluatorException {
+        SigmaTerm sigmaTerm = (SigmaTerm) sigmaTermObj;
+        
+        /* TODO: Function overloading by arguments */
+    
+        ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
+    
+        Object retVal = sigmaTerm.evaluate(evaluator);
+        return retVal;
+    }
+	
 	/* ~Methods */
 }

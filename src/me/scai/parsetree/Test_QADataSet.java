@@ -220,6 +220,8 @@ public class Test_QADataSet {
 			new QADataEntry("sim_119", "(3*f(9))", "{3}{f{\\left(9\\right)}}"),  					 // Custom function term as level-1 expression
 			new QADataEntry("sim_120", "(f(1)*g(0))", "{f{\\left(1\\right)}}{g{\\left(0\\right)}}"), // Custom function term as level-1 expression
 			new QADataEntry("sim_121", "((2*f(3)) + (4*g(5)))", "{{2}{f{\\left(3\\right)}}}+{{4}{g{\\left(5\\right)}}}"), // Custom function term as level-1 expression
+			new QADataEntry("sim_124", "Sigma((i = 1) : (8))(i)", "\\sum\\limits_{{i}={1}}^{8}{i}"),     // Sigma sum term // TODO: Full sigma term
+			new QADataEntry("sim_125", "Sigma((n = -2) : ((sqrt(4))))((n ^ 2))", "\\sum\\limits_{{n}={-{2}}}^{\\sqrt{4}}{{n}^{2}}"),     // Sigma sum term // TODO: Full sigma term
 	};
 	/* ~Member variables */
 }
