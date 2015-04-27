@@ -470,6 +470,22 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 			wtConstStrokeIdx.set(tokenIdx, MathHelper.listOfIntegers2ArrayOfInts(constIndices)); 		
 		}
 	}
+	
+	/* Force setting the recognition winner */
+	@Override
+	public void forceSetRecogWinner(int tokenIdx, String recogWinner) {
+	    if (tokenIdx >= wtRecogWinners.size()) {
+	        return;
+	    }
+	    
+	    wtRecogWinners.set(tokenIdx, recogWinner);
+	    
+	    wtRecogPs.set(tokenIdx, null);   /* Is this appropriate? */
+	    wtRecogMaxPs.set(tokenIdx, 1.0); /* Is this appropriate? */
+	    
+	    System.out.println("Calling setTokenRecogRes with tokenIdx=" + tokenIdx + " and recogWinner=" + recogWinner);
+	    wtSet.setTokenRecogRes(tokenIdx, recogWinner, null);
+	}
 
 	/* Force the merging of specified strokes into a token. The strokes may already
 	 * belong to other tokens, in which case the other tokens need to be taken care of

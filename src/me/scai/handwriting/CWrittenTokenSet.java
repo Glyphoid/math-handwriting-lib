@@ -78,17 +78,26 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	/* Add recognition results for a token, at the end:
 	 * including the winner of the recognition and the detailed p-values.
 	 */
-	private void addTokenRecogRes(String t_recogWinner, double [] t_recogP) {
+	private void addTokenRecogRes(String t_recogWinner, double [] t_recogPs) {
 		recogWinners.add(t_recogWinner);
-		recogPs.add(t_recogP);
+		recogPs.add(t_recogPs);
 	}
 	
 	/* Add recognition results for a token, at the specified location: 
 	 * including the winner of the recognition and the detailed p-values.
 	 */
-	private void addTokenRecogRes(int i, String t_recogWinner, double [] t_recogP) {
+	private void addTokenRecogRes(int i, String t_recogWinner, double [] t_recogPs) {
 		recogWinners.add(i, t_recogWinner);
-		recogPs.add(i, t_recogP);
+		recogPs.add(i, t_recogPs);
+	}
+	
+	/* Set token recognition winner and P-values */
+	public void setTokenRecogRes(int i, String t_recogWinner, double [] t_recogPs) {
+	    recogWinners.set(i, t_recogWinner);
+	    recogPs.set(i,  t_recogPs);
+	    
+	    tokens.get(i).setRecogWinner(t_recogWinner);
+	    tokens.get(i).setRecogPs(t_recogPs);
 	}
 	
 	/* Replace a token at specified index, with recognition results */

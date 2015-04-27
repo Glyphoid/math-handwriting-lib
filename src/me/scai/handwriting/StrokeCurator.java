@@ -43,4 +43,7 @@ public interface StrokeCurator {
 	
 	/* Get the constituent stroke indicies */
 	public List<int []> getWrittenTokenConstStrokeIndices();
+	
+	/* Force setting the recognition winner */
+	public void forceSetRecogWinner(int tokenIdx, String recogWinner);
 }
