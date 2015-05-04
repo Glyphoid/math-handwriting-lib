@@ -1,7 +1,6 @@
 package me.scai.parsetree.evaluation;
 
 import java.util.Arrays;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.IllegalAccessException;
 
 import Jama.Matrix;
-
 import me.scai.parsetree.Node;
 import me.scai.parsetree.GraphicalProduction;
 import me.scai.parsetree.GraphicalProductionSet;
@@ -32,6 +30,10 @@ public class ParseTreeEvaluator {
 	private LinkedList<String> lhsStack = new LinkedList<String>();
 	private LinkedList<String[]> rhsStack = new LinkedList<String[]>();
 
+	/* Stack for function evaluation */
+	LinkedList<String> funcNameStack = new LinkedList<String>();             /* Stack of function names */
+	LinkedList<String []> funcArgNamesStack = new LinkedList<String []>();   /* Stack of function argument variable names */  
+	
 	/* ~Member variables */
 
 	/* Methods */
@@ -72,23 +74,27 @@ public class ParseTreeEvaluator {
 			sumString2NodeIdxMap.put(sumString, nodeIndices);
 		}
 	}
+	
+	public String evalRes2String(Object evalRes) {
+	    String evalResStr = "";
+        if (evalRes.getClass().equals(Matrix.class)) {
+            evalResStr = matrix2String((Matrix) evalRes);
+        } else if (evalRes.getClass().equals(FunctionTerm.class)) {
+            evalResStr = ((FunctionTerm) evalRes).toString();
+        } else {
+            evalResStr = evalRes.toString();
+        }
+        
+        return evalResStr;
+	}
 
 	public String eval2String(Node n) throws ParseTreeEvaluatorException {
 		Object evalRes = eval(n);
 
 		lhsStack.clear();
 		rhsStack.clear();
-
-		String evalResStr = "";
-		if (evalRes.getClass().equals(Matrix.class)) {
-			evalResStr = matrix2String((Matrix) evalRes);
-		} else if (evalRes.getClass().equals(FunctionTerm.class)) {
-			evalResStr = ((FunctionTerm) evalRes).toString();
-		} else {
-			evalResStr = evalRes.toString();
-		}
-
-		return evalResStr;
+		
+		return evalRes2String(evalRes);
 	}
 
 	/* Convert a matrix to a string */
@@ -515,6 +521,12 @@ public class ParseTreeEvaluator {
 
 		return (String) s;
 	}
+	
+//	public VariableInfo variable_info(Object s) {
+//	    
+//	    
+//	    return new VariableInfo(); /* Factory method is more appropriate here? */
+//	}
 
 	public String digit_concat(Object c, Object d) {
 		if (!c.getClass().equals(String.class))
@@ -605,8 +617,13 @@ public class ParseTreeEvaluator {
 		hasDirectAncestor("USER_FUNCTION_DEF")) {
 			return varName;
 		}
-
-		if (varMap.containsKey(varName)) {
+		
+		int argIdx = EvaluatorHelper.getArgIdx(varName);
+		if (argIdx != -1) {
+		    String tempVarName = EvaluatorHelper.genFuncArgName(this.funcNameStack.size() - 1, argIdx);
+//		    ValueUnion vu = varMap.get(tempVarName);
+		    return varMap.get(tempVarName);
+		} else if (varMap.containsKey(varName)) {
 			return varMap.get(varName);
 		} else {
 			return new ValueUnion(0.0); /* TODO: Throw an error? */
@@ -719,6 +736,7 @@ public class ParseTreeEvaluator {
 
 		// System.out.println("Type of nodeObj = " + nodeObj.getClass());
 		Node node = (Node) nodeObj;
+        
 		funcTerm.defineBody(node);
 
 		/* Register the function */
@@ -733,17 +751,24 @@ public class ParseTreeEvaluator {
 		String functionName = funcTermInput.getFunctionName();
 		ValueUnion funcTermStoredVal = varMap.get(functionName);
 		if (funcTermStoredVal == null) {
-			throw new UndefinedFunctionException("Undefined function: \""
-					+ functionName + "\"");
+			throw new UndefinedFunctionException("Undefined function: \"" + functionName + "\"");
 		}
 
 		FunctionTerm funcTermStored = funcTermStoredVal.getUserFunction(); /* TODO: check if function exists */
 		/* TODO: Function overloading by arguments */
-
-		ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
-
-		Object retVal = funcTermStored.evaluate(evaluator,
-				funcTermInput.getArgumentList());
+		
+		/* Determine the temporary argument names based on function call stack status */
+		int funcStackPos = funcNameStack.size(); 
+		List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, funcTermInput.argList.numArgs()));
+		
+		/* Push function name to call stack */
+		funcNameStack.add(funcTermInput.functionName);
+		
+		Object retVal = funcTermStored.evaluate(this, funcArgNames, funcTermInput.getArgumentList());
+		
+		/* Pop function name from call stack */
+		funcNameStack.pop();
+		
 		return retVal;
 	}
 	
@@ -775,12 +800,27 @@ public class ParseTreeEvaluator {
         SigmaTerm sigmaTerm = (SigmaTerm) sigmaTermObj;
         
         /* TODO: Function overloading by arguments */
+        
+//        ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
     
-        ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
-    
-        Object retVal = sigmaTerm.evaluate(evaluator);
+        int funcStackPos = funcNameStack.size(); 
+        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, sigmaTerm.argList.numArgs()));
+        
+        /* Push function name to call stack */
+        funcNameStack.add("SigmaTerm_" + sigmaTerm.hashCode()); /* TODO: Better naming */
+        
+        Object retVal = sigmaTerm.evaluate(this, funcArgNames);
+        
+        /* Pop from call stack */
+        funcNameStack.pop();
+                
         return retVal;
     }
+	
+	/* Clear variable map: Including user-defined variables and functions */
+	public void clearUserData() {
+	    varMap.clear();
+	}
 	
 	/* ~Methods */
 }

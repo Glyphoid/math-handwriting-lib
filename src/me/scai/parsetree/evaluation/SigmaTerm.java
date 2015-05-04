@@ -10,8 +10,13 @@ class SigmaTerm extends SigmaPiTerm {
 	}
 
 	/* Implementation of abstract methods */
-	public Object evaluate(ParseTreeEvaluator evaluator)
+	public Object evaluate(ParseTreeEvaluator evaluator, 
+	                       List<String> tempArgNames)
 			throws ParseTreeEvaluatorException {
+	    if (tempArgNames.size() != argList.numArgs()) {
+	        throw new RuntimeException("Incorrect number of temporary argument names");
+	    }
+	    
 		if (!isDefined()) {
 			throw new RuntimeException(
 					"The body of this function is not defined"); /* TODO: More specific exception type */
@@ -28,21 +33,25 @@ class SigmaTerm extends SigmaPiTerm {
 		for (int i = 0; i < numArgs; ++i) {
 			allArgVals.add(argumentRanges.get(i).getValues());
 		}
+		
+		/* "Functionize" the body, i.e., replace the argument symbols with 
+		 * special ones like "__stack0_funcArg1__"
+		 */
+		EvaluatorHelper.functionizeBody(this.evalBody, argSymbols);
 
 		int numVals = allArgVals.get(0).size();
 		for (int i = 0; i < numVals; ++i) {
 			for (int j = 0; j < numArgs; ++j) {
-				String argSymbol = argSymbols.get(j);
+//				String argSymbol = argSymbols.get(j);
+			    String argSymbol = tempArgNames.get(j);
 				double argVal = allArgVals.get(j).get(i);
 
 				evaluator.variable_assign_value(argSymbol, argVal);
 			}
 
-			Object out = evaluator.eval(body);
-			double outVal = (double) out; /*
-										 * TODO: Handle situations in which this
-										 * isn't satisfied
-										 */
+			Object out = evaluator.eval(this.evalBody);
+			double outVal = (double) out;
+			/* TODO: Handle situations in which this isn't satisfied */
 			sum += outVal;
 		}
 

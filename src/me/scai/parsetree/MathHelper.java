@@ -331,4 +331,9 @@ public class MathHelper {
 		 return xa;
 	 }
 	 
+	 /* Equality of two doubles under a given absolute tolerance */ 
+	 public static boolean equalsTol(double x, double y, double absTol) {
+	     return Math.abs(x - y) < absTol;
+	 }
+	 
 }

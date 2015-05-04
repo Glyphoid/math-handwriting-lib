@@ -1,11 +1,15 @@
 package me.scai.parsetree;
 
+import java.util.Arrays;
+
 public class Node {
 //	private float x_min = 0.0f, y_min = 0.0f, x_max = 0.0f, y_max = 0.0f; /* Location information */	
 	private boolean isTerminal = true;
 	public String lhs;
 	public String prodSumString;	/* Production summary string. See GraphicalProduction.sumString */
 	public String termName; 		/* Terminal name: applies only to terminal nodes, e.g., EPS, 3 */
+//	public String auxTermName;      /* Used by classes such as the evaluator to store auxiliary info 
+//	                                   such as internal variable names during function calls */
 	public String [] rhsTypes;		        /* Child types: applies only to non-terminal nodes */
 	
 	private float [] bounds;        /* {x_min, y_min, x_max, y_max} */
@@ -44,6 +48,38 @@ public class Node {
 		p = t_p;
 		nc = t_ch.length;
 		ch = t_ch;		
+	}
+	
+	/* Copy constructor */
+	public Node(Node n0) {
+	    this.isTerminal = n0.isTerminal;
+	    this.lhs = n0.lhs;
+	    this.prodSumString = n0.prodSumString;
+	    this.termName = n0.termName;
+	    
+	    if (n0.rhsTypes != null) {
+	        this.rhsTypes = Arrays.copyOf(n0.rhsTypes, n0.rhsTypes.length);
+	    }
+	    if (n0.bounds != null) {
+	        this.bounds = Arrays.copyOf(n0.bounds, n0.bounds.length);
+	    }
+	    
+	    this.geometricScore = n0.geometricScore;
+	    this.nc = n0.nc;
+	    
+//	    this.p = n0.p;
+	    /* TODO: This may be problematic. We want p to point to the copy, not the original. */
+	    
+	    if (n0.ch != null) {
+    	    this.ch = new Node[n0.ch.length];
+    	    
+    	    for (int i = 0; i < this.ch.length; ++i) {
+    	        if (n0.ch[i] != null) {
+    	            this.ch[i] = new Node(n0.ch[i]);
+    	            this.ch[i].p = this; /* Order of things matter. See comment above. */
+    	        }
+    	    }
+	    }
 	}
 	
 	/* Non-Terminal (NT) node with production summary string specified */
@@ -130,14 +166,17 @@ public class Node {
 	@Override
 	public String toString() {
 		String s = "Node (";
-		if ( prodSumString != null )
+		if ( prodSumString != null ) {
 			s += prodSumString;
+		}
 		s += ")";
 		
-		if ( isTerminal )
+		if ( isTerminal ) {
 			s += "(T: " + termName + ")";
-		else
-			s += "(NT)";		
+		}
+		else {
+			s += "(NT)";
+		}
 		
 		return s;
 	}

@@ -9,8 +9,8 @@ public abstract class FunctionSigmaPiTerm { /* For the lack of a better name ...
 	protected FunctionArgumentList argList;
 	protected List<String> argNames;
 
-	Node body; /* Function body */
-
+	Node body; /* Function body that preserves the original variable names */
+	Node evalBody; /* Function body for evaluation purpose. Variable names are internal temporary ones */
 	/* ~Member variables */
 
 	/* Constructor */
@@ -25,6 +25,12 @@ public abstract class FunctionSigmaPiTerm { /* For the lack of a better name ...
 	/* Concrete methods */
 	public void defineBody(Node tBody) {
 		body = tBody;
+		evalBody = new Node(tBody); /* Use the copy constructor of Node */
+		/* TODO: This is probably not the best option. Why would you duplicate and 
+		 *       DFS-traverse a function body just to accommodate variable name changes? 
+		 *       Can build a cache of the argument name nodes to speed up the  
+		 *       name changes and avoid duplication. 
+		 */
 	}
 
 	public boolean isDefined() {
@@ -38,5 +44,13 @@ public abstract class FunctionSigmaPiTerm { /* For the lack of a better name ...
 
 	public FunctionArgumentList getArgumentList() {
 		return argList;
+	}
+	
+	public void setArgNames(List<String> tArgNames) {
+	    this.argNames = tArgNames;
+	}
+	
+	public List<String> getArgNames() {
+	    return this.argNames;
 	}
 }

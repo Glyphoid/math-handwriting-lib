@@ -2,10 +2,6 @@ package me.scai.parsetree;
 
 import java.util.HashMap;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-
-
 public class ParseTreeMathTexifier {
 	/* Member variables */
 	/* Constants */

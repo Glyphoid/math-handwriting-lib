@@ -12,7 +12,6 @@ import me.scai.handwriting.StrokeCuratorConfig;
 import me.scai.parsetree.geometry.GeometryHelper;
 import me.scai.parsetree.MathHelper;
 import me.scai.parsetree.TerminalSet;
-import me.scai.parsetree.TextHelper;
 
 public class StrokeCuratorConfigurable implements StrokeCurator {
 	/* Enum types */
