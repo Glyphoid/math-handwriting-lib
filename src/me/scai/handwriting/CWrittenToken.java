@@ -24,8 +24,9 @@ public class CWrittenToken {
 	
 	private LinkedList<CStroke> strokes = new LinkedList<>();
 	public boolean bNormalized = false;
-	private float min_x = Float.MAX_VALUE, max_x = Float.MIN_VALUE;
-	private float min_y = Float.MAX_VALUE, max_y = Float.MIN_VALUE;
+//	private float min_x = Float.MAX_VALUE, max_x = Float.MIN_VALUE;
+//	private float min_y = Float.MAX_VALUE, max_y = Float.MIN_VALUE;
+	private float [] tokenBounds = new float[4];
 	public float width = 0f;
 	public float height = 0f;
 	
@@ -47,10 +48,12 @@ public class CWrittenToken {
 		}
 		
 		bNormalized = wt0.bNormalized;
-		min_x = wt0.min_x;
-		min_y = wt0.min_y;
+//		min_x = wt0.min_x;
+//		min_y = wt0.min_y;
 		width = wt0.width;
 		height = wt0.height;
+		
+		tokenBounds = wt0.tokenBounds;
 		
 		if (recogWinner != null) {
 			recogWinner = new String(wt0.recogWinner);
@@ -121,16 +124,13 @@ public class CWrittenToken {
 	}
 	
 	public CWrittenToken(float [] t_bnds, String t_recogWinner, double [] t_recogPs) {
-		min_x = t_bnds[0];
-		min_y = t_bnds[1];
-		max_x = t_bnds[2];
-		max_y = t_bnds[3];
+		tokenBounds = t_bnds;
 		
 		recogWinner = t_recogWinner;
 		recogPs = t_recogPs;
 		
-		width = max_x - min_x;
-		height = max_y - min_y;
+		width = tokenBounds[2] - tokenBounds[0];
+		height = tokenBounds[3] - tokenBounds[1];
 	}
 	
 	public CWrittenToken(File wtFile) {		
@@ -146,10 +146,14 @@ public class CWrittenToken {
 	public void clear() {
 		strokes.clear();
 		
-		min_x = Float.MAX_VALUE;
-		max_x = Float.MIN_VALUE;
-		min_y = Float.MAX_VALUE;
-		max_y = Float.MIN_VALUE;
+//		min_x = Float.MAX_VALUE;
+//		max_x = Float.MIN_VALUE;
+//		min_y = Float.MAX_VALUE;
+//		max_y = Float.MIN_VALUE;
+		tokenBounds[0] = Float.MAX_VALUE;
+		tokenBounds[1] = Float.MIN_VALUE;
+		tokenBounds[2] = Float.MAX_VALUE;
+		tokenBounds[3] = Float.MIN_VALUE;
 		
 		width = 0f;
 		height = 0f;
@@ -214,31 +218,37 @@ public class CWrittenToken {
 	
 	/* Get the bounds: min_x, min_y, max_x, max_y */
 	public float [] getBounds() {
-		if ( !bNormalized )
-			return null;
-		
-		float [] bounds = new float[4];
-		
-		bounds[0] = min_x;
-		bounds[1] = min_y;
-		bounds[2] = max_x;
-		bounds[3] = max_y;
-		
-		return bounds;
+//		if ( !bNormalized )
+//			return null;
+//		
+//		float [] bounds = new float[4];
+//		
+//		bounds[0] = min_x;
+//		bounds[1] = min_y;
+//		bounds[2] = max_x;
+//		bounds[3] = max_y;
+//		
+//		return bounds;
+	    return tokenBounds;
 	}
+
+	public void setBounds(float [] bounds) {
+	    this.tokenBounds = bounds;
+	}
+	
 	
 	public float getCentralX() {
 		if ( !bNormalized )
 			throw new RuntimeException("Calling getCentralX before normalization");
 		
-		return 0.5f * (min_x + max_x); 
+		return 0.5f * (tokenBounds[2] + tokenBounds[0]); 
 	}
 	
 	public float getCentralY() {
 		if ( !bNormalized )
 			throw new RuntimeException("Calling getCentralY before normalization");
 		
-		return 0.5f * (min_y + max_y); 
+		return 0.5f * (tokenBounds[3] + tokenBounds[1]); 
 	}
 	
 	
@@ -492,17 +502,17 @@ public class CWrittenToken {
 		}
 		
 		for (int i = 0; i < strokes.size(); ++i) {
-			if ( strokes.get(i).min_x < min_x ) min_x = strokes.get(i).min_x;
-			if ( strokes.get(i).max_x > max_x ) max_x = strokes.get(i).max_x;
-			if ( strokes.get(i).min_y < min_y ) min_y = strokes.get(i).min_y;
-			if ( strokes.get(i).max_y > max_y ) max_y = strokes.get(i).max_y;
+			if ( strokes.get(i).min_x < tokenBounds[0] ) tokenBounds[0] = strokes.get(i).min_x;
+			if ( strokes.get(i).max_x > tokenBounds[2] ) tokenBounds[2] = strokes.get(i).max_x;
+			if ( strokes.get(i).min_y < tokenBounds[1] ) tokenBounds[1] = strokes.get(i).min_y;
+			if ( strokes.get(i).max_y > tokenBounds[3] ) tokenBounds[3] = strokes.get(i).max_y;
 		}
 		
-		width = max_x - min_x;
-		height = max_y - min_y;
+		width = tokenBounds[2] - tokenBounds[0];
+		height = tokenBounds[3] - tokenBounds[1];
 		
 		for (int i = 0; i < strokes.size(); ++i) {
-			strokes.get(i).normalizeAxes(min_x, max_x, min_y, max_y);
+			strokes.get(i).normalizeAxes(tokenBounds[0], tokenBounds[2], tokenBounds[1], tokenBounds[3]);
 		}
 		
 		bNormalized = true;
