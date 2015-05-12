@@ -172,8 +172,9 @@ public class CStroke {
 	public float[] getXs() {
 		float [] oxs = new float[xs.size()];
 		
-		for (int i = 0; i < xs.size(); ++i)
+		for (int i = 0; i < xs.size(); ++i) {
 			oxs[i] = xs.get(i);
+		}
 		
 		return oxs;
 	}
@@ -181,8 +182,9 @@ public class CStroke {
 	public float[] getYs() {
 		float [] oys = new float[ys.size()];
 		
-		for (int i = 0; i < ys.size(); ++i)
+		for (int i = 0; i < ys.size(); ++i) {
 			oys[i] = ys.get(i);
+		}
 		
 		return oys;
 	}

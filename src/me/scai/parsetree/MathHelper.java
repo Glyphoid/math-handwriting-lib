@@ -222,16 +222,16 @@ public class MathHelper {
 	
 	/* Convert an array of integers to string */
 	public static String intArray2String(int [] xs) {
-		String s = "";
+        StringBuilder sb = new StringBuilder();
 		
 		for (int i = 0; i < xs.length; ++i) {
-			s += xs[i];
-			
-			if ( i < xs.length - 1 )
-				s += ",";
+            sb.append(Integer.toString(xs[i]));
+			if (i < xs.length - 1) {
+                sb.append(",");
+            }
 		}
 		
-		return s;
+		return sb.toString();
 	}
 	
 	

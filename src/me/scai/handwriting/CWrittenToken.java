@@ -20,36 +20,32 @@ import com.google.gson.JsonParser;
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
 public class CWrittenToken {
 	/* Member variables */
-//	private final static Logger logger = Logger.getLogger(CWrittenToken.class.getName()); //DEBUG
-	
-	private LinkedList<CStroke> strokes = new LinkedList<>();
-	public boolean bNormalized = false;
-//	private float min_x = Float.MAX_VALUE, max_x = Float.MIN_VALUE;
-//	private float min_y = Float.MAX_VALUE, max_y = Float.MIN_VALUE;
-	private float [] tokenBounds = new float[4];
-	public float width = 0f;
-	public float height = 0f;
-	
-	private String recogWinner;
-	private double [] recogPs;
-	
-	/* The type of a token, according to the terminal set */
-	public String tokenTermType = null;
-	
+    private LinkedList<CStroke> strokes = new LinkedList<>();
+    public boolean bNormalized = false;
+    private float [] tokenBounds = new float[4];
+    public float width = 0f;
+    public float height = 0f;
+
+    private String recogWinner;
+    private double [] recogPs;
+
+    /* The type of a token, according to the terminal set */
+    public String tokenTermType = null;
+
 	/* ~Member variables */
-	
-	/* Constructor */
-	public CWrittenToken() {};
-	
-	/* Copy constructor */
+
+    /* Constructor */
+    public CWrittenToken() {
+        initializeTokenBounds();
+    }
+
+    /* Copy constructor */
 	public CWrittenToken(CWrittenToken wt0) {
 		for (CStroke stroke : wt0.strokes) {
 			addStroke(stroke);
 		}
 		
 		bNormalized = wt0.bNormalized;
-//		min_x = wt0.min_x;
-//		min_y = wt0.min_y;
 		width = wt0.width;
 		height = wt0.height;
 		
@@ -69,8 +65,17 @@ public class CWrittenToken {
 		if (wt0.tokenTermType != null) {
 			tokenTermType = new String(wt0.tokenTermType);
 		}
+		
+		initializeTokenBounds();
 	}
 	
+	private void initializeTokenBounds() {
+	    /* Initialize the token bounds: [min_x, min_y, max_x, max_y] */        
+        tokenBounds[0] = Float.MAX_VALUE;
+        tokenBounds[1] = Float.MAX_VALUE;
+        tokenBounds[2] = Float.MIN_VALUE;
+        tokenBounds[2] = Float.MIN_VALUE;
+	}
 	
 	/* Constructor: From JSON string */
 	/* Expected fields: 
@@ -82,19 +87,17 @@ public class CWrittenToken {
 	 *                  (x and y data are assumed to follow the HTML canvas definition of coordinates)
 	 */
 	public CWrittenToken(String jsonStrokes) {
+	    initializeTokenBounds();
+	    
 		JsonObject jsonToken = null;
 		int numStrokes;
-		JsonObject strokes = null;
-		
-//		logger.info("Beginning to parse JSON");
+		JsonObject strokes = null;		
+
 		try {
 			jsonToken = new JsonParser().parse(jsonStrokes).getAsJsonObject();
 			
 			numStrokes = jsonToken.getAsJsonPrimitive("numStrokes").getAsInt();
-			
-//			logger.info("jsonToken = " + jsonToken);
-//			logger.info("numStokes = " + numStrokes);
-			
+
 			strokes = jsonToken.getAsJsonObject("strokes");
 			for (int i = 0; i < numStrokes; ++i) {				
 				String key = String.format("%d", i);
@@ -145,15 +148,8 @@ public class CWrittenToken {
 	/* Clear */
 	public void clear() {
 		strokes.clear();
-		
-//		min_x = Float.MAX_VALUE;
-//		max_x = Float.MIN_VALUE;
-//		min_y = Float.MAX_VALUE;
-//		max_y = Float.MIN_VALUE;
-		tokenBounds[0] = Float.MAX_VALUE;
-		tokenBounds[1] = Float.MIN_VALUE;
-		tokenBounds[2] = Float.MAX_VALUE;
-		tokenBounds[3] = Float.MIN_VALUE;
+
+		initializeTokenBounds();
 		
 		width = 0f;
 		height = 0f;
@@ -218,17 +214,6 @@ public class CWrittenToken {
 	
 	/* Get the bounds: min_x, min_y, max_x, max_y */
 	public float [] getBounds() {
-//		if ( !bNormalized )
-//			return null;
-//		
-//		float [] bounds = new float[4];
-//		
-//		bounds[0] = min_x;
-//		bounds[1] = min_y;
-//		bounds[2] = max_x;
-//		bounds[3] = max_y;
-//		
-//		return bounds;
 	    return tokenBounds;
 	}
 
@@ -640,10 +625,7 @@ public class CWrittenToken {
 			float [] cuml = MathHelper.cumsum(ls, true);	/* Include initial zero */
 			float suml = MathHelper.sum(ls);
 			float ulen = suml / (npPerStroke - 1);
-			
-//			float [] sxs = new float[npPerStroke];	/* TODO: Optimize: Avoid repeated new */
-//			float [] sys = new float[npPerStroke];
-			
+
 			float cx = xs[0];
 			float cy = ys[0];
 			float cl = 0f;
@@ -705,20 +687,5 @@ public class CWrittenToken {
 			return strokes.get(i);
 		}
 	}
-	
-//	/* main() for testing */
-//	public static void main(String [] args) {
-//		final String testWT_fn = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\letters\\L_100.wt";
-//		
-//		final int npPerStroke = 16;
-//		final int maxNumStrokes = 4;
-//		
-//		System.out.println("CWrittenToken.main started");
-//		
-//		File testWT_f = new File(testWT_fn);
-//		CWrittenToken wt = new CWrittenToken(testWT_f);
-//		
-//		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, null);
-//	}
-	
+
 }
