@@ -482,9 +482,9 @@ public class CWrittenToken {
 			return;
 		}
 		
-		if ( strokes.size() == 0 ) {
-			System.err.println("EMPTY_STROKES_ERR: There are no storkes in this written token.");
-		}
+//		if ( strokes.size() == 0 ) {
+//			System.err.println("EMPTY_STROKES_ERR: There are no strokes in this written token.");
+//		}
 		
 		for (int i = 0; i < strokes.size(); ++i) {
 			if ( strokes.get(i).min_x < tokenBounds[0] ) tokenBounds[0] = strokes.get(i).min_x;

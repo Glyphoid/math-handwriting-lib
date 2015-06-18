@@ -170,7 +170,7 @@ public class CStroke {
 	
 	/* Get a float array of the xs and ys coordinates */
 	public float[] getXs() {
-		float [] oxs = new float[xs.size()];
+		float [] oxs = new float[xs.size()];		
 		
 		for (int i = 0; i < xs.size(); ++i) {
 			oxs[i] = xs.get(i);

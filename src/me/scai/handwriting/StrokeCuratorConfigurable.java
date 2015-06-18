@@ -382,19 +382,19 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 	
 	/* Remove tokens, without removing the constituent strokes */
 	private void removeTokens(int [] removedTokenIndices) {				
-		System.out.println("removeTokens: Removing " + removedTokenIndices.length + " token(s)"); //DEBUG
+//		System.out.println("removeTokens: Removing " + removedTokenIndices.length + " token(s)"); //DEBUG
 		if (removedTokenIndices.length == 0) {
 			return;
 		}
 		
 		for (int i = 0; i < removedTokenIndices.length; ++i) { //DEBUG
-			System.out.println("  " + removedTokenIndices[i]); //DEBUG
+//			System.out.println("  " + removedTokenIndices[i]); //DEBUG
 		}                                                      //DEBUG
 		
 		boolean [] toPreserve = new boolean[getNumTokens()];
 		for (int k = 0; k < toPreserve.length; ++k) {
 			toPreserve[k] = ! ( ArrayUtils.contains(removedTokenIndices, k) );
-			System.out.println("removeTokens: toPreserve[" + k + "] = " + toPreserve[k]); //DEBUG
+//			System.out.println("removeTokens: toPreserve[" + k + "] = " + toPreserve[k]); //DEBUG
 		}
 		
 		/* Copies of old data */
@@ -438,12 +438,18 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 		for (int i = 0; i < numTokensToPluck; ++i) {
 			int tokenIdx = idxTokensToPluck.get(i);
 			int [] constIdx = wtConstStrokeIdx.get(tokenIdx);
+
 			int [] strokesToRemove = idxStrokeIndicesToPluck.get(i);
-			
+            for (int j = 0; j < strokesToRemove.length; ++j) {
+                strokesToRemove[j] = constIdx[strokesToRemove[j]];
+            }
+
 			CWrittenToken tmpWT = new CWrittenToken();
-			List<Integer> constIndices = new ArrayList<Integer>(); 
+			List<Integer> constIndices = new ArrayList<Integer>();
+
 			for (int j = 0; j < constIdx.length; ++j) {
-				if ( !Arrays.asList(strokesToRemove).contains(constIdx[j]) ) {
+//				if ( !.contains(constIdx[j]) ) {
+                if (MathHelper.find(strokesToRemove, constIdx[j]).length == 0) {
 					tmpWT.addStroke(new CStroke(strokesUN.get(constIdx[j])));
 					constIndices.add(constIdx[j]);
 				}
@@ -482,7 +488,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 	    wtRecogPs.set(tokenIdx, null);   /* Is this appropriate? */
 	    wtRecogMaxPs.set(tokenIdx, 1.0); /* Is this appropriate? */
 	    
-	    System.out.println("Calling setTokenRecogRes with tokenIdx=" + tokenIdx + " and recogWinner=" + recogWinner);
+//	    System.out.println("Calling setTokenRecogRes with tokenIdx=" + tokenIdx + " and recogWinner=" + recogWinner);
 	    wtSet.setTokenRecogRes(tokenIdx, recogWinner, null);
 	}
 
@@ -496,8 +502,8 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 		
 		int nStrokes = indices.length;
 		
-		System.out.println("nStrokes = " + nStrokes); //DEBUG
-		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
+//		System.out.println("nStrokes = " + nStrokes); //DEBUG
+//		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
 		
 		if (nStrokes == 0) { /* Edge case: no strokes to merge */
 			return;
@@ -511,7 +517,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 		
 		for (int i = 0; i < nStrokes; ++i) {
 			ownerIndices[i] = getOwningTokenIndex(indices[i]);
-			System.out.println("ownerIndices[" + i + "] = " + ownerIndices[i]); //DEBUG
+//			System.out.println("ownerIndices[" + i + "] = " + ownerIndices[i]); //DEBUG
 		}
 		
 		/* Determine tokens needs to be removed and which need to be plucked */
@@ -520,43 +526,43 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 			
 			int numConstStrokes = constIndices.length;	/* Number of strokes in the token */
 			int numOccurrences = MathHelper.countOccurrences(ownerIndices, ownerIndices[i]);
-			System.out.println("Number of occurrences for token " + ownerIndices[i] + " in ownerIndices = " + numOccurrences); //DEBUG
+//			System.out.println("Number of occurrences for token " + ownerIndices[i] + " in ownerIndices = " + numOccurrences); //DEBUG
 
 			if (numConstStrokes == numOccurrences) {
 				if ( !idxTokensToRemove.contains(ownerIndices[i]) ) {	/* TODO: Replace with Set */
 					idxTokensToRemove.add(ownerIndices[i]);
-					System.out.println("Adding token " + ownerIndices[i] + " to list of tokens to be removed"); //DEBUG
+//					System.out.println("Adding token " + ownerIndices[i] + " to list of tokens to be removed"); //DEBUG
 				}
 			}
 			else {
 				idxTokensToPluck.add(ownerIndices[i]);
-				idxStrokeIndicesToPluck.add(MathHelper.find(ownerIndices, indices[i]));
-				System.out.println("Adding token " + ownerIndices[i] + " to list of tokens to be plucked"); //DEBUG
+				idxStrokeIndicesToPluck.add(MathHelper.find(constIndices, indices[i]));
+//				System.out.println("Adding token " + ownerIndices[i] + " to list of tokens to be plucked"); //DEBUG
 			}
 		}
 		
-		System.out.println("# of tokens to be removed = " + idxTokensToRemove.size()); //DEBUG
-		System.out.println("# of tokens to be plucked = " + idxTokensToPluck.size()); //DEBUG
+//		System.out.println("# of tokens to be removed = " + idxTokensToRemove.size()); //DEBUG
+//		System.out.println("# of tokens to be plucked = " + idxTokensToPluck.size()); //DEBUG
 		
 		/* Remove the tokens that need to be removed (while preserving the strokes) */
-		System.out.println("About to call removeTokens()");
-		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
+//		System.out.println("About to call removeTokens()");
+//		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
 		
 		int [] removedTokenIndices = MathHelper.listOfIntegers2ArrayOfInts(idxTokensToRemove);		
 		removeTokens(removedTokenIndices);
 		
-		System.out.println("Done calling removeTokens()"); //DEBUG
-		System.out.println("  getNumTokens() = " + this.getNumTokens()); //DEBUG
-		System.out.println("  getNuMStrokes() = " + this.getNumStrokes()); //DEBUG
-		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
+//		System.out.println("Done calling removeTokens()"); //DEBUG
+//		System.out.println("  getNumTokens() = " + this.getNumTokens()); //DEBUG
+//		System.out.println("  getNuMStrokes() = " + this.getNumStrokes()); //DEBUG
+//		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
 		
 		/* Pluck tokens that need to be plucked (while preserving the strokes */
-		System.out.println("idxTokensToPluck.size() = " + idxTokensToPluck.size()); //DEBUG
-		System.out.println("idxStrokeIndicesToPluck.size() = " + idxStrokeIndicesToPluck.size()); //DEBUG
+//		System.out.println("idxTokensToPluck.size() = " + idxTokensToPluck.size()); //DEBUG
+//		System.out.println("idxStrokeIndicesToPluck.size() = " + idxStrokeIndicesToPluck.size()); //DEBUG
 		
 		pluckTokens(idxTokensToPluck, idxStrokeIndicesToPluck);
 		
-		System.out.println("Done calling pluckTokens()"); //DEBUG
+//		System.out.println("Done calling pluckTokens()"); //DEBUG
 		
 		/* Create a new token and add the strokes in */
 		CWrittenToken tmpWT = new CWrittenToken();		
@@ -575,13 +581,13 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 		tmpWT.setRecogWinner(newWinnerTokenName); /* TODO: Refactor into tokenEngine.recognize() */
 		tmpWT.setRecogPs(newPs);
 		
-		System.out.println("Done calling tokenEngine.recognize()"); //DEBUG
-		System.out.println("  newWinnerTokenName = \"" + newWinnerTokenName + "\""); //DEBUG
-		System.out.println("  newMaxP = \"" + newMaxP + "\""); //DEBUG
+//		System.out.println("Done calling tokenEngine.recognize()"); //DEBUG
+//		System.out.println("  newWinnerTokenName = \"" + newWinnerTokenName + "\""); //DEBUG
+//		System.out.println("  newMaxP = \"" + newMaxP + "\""); //DEBUG
 		
 		/* Add the new token */
-		System.out.println("About to call wtSet.addToken(): getNumTokens() = " + wtSet.getNumTokens()); //DEBUG
-		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
+//		System.out.println("About to call wtSet.addToken(): getNumTokens() = " + wtSet.getNumTokens()); //DEBUG
+//		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
 		wtSet.addToken(wtSet.getNumTokens(), tmpWT, newWinnerTokenName, newPs);	
 		
 		/* Central X and Y coordinates of the token */
@@ -591,8 +597,8 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 		/* Update recognition results */
 		wtRecogWinners.add(newWinnerTokenName);
 		wtRecogPs.add(newPs);
-		wtRecogMaxPs.add(newMaxP);		
-		
+		wtRecogMaxPs.add(newMaxP);
+
 		/* Update the wtConstStrokeIdx */
 		wtConstStrokeIdx.add(indices);
 		

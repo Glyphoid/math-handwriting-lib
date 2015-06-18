@@ -309,7 +309,7 @@ public class MathHelper {
 	 /* Find all occurrences of an integer in an array of integers:
 	  * return all indices 
 	  */
-	 public static int [] find(int [] ns, int n) {
+	 public static int [] find(final int [] ns, final int n) {
 		 List<Integer> idxsList = new LinkedList<Integer>();
 		 
 		 for (int i = 0; i < ns.length; ++i) {

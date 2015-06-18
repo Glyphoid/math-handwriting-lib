@@ -20,6 +20,7 @@ public class ParseTreeStringizer {
 		
 		/* Create map of special strings */
 		specialStringMap.put("_SPACE_", " ");
+        specialStringMap.put("_UNDERSCORE_", "_");
 		specialStringMap.put("_OPEN_PAREN_", "(");
 		specialStringMap.put("_CLOSE_PAREN_", ")");
 		

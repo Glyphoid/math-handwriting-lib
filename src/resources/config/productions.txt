@@ -366,6 +366,14 @@ _STRINGIZE_ 	n0
 _MATH_TEX_      n0
 _EVAL_ 		 	STRING(n0)
 
+--- # Variable with a subscript
+VARIABLE
+VARIABLE_SYMBOL
+DIGIT_STRING    : {AlignTopSouthPastMiddle(0), AlignBottomSouthPastBottom(0), PositionGenEast(0)} # Subscript
+_STRINGIZE_  	n0 _UNDERSCORE_ n1
+_MATH_TEX_      n0 _ n1
+_EVAL_ 		 	FORM_SUBSCRIPTED_VAR_NAME(n0, n1)     # TODO: Add subscript
+
 ---
 VARIABLE_EVALUATED
 VARIABLE

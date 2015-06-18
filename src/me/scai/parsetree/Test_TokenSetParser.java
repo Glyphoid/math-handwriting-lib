@@ -11,10 +11,8 @@ import java.util.List;
 import java.net.URL;
 
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
-//import me.scai.parsetree.geometry.NodeInternalGeometry; //DEBUG
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
 import me.scai.parsetree.evaluation.ParseTreeEvaluatorException;
-import me.scai.parsetree.MathHelper;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -195,7 +193,7 @@ public class Test_TokenSetParser {
                 System.err.println("Mismatch: \"" + stringized + "\" != \"" + 
                                    tokenSetTrueString + "\"");
             }
-            assertEquals(stringized, tokenSetTrueString);
+            assertEquals(tokenSetTrueString, stringized);
 
             boolean checkResult = stringized.equals(tokenSetTrueString);
                     
@@ -204,7 +202,7 @@ public class Test_TokenSetParser {
             if (tokenSetTrueMathTex != null) {
                 texOut = mathTexifier.texify(parseRoot);
                 
-                assertEquals(texOut, tokenSetTrueMathTex);
+                assertEquals(tokenSetTrueMathTex, texOut);
                 checkResult = checkResult && texOut.equals(tokenSetTrueMathTex);
             }
             
@@ -285,8 +283,8 @@ public class Test_TokenSetParser {
     }
 	
 	@Test 
-    public void testParser_algebraWithParenthses() {
-        testParser("algebraWithParenthses");
+    public void testParser_algebraWithParentheses() {
+        testParser("algebraWithParentheses");
     }
 	
 	@Test
@@ -308,6 +306,11 @@ public class Test_TokenSetParser {
 	public void testParser_symbols() {
 	    testParser("symbols");
 	}
+
+    @Test
+    public void testParser_symbolsStateful() {
+        testParser("symbolsStateful");
+    }
 	
 	@Test
 	public void testParser_function() {

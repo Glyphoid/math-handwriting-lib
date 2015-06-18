@@ -2,6 +2,7 @@ package me.scai.handwriting;
 
 import java.util.ArrayList;
 import java.lang.IllegalStateException;
+import java.util.Iterator;
 
 public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	public ArrayList<String> recogWinners = new ArrayList<String>();
@@ -234,6 +235,15 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	public float [] getTokenBounds(int i) {
 		return tokens.get(i).getBounds();
 	}
+
+    /* @returns Old token bounds */
+    @Override
+    public float [] setTokenBounds(int i, final float [] newBounds) {
+        float [] oldBounds = tokens.get(i).getBounds();
+
+        tokens.get(i).setBounds(newBounds);
+        return oldBounds;
+    }
 	
 	@Override 
 	public float[] getTokenBounds(int [] is) {
@@ -262,4 +272,15 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	public String getTokenTermType(int i) {
 		return tokens.get(i).tokenTermType;
 	}
+
+    public int getNumStrokes() {
+        int nStrokes = 0;
+
+        Iterator<CWrittenToken> tokenIt = tokens.iterator();
+        while (tokenIt.hasNext()) {
+            nStrokes += tokenIt.next().nStrokes();
+        }
+
+        return nStrokes;
+    }
 }

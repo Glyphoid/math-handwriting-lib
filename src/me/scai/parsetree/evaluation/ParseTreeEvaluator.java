@@ -521,6 +521,20 @@ public class ParseTreeEvaluator {
 
 		return (String) s;
 	}
+
+    public String form_subscripted_var_name(Object v, Object sub) {
+        @SuppressWarnings("rawtypes")
+
+        Class vClass = v.getClass();
+        Class subClass = sub.getClass();
+
+        if (!vClass.equals(String.class) || !subClass.equals(String.class)) {
+            throw new RuntimeException(
+                    "Input argument to form_subscripted_var_name() are not of String type");
+        }
+
+        return ((String) v) + "_" + ((String) sub);
+    }
 	
 //	public VariableInfo variable_info(Object s) {
 //	    

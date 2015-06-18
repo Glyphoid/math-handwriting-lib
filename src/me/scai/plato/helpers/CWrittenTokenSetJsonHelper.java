@@ -6,7 +6,6 @@ package me.scai.plato.helpers;
 
 import com.google.gson.*;
 
-import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenToken;
 import me.scai.handwriting.CWrittenTokenSet;
 
@@ -21,34 +20,18 @@ class CWrittenTokenSetJsonConversionException extends Exception {
 
 public class CWrittenTokenSetJsonHelper {
     private static Gson gson = new Gson();
-    private static final JsonParser jsonParser = new JsonParser();
-
-//    public static CWrittenTokenSet json2CWrittenToken(String json)
-//        throws CWrittenTokenSetJsonConversionException {
-//        JsonObject jsonObj = null;
-//        try {
-//            jsonObj = jsonParser.parse(json).getAsJsonObject();
-//        }
-//        catch (JsonParseException exc) {
-//            throw new CWrittenTokenSetJsonConversionException("Failed to parse json for CWrittenToken, due to " + exc.getMessage());
-//        }
-//
-//        JsonArray tokens = jsonObj.get("tokens").getAsJsonArray();
-//        if (tokens == null) {
-//            throw new CWrittenTokenSetJsonConversionException("The required token ");
-//        }
-//
-//        return null; /* TODO */
-//    }
-    
     
     public static CWrittenTokenSet jsonObj2CWrittenTokenSet(JsonObject jsonObj) {
         CWrittenTokenSet wtSet = new CWrittenTokenSet();
         
         JsonArray tokens = jsonObj.get("tokens").getAsJsonArray();
         
-        for (int i = 0; i < tokens.size(); ++i) {
-            wtSet.addToken(CWrittenTokenJsonHelper.jsonObj2CWrittenTokenNoStroke(tokens.get(i).getAsJsonObject()));
+        for (int i = 0; i < tokens.size(); ++i) {            
+            CWrittenToken wt = CWrittenTokenJsonHelper.jsonObj2CWrittenTokenNoStroke(tokens.get(i).getAsJsonObject());
+            wtSet.addToken(wt);
+                        
+            wtSet.recogWinners.add(wt.getRecogWinner());
+            wtSet.recogPs.add(wt.getRecogPs());
         }
         
         return wtSet;

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.AssertionError;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 import me.scai.parsetree.TerminalSet;
 
@@ -296,6 +297,15 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 //		return tokenBounds.get(i);
 		return tokens.get(i).getBounds();
 	}
+
+    @Override
+    public float[] setTokenBounds(int i, final float[] newBounds) {
+        float[] oldBounds = tokens.get(i).getBounds();
+
+        tokens.get(i).setBounds(newBounds);
+
+        return oldBounds;
+    }
 	
 	@Override 
 	public float[] getTokenBounds(int [] is) {
@@ -367,5 +377,4 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		
 		return s;
 	}
-	
 }

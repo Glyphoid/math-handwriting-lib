@@ -16,13 +16,15 @@ public class AlignRelation extends GeometricRelation {
 		AlignCenter,   /* Center of the left-right dimension */
 		AlignWidthInclusion, /* Within the width range of the in-rel */
 		AlignBottomNorthPastMiddle, /* The bottom of the token should be more north than the middle of the in-rel token */
+        AlignTopSouthPastMiddle,    /* The top of the token should be more south than the middle of the in-rel token */
 		AlignTopNorthPastTop, 		/* The top of the token should be more north than the top of the in-rel token */
+        AlignBottomSouthPastBottom  /* The bottom of the token should be more south than the bottom of the in-rel token */
 	};
 	
 	/* Member variables */
 	/* Constants */
 	static final float pastMiddleDisplacementLB = 0.25f; 	
-	static final float pastMiddleDisplacementUB = 0.75f;	/* Apply to relations such as AlignBottomNorthPastMiddle */
+	static final float pastMiddleDisplacementUB = 0.50f;	/* Apply to relations such as AlignBottomNorthPastMiddle */
 	static final float pastEdgeDisplacementLB = -0.25f;
 	static final float pastEdgeDisplacementUB = 0.00f;		/* Apply to relations such as AlignTopNorthPastTop */
 	
@@ -69,8 +71,10 @@ public class AlignRelation extends GeometricRelation {
 			 alignType == AlignType.AlignTop ||
 			 alignType == AlignType.AlignMiddle || 
 			 alignType == AlignType.AlignHeightInclusion || 
-			 alignType == AlignType.AlignBottomNorthPastMiddle || 
-			 alignType == AlignType.AlignTopNorthPastTop ) { /* Align in the vertical dimension */
+			 alignType == AlignType.AlignBottomNorthPastMiddle ||
+             alignType == AlignType.AlignTopSouthPastMiddle ||
+			 alignType == AlignType.AlignTopNorthPastTop ||
+             alignType == AlignType.AlignBottomSouthPastBottom ) { /* Align in the vertical dimension */
 			/* sz is height */
 			szTested = bndsTested[3] - bndsTested[1];
 			szInRel = bndsInRel[3] - bndsInRel[1];
@@ -101,19 +105,48 @@ public class AlignRelation extends GeometricRelation {
 				edgeDiff = inclusionEdgeDiff(limsTested, limsInRel);
 				v = 1 - edgeDiff / szMean;
 			}
-			else if ( alignType == AlignType.AlignBottomNorthPastMiddle ) {
-				float midYInRel = (bndsInRel[3] + bndsInRel[1]) * 0.5f;
-				
-				float sb = bndsTested[3] - pastMiddleDisplacementLB * szTested;
-				float nb = bndsTested[3] - pastMiddleDisplacementUB * szTested;
-				
-				v = (sb - midYInRel) / (sb - nb);
+			else if ( alignType == AlignType.AlignBottomNorthPastMiddle ||
+                      alignType == AlignType.AlignTopSouthPastMiddle ) {
+                // New AlignBottomNorthPastMiddle
+                float midYInRel = (bndsInRel[3] + bndsInRel[1]) * 0.5f;
+
+                if ( alignType == AlignType.AlignBottomNorthPastMiddle ) {
+                    float sb = bndsInRel[3] - pastMiddleDisplacementLB * szInRel;
+                    float nb = bndsInRel[3] - pastMiddleDisplacementUB * szInRel;
+
+                    v = (sb - bndsTested[3]) / (sb - nb);
+                } else { // AlignTopSouthPastMiddle
+                    float sb = bndsInRel[1] + pastMiddleDisplacementUB * szInRel;
+                    float nb = bndsInRel[1] + pastMiddleDisplacementLB * szInRel;
+
+                    v = (bndsTested[1] - nb) / (sb - nb);
+                }
+
+                // Old AlignBottomNorthPastMiddle
+//              float midYInRel = (bndsInRel[3] + bndsInRel[1]) * 0.5f;
+//
+//				float sb = bndsTested[3] - pastMiddleDisplacementLB * szTested;
+//				float nb = bndsTested[3] - pastMiddleDisplacementUB * szTested;
+//
+//                if ( alignType == AlignType.AlignBottomNorthPastMiddle ) {
+//                    v = (sb - midYInRel) / (sb - nb);
+//                } else { // AlignTopSouthPastMiddles
+//                    v = (midYInRel - nb) / (sb - nb);
+//                }
 			}
-			else if ( alignType == AlignType.AlignTopNorthPastTop ) {
-				float sb = bndsInRel[1] + pastEdgeDisplacementUB * szTested;
-				float nb = bndsInRel[1] + pastEdgeDisplacementLB * szTested;
-				
-				v = (sb - bndsTested[1]) / (sb - nb);
+			else if ( alignType == AlignType.AlignTopNorthPastTop ||
+                      alignType == AlignType.AlignBottomSouthPastBottom ) {
+                if ( alignType == AlignType.AlignTopNorthPastTop ) {
+                    float sb = bndsInRel[1] + pastEdgeDisplacementUB * szTested;
+                    float nb = bndsInRel[1] + pastEdgeDisplacementLB * szTested;
+
+                    v = (sb - bndsTested[1]) / (sb - nb);
+                } else { // AlignBottomSouthPastBottom
+                    float sb = bndsInRel[3] - pastEdgeDisplacementLB * szTested;
+                    float nb = bndsInRel[3] + pastEdgeDisplacementUB * szTested;
+
+                    v = (bndsTested[3] - nb) / (sb - nb);
+                }
 			}
 			else {
 				throw new RuntimeException("Unrecognized alignType");

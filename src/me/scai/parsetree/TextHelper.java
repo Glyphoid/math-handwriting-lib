@@ -45,7 +45,12 @@ public class TextHelper {
 		ArrayList<String> lineList = new ArrayList<String>();
 		String line;
 		while ( in.ready() ) {
-			line = in.readLine().trim();
+			line = in.readLine();
+            if (line == null) {
+                continue;
+            }
+
+            line = line.trim();
 			
 			if ( line.startsWith(commentString) ) 
 				continue;
