@@ -1,10 +1,14 @@
 package me.scai.parsetree.evaluation;
 
 import Jama.Matrix;
+import org.jscience.physics.amount.Amount;
 
-class ValueUnion {
+public class ValueUnion {
 	public enum ValueType {
-		Double, Matrix, UserFunction
+		Double,
+        Matrix,
+        UserFunction,
+        PhysicalQuantity
 	}
 
 	private ValueType valueType;
@@ -25,6 +29,11 @@ class ValueUnion {
 		valueType = ValueType.UserFunction;
 		value = funcTerm;
 	}
+
+    public ValueUnion(Amount physicalAmount) {
+        valueType = ValueType.PhysicalQuantity;
+        value = physicalAmount;
+    }
 
 	/* Value getters */
 	public Object get() {
@@ -54,4 +63,12 @@ class ValueUnion {
 
 		return (FunctionTerm) value;
 	}
+
+    public Amount getPhysicalQuantity() {
+        if (valueType != ValueType.PhysicalQuantity) {
+            throw new RuntimeException("Incorrect value type");
+        }
+
+        return (Amount) value;
+    }
 }

@@ -677,6 +677,10 @@ public class TokenSetParser implements ITokenSetParser {
 								.get(tHashKey2)[t_c_idxMax2[0]][t_c_idxMax2[1]];
 
 						/* Push onto stack */
+                        if (t_c_node == null) {
+                            int iii = 0; //DEBUG
+                        }
+
 						nStack.push(t_c_node);
 						rsStack.push(t_c_remSets);
 						bParsedStack.push(t_c_node.isTerminal());

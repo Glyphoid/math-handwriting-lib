@@ -197,6 +197,10 @@ public class GraphicalProduction {
 			/* This is the brute-force approach. */
 			labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
 		}
+
+        if (labels == null || labels.length == 0) {
+            return null;
+        }
 		
 		/* TODO: Use shortcuts based on the production */
 

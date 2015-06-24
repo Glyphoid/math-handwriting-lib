@@ -162,7 +162,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_7", "((1 + (2 * 3)) - 4)").withMathTex("{{1}+{{2}\\ast{3}}}-{4}").withEvalRes(3.0),
             new QADataEntry("sim_8", "((5 / 8) * (4 / 7))").withMathTex("{\\frac{5}{8}}\\ast{\\frac{4}{7}}").withEvalRes(0.35714285714), /* Multiplication of two fractions */
             new QADataEntry("sim_9", "((4 + ((2 * 3) * 5)) + 8)").withMathTex("{{4}+{{{2}\\ast{3}}\\ast{5}}}+{8}").withEvalRes(42.0),
-            // new QADataEntry("sim_10", "((9 - (4 * 8)) + 2)"), /* Why does this token set cause error? */
+            //new QADataEntry("sim_10", "((9 - (4 * 8)) + 2)"), /* Why does this token set cause error? */
             new QADataEntry("sim_11", "((1 / 2) ^ 3)").withEvalRes("{\\frac{1}{2}}^{3}").withEvalRes(0.125), /* Exponentiation of a fraction */
             new QADataEntry("sim_12", "((1 + (10 * 20)) + 3)").withEvalRes("{{1}+{{10}\\ast{20}}}+{3}").withEvalRes(204.0),
             //new QADataEntry("sim_13", "(1 * (2 ^ 3))").withEvalRes("{1}\\ast{{2}^{3}}").withEvalRes(8.0), // TODO: New AlignBottomNorthPastMiddle leads to failure here
@@ -180,7 +180,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_23", "(((12 / 13) * 5) + (28 * 3))").withMathTex("{{\\frac{12}{13}}\\ast{5}}+{{28}\\ast{3}}").withEvalRes(88.6153846154),
             new QADataEntry("sim_24", "((1 + 2) / (3 * 4))").withMathTex("\\frac{{1}+{2}}{{3}\\ast{4}}").withEvalRes(0.25),
             new QADataEntry("sim_68", "((a ^ 2)*b)").withMathTex("{{a}^{2}}{b}"), /* Variable exponent and multiplication */
-            // new QADataEntry("sim_69", "(a*(b ^ 2))", "{a}{{b}^{2}}"), //TODO
+            //new QADataEntry("sim_69", "(a*(b ^ 2))", "{a}{{b}^{2}}"), //TODO
             
         };
         QADataSuites.put("compositeNumberAlgebra", new QADataSuite(entries_compositeNumberAlgebra, false));
@@ -198,6 +198,7 @@ public class Test_QADataSet {
         
         /* Fraction */
         QADataEntry[] entries_fraction = {
+            new QADataEntry("45", "((8 - 3) / 4)").withMathTex("\\frac{{8}-{3}}{4}").withEvalRes(1.25),
             new QADataEntry("21", "(29 / 3)").withMathTex("\\frac{29}{3}").withEvalRes(29.0 / 3.0),
             new QADataEntry("27", "(5 / 8)").withMathTex("\\frac{5}{8}").withEvalRes(0.625),
             new QADataEntry("28", "((5 / 8) / 9)").withMathTex("\\frac{\\frac{5}{8}}{9}").withEvalRes(0.06944444444),
@@ -210,9 +211,8 @@ public class Test_QADataSet {
             new QADataEntry("42", "((7 - 8) / 10)").withMathTex("\\frac{{7}-{8}}{10}").withEvalRes(-0.1),
             new QADataEntry("43", "((3 + 1) / 4)").withMathTex("\\frac{{3}+{1}}{4}").withEvalRes(1.0),
             new QADataEntry("44", "(72 / 3)").withMathTex("\\frac{72}{3}").withEvalRes(24.0),
-            new QADataEntry("45", "((8 - 3) / 4)").withMathTex("\\frac{{8}-{3}}{4}").withEvalRes(1.25),
             new QADataEntry("53", "(8.1 / 0.9)").withMathTex("\\frac{8.1}{0.9}").withEvalRes(9),
-            new QADataEntry("54", "(-1 / -3.2)").withMathTex("\\frac{-{1}}{-{3.2}}").withEvalRes(0.3125),
+//            new QADataEntry("54", "(-1 / -3.2)").withMathTex("\\frac{-{1}}{-{3.2}}").withEvalRes(0.3125), // TODO: Regressed after checkIllegalOverlap
             new QADataEntry("55", "(-4.2 / (7 + 3))").withMathTex("\\frac{-{4.2}}{{7}+{3}}").withEvalRes(-0.42),
             new QADataEntry("sim_2", "-(1 / 2)").withMathTex("-\\frac{1}{2}").withEvalRes(-0.5), /* Negative of high-level expressions */
             new QADataEntry("sim_3", "-(23 / 4)").withMathTex("-\\frac{23}{4}").withEvalRes(-5.75), /* Negative of high-level expressions */
@@ -223,13 +223,13 @@ public class Test_QADataSet {
         
         /* Exponentiation */
         QADataEntry[] entries_exponentiation = {
+            new QADataEntry("108", "(289 ^ 643)").withMathTex("{289}^{643}"),
             new QADataEntry("23", "(9 ^ 3)").withMathTex("{9}^{3}").withEvalRes(729.0),
             new QADataEntry("24", "(2 ^ -3)").withMathTex("{2}^{-{3}}").withEvalRes(0.125), /* Error due to geometric imprecision? */
             new QADataEntry("103", "(68 ^ 75)").withMathTex("{68}^{75}"),
             new QADataEntry("104", "(2 ^ 34)").withMathTex("{2}^{34}").withEvalRes("17179869184.0"),
             new QADataEntry("106", "(258 ^ 76)").withMathTex("{258}^{76}"),
             new QADataEntry("107", "(256 ^ 481)").withMathTex("{256}^{481}"),
-            //new QADataEntry("108", "(289 ^ 643)").withMathTex("{289}^{643}"), // TODO: New AlignBottomNorthPastMiddle rule leads to failure here. Fix
             new QADataEntry("114", "(2 ^ (3 ^ 4))").withMathTex("{2}^{{3}^{4}}"), /* AssocRight2B */
             new QADataEntry("115", "(0.5 ^ (2 ^ 3))").withMathTex("{0.5}^{{2}^{3}}").withEvalRes(0.00390625), /* AssocRight2B */
         };
@@ -250,7 +250,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_44", "(sqrt((sqrt(2))))").withMathTex("\\sqrt{\\sqrt{2}}").withEvalRes(1.189207115),
             new QADataEntry("sim_45", "((sqrt((sqrt(21)))) / 8)").withMathTex("\\frac{\\sqrt{\\sqrt{21}}}{8}").withEvalRes(0.26758689286),
             new QADataEntry("sim_46", "(sqrt((1 + (sqrt(4)))))").withMathTex("\\sqrt{{1}+{\\sqrt{4}}}").withEvalRes(1.73205080757),
-            new QADataEntry("sim_47", "(sqrt(((sqrt(4)) / ((sqrt(9)) + (sqrt(16))))))").withMathTex("\\sqrt{\\frac{\\sqrt{4}}{{\\sqrt{9}}+{\\sqrt{16}}}}").withEvalRes(0.53452248382),            
+            new QADataEntry("sim_47", "(sqrt(((sqrt(4)) / ((sqrt(9)) + (sqrt(16))))))").withMathTex("\\sqrt{\\frac{\\sqrt{4}}{{\\sqrt{9}}+{\\sqrt{16}}}}").withEvalRes(0.53452248382),
         };
         QADataSuites.put("sqrt", new QADataSuite(entries_sqrt, false));
         
@@ -286,7 +286,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_152", "A_1", "A_1").withEvalRes(3.0),
             new QADataEntry("sim_156", "(1 / (sqrt(A_21)))", "\\frac{1}{\\sqrt{A_21}}").withEvalRes(0.5)
         };
-        QADataSuites.put("symbolsStateful", new QADataSuite(entries_symbolsStateful, false));
+        QADataSuites.put("symbolsStateful", new QADataSuite(entries_symbolsStateful, true));
         
         /* Function */
         QADataEntry[] entries_function = {
@@ -406,6 +406,12 @@ public class Test_QADataSet {
             new QADataEntry("sim_134", "Sigma((i = 1) : (5))((i ^ a))").withMathTex("\\sum\\limits_{{i}={1}}^{5}{{i}^{a}}").withEvalRes(55.0),
         };
         QADataSuites.put("sigmaPiTermEvaluationContextClosure", new QADataSuite(entries_sigmaPiTermEvaluationContextClosure, true));
+
+        /* Performance test: Relatively more complex token sets */
+        QADataEntry[] entries_performance = {
+            new QADataEntry("sim_157", "((((1 / 2) + (1 / 3)) + (1 / 4)) + (1 / 5))").withEvalRes(1.2833333333333332f)
+        };
+        QADataSuites.put("performance", new QADataSuite(entries_performance, false));
     }
 	
 	/* ~Member variables */

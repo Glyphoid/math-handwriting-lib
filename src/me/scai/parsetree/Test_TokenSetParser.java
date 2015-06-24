@@ -181,11 +181,7 @@ public class Test_TokenSetParser {
                 catch (ParseTreeEvaluatorException exc) {
                     evalResStr = "[Evaluator exception occurred]";
                 }
-                
-//              if (!evalRes.getClass().equals(Double.class)) {
-//                  throw new RuntimeException(
-//                          "Unexpected return type from evaluator");
-//              }
+
             }
             
             /* Check stringizer output */
@@ -341,4 +337,9 @@ public class Test_TokenSetParser {
 	public void testParser_sigmaPiTermEvaluationContextClosure() {
 	    testParser("sigmaPiTermEvaluationContextClosure");
 	}
+
+    @Test
+    public void testParser_performance() {
+        testParser("performance");
+    }
 }

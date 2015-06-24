@@ -274,14 +274,15 @@ FRACTION
 MINUS_OP
 EXPR_LV4 : {AlignWidthInclusion(0), PositionSouth(0)} # Denominator.
 EXPR_LV4 : {AlignWidthInclusion(0), PositionNorth(0)} # Numerator
-_STRINGIZE_		( n1 _SPACE_ / _SPACE_ n2 )
-_MATH_TEX_      \frac { n1 } { n2 }
+_STRINGIZE_		( n2 _SPACE_ / _SPACE_ n1 )
+_MATH_TEX_      \frac { n2 } { n1 }
 _EVAL_			DIVIDE(n2, n1)
 
 --- # 30
 SQROOT
 ROOT_OP
-EXPR_LV4 : {AlignBottom(0), AlignLeftWithin(0), AlignRightWithin(0), HeightRelationLess(0)}
+# EXPR_LV4 : {AlignBottom(0), AlignLeftWithin(0), AlignRightWithin(0), HeightRelationLess(0)}
+EXPR_LV4 : {AlignBottomWithin(0), AlignLeftWithin(0), AlignRightWithin(0), HeightRelationLess(0)}
 _STRINGIZE_		( sqrt _OPEN_PAREN_ n1 _CLOSE_PAREN_ )
 _MATH_TEX_      \sqrt { n1 }
 _EVAL_			SQRT(n1)

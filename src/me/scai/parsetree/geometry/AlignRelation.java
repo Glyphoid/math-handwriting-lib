@@ -13,6 +13,7 @@ public class AlignRelation extends GeometricRelation {
 		AlignRight,
 		AlignLeftWithin,
 		AlignRightWithin,
+        AlignBottomWithin,
 		AlignCenter,   /* Center of the left-right dimension */
 		AlignWidthInclusion, /* Within the width range of the in-rel */
 		AlignBottomNorthPastMiddle, /* The bottom of the token should be more north than the middle of the in-rel token */
@@ -23,8 +24,8 @@ public class AlignRelation extends GeometricRelation {
 	
 	/* Member variables */
 	/* Constants */
-	static final float pastMiddleDisplacementLB = 0.25f; 	
-	static final float pastMiddleDisplacementUB = 0.50f;	/* Apply to relations such as AlignBottomNorthPastMiddle */
+	static final float pastMiddleDisplacementLB = 0.50f;
+	static final float pastMiddleDisplacementUB = 0.75f;	/* Apply to relations such as AlignBottomNorthPastMiddle */
 	static final float pastEdgeDisplacementLB = -0.25f;
 	static final float pastEdgeDisplacementUB = 0.00f;		/* Apply to relations such as AlignTopNorthPastTop */
 	
@@ -69,7 +70,8 @@ public class AlignRelation extends GeometricRelation {
 		float v;	/* Return value */
 		if ( alignType == AlignType.AlignBottom || 
 			 alignType == AlignType.AlignTop ||
-			 alignType == AlignType.AlignMiddle || 
+			 alignType == AlignType.AlignMiddle ||
+             alignType == AlignType.AlignBottomWithin ||
 			 alignType == AlignType.AlignHeightInclusion || 
 			 alignType == AlignType.AlignBottomNorthPastMiddle ||
              alignType == AlignType.AlignTopSouthPastMiddle ||
@@ -108,8 +110,6 @@ public class AlignRelation extends GeometricRelation {
 			else if ( alignType == AlignType.AlignBottomNorthPastMiddle ||
                       alignType == AlignType.AlignTopSouthPastMiddle ) {
                 // New AlignBottomNorthPastMiddle
-                float midYInRel = (bndsInRel[3] + bndsInRel[1]) * 0.5f;
-
                 if ( alignType == AlignType.AlignBottomNorthPastMiddle ) {
                     float sb = bndsInRel[3] - pastMiddleDisplacementLB * szInRel;
                     float nb = bndsInRel[3] - pastMiddleDisplacementUB * szInRel;
@@ -134,6 +134,10 @@ public class AlignRelation extends GeometricRelation {
 //                    v = (midYInRel - nb) / (sb - nb);
 //                }
 			}
+            else if ( alignType == AlignType.AlignBottomWithin ) {
+                edgeDiff = bndsInRel[3] - bndsTested[3];
+                v = edgeDiff / (szMean * 0.05f); /* TODO: 0.05 is somewhat ad hoc - Correct it */
+            }
 			else if ( alignType == AlignType.AlignTopNorthPastTop ||
                       alignType == AlignType.AlignBottomSouthPastBottom ) {
                 if ( alignType == AlignType.AlignTopNorthPastTop ) {
@@ -198,10 +202,12 @@ public class AlignRelation extends GeometricRelation {
 			
 		}
 		
-		if ( v > 1f )
-			v = 1f;
-		if ( v < 0f ) 
-			v = 0f;
+		if ( v > 1f ) {
+            v = 1f;
+        }
+		if ( v < 0f ) {
+            v = 0f;
+        }
 		
 		return v;
 	}
@@ -211,32 +217,6 @@ public class AlignRelation extends GeometricRelation {
 		String [] items = splitInputString(str);
 		
 		alignType = AlignType.valueOf(items[0]);
-//		if ( items[0].equals("AlignBottom") )	/* TODO: Replace with valueOf() */
-//			alignType = AlignType.AlignBottom;
-//		else if ( items[0].equals("AlignTop") )
-//			alignType = AlignType.AlignTop;
-//		else if ( items[0].equals("AlignMiddle") )
-//			alignType = AlignType.AlignMiddle;
-//		else if ( items[0].equals("AlignHeightInclusion") )
-//			alignType = AlignType.AlignHeightInclusion;
-//		else if ( items[0].equals("AlignLeft") )
-//			alignType = AlignType.AlignLeft;
-//		else if ( items[0].equals("AlignRight") )
-//			alignType = AlignType.AlignRight;
-//		else if ( items[0].equals("AlignLeftWithin") )
-//			alignType = AlignType.AlignLeftWithin;
-//		else if ( items[0].equals("AlignRightWithin") )
-//			alignType = AlignType.AlignRightWithin;
-//		else if ( items[0].equals("AlignCenter") )
-//			alignType = AlignType.AlignCenter;
-//		else if ( items[0].equals("AlignWidthInclusion") )
-//			alignType = AlignType.AlignWidthInclusion;
-//		else if ( items[0].equals("AlignBottomNorthPastMiddle") )
-//			alignType = AlignType.AlignBottomNorthPastMiddle;
-//		else if ( items[0].equals("AlignTopNorthPastTop") )
-//			alignType = AlignType.AlignTopNorthPastTop;		
-//		else
-//			throw new RuntimeException("Unrecognized AlignRelation type: " + items[0]);
 		
 		idxTested = new int[1];
 		idxTested[0] = t_idxTested;

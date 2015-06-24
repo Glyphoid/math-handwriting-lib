@@ -4,12 +4,70 @@ import me.scai.parsetree.MathHelper;
 import java.util.List;
 
 public class GeometryHelper {
-	public static float pctOverlap(float [] oldBnds, float [] newBnds) {
-		if ( oldBnds.length != 2 || newBnds.length != 2 )
-			throw new IllegalArgumentException("Input bounds are not all of length 2");
+
+    /* @params: lb0, ub0: The lower and upper bounds of the "reference" token
+                lb1, ub1: The lower and upper bounds of the "target" token
+                unityForEnclosingCase: This parameter matters only for the case in which the target token's bounds
+                                       [lb1, ub1] completely encompasses the reference token's bounds [lb0, ub0]
+                                          If true, will return 1.0f
+                                          If false, will return (reference token size) / (target token size)
+     */
+    public static final float pctOverlap(float lb0, float ub0, float lb1, float ub1, boolean unityForEnclosingCases) {
+        if ( ub0 < lb0 || ub1 < lb1 ) {
+            throw new IllegalArgumentException("Input bounds are not all in the ascending order");
+        }
+
+        float refSize = ub0 - lb0;
+        float targSize = ub1 - lb1;
+        float meanSize = (refSize + targSize) * 0.5f;
+
+		/* Branch depending on relations */
+        if ( ub1 < lb0 || lb1 > ub0 ) {
+            return 0.0f;
+        }
+        else { /* Guaranteed overlap */
+            if ( ub1 < ub0 ) {
+                if ( lb1 >= lb0 ) {
+					/* oldBnds:      [              ] */
+					/* newBnds:         [         ]   */
+                    return 1.0f;
+                }
+                else {
+					/* oldBnds:      [              ] */
+					/* newBnds:   [               ]   */
+                    return (ub1 - lb0) / meanSize;
+                }
+
+            }
+            else {
+                if ( lb1 <= lb0 ) {
+					/* oldBnds:      		[     ]         */
+					/* newBnds:         [               ]   */
+                    if (unityForEnclosingCases || targSize == 0f) {
+                        return 1.0f;
+                    } else {
+                        return refSize / targSize;
+                    }
+                }
+                else {
+					/* oldBnds:       [           ]         */
+					/* newBnds:         [               ]   */
+                    return ( ub0 - lb1 ) / meanSize;
+                }
+
+
+            }
+        }
+    }
+
+	public static final float pctOverlap(float [] oldBnds, float [] newBnds) {
+		if ( oldBnds.length != 2 || newBnds.length != 2 ) {
+            throw new IllegalArgumentException("Input bounds are not all of length 2");
+        }
 		
-		if ( oldBnds[1] < oldBnds[0] || newBnds[1] < newBnds[0] )
-			throw new IllegalArgumentException("Input bounds are not all in the ascending order");
+		if ( oldBnds[1] < oldBnds[0] || newBnds[1] < newBnds[0] ) {
+            throw new IllegalArgumentException("Input bounds are not all in the ascending order");
+        }
 		
 		float oldSize = oldBnds[1] - oldBnds[0];
 		float newSize = newBnds[1] - newBnds[0];

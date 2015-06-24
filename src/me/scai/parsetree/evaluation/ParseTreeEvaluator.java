@@ -15,6 +15,7 @@ import Jama.Matrix;
 import me.scai.parsetree.Node;
 import me.scai.parsetree.GraphicalProduction;
 import me.scai.parsetree.GraphicalProductionSet;
+import me.scai.parsetree.scientific.ScientificConstants;
 
 public class ParseTreeEvaluator {
 	/* Member variables */
@@ -73,6 +74,9 @@ public class ParseTreeEvaluator {
 
 			sumString2NodeIdxMap.put(sumString, nodeIndices);
 		}
+
+        /* Put default scientific constants */
+        ScientificConstants.inject2VariableMap(varMap);
 	}
 	
 	public String evalRes2String(Object evalRes) {
@@ -382,7 +386,8 @@ public class ParseTreeEvaluator {
 			throw new DivisionByZeroException();
 		}
 
-		return d_denom / d_numer;
+//		return d_denom / d_numer;
+        return d_numer / d_denom;
 	}
 
 	public double exponentiation(Object base, Object exp)
@@ -524,7 +529,6 @@ public class ParseTreeEvaluator {
 
     public String form_subscripted_var_name(Object v, Object sub) {
         @SuppressWarnings("rawtypes")
-
         Class vClass = v.getClass();
         Class subClass = sub.getClass();
 
