@@ -7,28 +7,54 @@ import java.util.List;
 import java.util.LinkedList;
 
 /* Helper class for sort */
-class PairedValueIndex implements Comparable<PairedValueIndex> {
-	public float x;
-	int index;
-	
-	/* Methods */
-	public PairedValueIndex(float t_x, int i) {
-		x = t_x;
-		index = i;
-	}
+class FloatPairedValueIndex implements Comparable<FloatPairedValueIndex> {
+    public float x;
+    int index;
 
-	@Override
-	public int compareTo(PairedValueIndex pvi0) {
-		
-		// TODO Auto-generated method stub
-		if ( this.x > pvi0.x )
-			return 1;
-		else  if ( this.x < pvi0.x )
-			return -1;
-		else
-			return 0;
-			
-	}
+    /* Methods */
+    public FloatPairedValueIndex(float t_x, int i) {
+        x = t_x;
+        index = i;
+    }
+
+    @Override
+    public int compareTo(FloatPairedValueIndex pvi0) {
+
+        // TODO Auto-generated method stub
+        if ( this.x > pvi0.x ) {
+            return 1;
+        } else  if ( this.x < pvi0.x ) {
+            return -1;
+        } else {
+            return 0;
+        }
+
+    }
+}
+
+class DoublePairedValueIndex implements Comparable<DoublePairedValueIndex> {
+    public double x;
+    int index;
+
+    /* Methods */
+    public DoublePairedValueIndex(double t_x, int i) {
+        x = t_x;
+        index = i;
+    }
+
+    @Override
+    public int compareTo(DoublePairedValueIndex pvi0) {
+
+        // TODO Auto-generated method stub
+        if ( this.x > pvi0.x ) {
+            return 1;
+        } else  if ( this.x < pvi0.x ) {
+            return -1;
+        } else {
+            return 0;
+        }
+
+    }
 }
 
 /* Class: MathHelper */
@@ -207,10 +233,10 @@ public class MathHelper {
 		if ( xs.length != idxInSorted.length )
 			throw new RuntimeException("Length of idxInSorted does not equal length of x");
 
-		PairedValueIndex [] pvis = new PairedValueIndex[xs.length];
+		FloatPairedValueIndex[] pvis = new FloatPairedValueIndex[xs.length];
 		
 		for (int i = 0; i < xs.length; ++i)
-			pvis[i] = new PairedValueIndex(xs[i], i);
+			pvis[i] = new FloatPairedValueIndex(xs[i], i);
 		
 		Arrays.sort(pvis);
 		
@@ -233,6 +259,16 @@ public class MathHelper {
 		
 		return sb.toString();
 	}
+
+    public static int intArray2HashCode(int [] xs) {
+        int hc = 0;
+
+        for (int i = 0; i < xs.length; ++i) {
+            hc = 31 * hc + xs[i];
+        }
+
+        return hc;
+    }
 	
 	
 	/* Differentiation of a float array: 
@@ -335,5 +371,35 @@ public class MathHelper {
 	 public static boolean equalsTol(double x, double y, double absTol) {
 	     return Math.abs(x - y) < absTol;
 	 }
+
+
+    /* Return the indices of the n biggest elements */
+    public static int[] getMaxNIndices(double[] xs, int n) {
+        if (xs.length == 0) {
+            return null;
+        }
+
+        if (n > xs.length) {
+            n = xs.length;
+        }
+
+        DoublePairedValueIndex[] pv = new DoublePairedValueIndex[xs.length];
+
+        for (int i = 0; i < xs.length; ++i) {
+            pv[i] = new DoublePairedValueIndex(xs[i], i);
+        }
+
+
+        Arrays.sort(pv);
+
+        int[] indices = new int[n];
+
+        for (int i = 0; i < n; ++i) {
+            indices[i] = pv[pv.length - 1 - i].index;
+        }
+
+        return indices;
+
+    }
 	 
 }

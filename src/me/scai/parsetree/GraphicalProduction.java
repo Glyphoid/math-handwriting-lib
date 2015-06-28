@@ -162,10 +162,10 @@ public class GraphicalProduction {
 	 *         remaainingSets: token sets after the head node is 
 	 *         parsed out. null if parsing is unsuccessful. 
 	 */
-	public Node attempt(CWrittenTokenSetNoStroke tokenSet, 
-			            int [] iHead,
-			            CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
-			            float [] maxGeomScore) {
+	public Node attempt(final CWrittenTokenSetNoStroke tokenSet,
+			            final int [] iHead,
+			            final CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
+			            final float [] maxGeomScore) {
 		if ( iHead.length == 0 ) {
 			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
 		}

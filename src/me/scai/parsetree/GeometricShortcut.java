@@ -24,6 +24,8 @@ class GeometricShortcut {
 
     /* Constants */
     private static boolean returnUnityForEnclosingRelationsBipartite  = true;
+    private static final int[] BOUND_INDICES_0_2 = {0, 2};
+    private static final int[] BOUND_INDICES_1_3 = {1, 3};
 
     /* Member variables */
     private ShortcutType shortcutType = ShortcutType.noShortcut;
@@ -368,24 +370,17 @@ class GeometricShortcut {
     }
 
     private int[] getKeyBoundsIndices() {
-        int[] idxBnds = new int[2];
         if ( shortcutType == ShortcutType.verticalTerminalDivideWE ) {
-            idxBnds[0] = 0;
-            idxBnds[1] = 2;
+            return BOUND_INDICES_0_2;
         } else if ( shortcutType == ShortcutType.verticalTerminalDivideEW ) {
-            idxBnds[0] = 0;
-            idxBnds[1] = 2;
+            return BOUND_INDICES_0_2;
         } else if ( shortcutType == ShortcutType.horizontalTerminalDivideNS) {
-            idxBnds[0] = 1;
-            idxBnds[1] = 3;
+            return BOUND_INDICES_1_3;
         } else if ( shortcutType == ShortcutType.horizontalTerminalDivideSN ) {
-            idxBnds[0] = 1;
-            idxBnds[1] = 3;
+            return BOUND_INDICES_1_3;
         } else {
             throw new RuntimeException("Unrecognized shortcut type");
         }
-
-        return idxBnds;
     }
 
 

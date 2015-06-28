@@ -342,4 +342,9 @@ public class Test_TokenSetParser {
     public void testParser_performance() {
         testParser("performance");
     }
+
+    @Test
+    public void testParser_predefinedConstants() {
+        testParser("predefinedConstants");
+    }
 }

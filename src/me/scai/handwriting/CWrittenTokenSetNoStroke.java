@@ -373,8 +373,18 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			if ( i < tokens.size() - 1 )
 				s += ",";
 		}
-//		s += "";
 		
 		return s;
 	}
+
+    @Override
+    public int hashCode() {
+        int hc = 0;
+
+        for (int i = 0; i < tokens.size(); ++i) {
+            hc = 127 * hc + tokenIDs.get(i);
+        }
+
+        return hc;
+    }
 }

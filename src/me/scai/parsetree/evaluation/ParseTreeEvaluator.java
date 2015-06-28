@@ -839,6 +839,15 @@ public class ParseTreeEvaluator {
 	public void clearUserData() {
 	    varMap.clear();
 	}
-	
+
+
+    public Map<String, ValueUnion> getVarMap() {
+        return varMap;
+    }
+
+    public ValueUnion getFromVarMap(final String varName) {
+        return varMap.get(varName);
+    }
+
 	/* ~Methods */
 }

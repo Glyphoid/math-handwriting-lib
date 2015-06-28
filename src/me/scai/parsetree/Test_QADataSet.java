@@ -412,6 +412,12 @@ public class Test_QADataSet {
             new QADataEntry("sim_157", "((((1 / 2) + (1 / 3)) + (1 / 4)) + (1 / 5))").withEvalRes(1.2833333333333332f)
         };
         QADataSuites.put("performance", new QADataSuite(entries_performance, false));
+
+        /* Predefined constants */
+        QADataEntry[] entries_predefinedConstants = {
+            new QADataEntry("sim_158", "c").withEvalRes(299792458f)
+        };
+        QADataSuites.put("predefinedConstants", new QADataSuite(entries_predefinedConstants, false));
     }
 	
 	/* ~Member variables */
