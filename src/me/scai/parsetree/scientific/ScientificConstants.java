@@ -15,6 +15,5 @@ public class ScientificConstants {
         varMap.put("hbar",    new ValueUnion(Constants.ℏ));    // Planck constant over 2*pi
         varMap.put("N_A",     new ValueUnion(Constants.N));    // Avogadro's number
         varMap.put("G",       new ValueUnion(Constants.G));    // Newtonian constant of gravitatino
-
     }
 }

@@ -16,6 +16,7 @@ import me.scai.parsetree.Node;
 import me.scai.parsetree.GraphicalProduction;
 import me.scai.parsetree.GraphicalProductionSet;
 import me.scai.parsetree.scientific.ScientificConstants;
+import org.jscience.physics.amount.Amount;
 
 public class ParseTreeEvaluator {
 	/* Member variables */
@@ -257,7 +258,11 @@ public class ParseTreeEvaluator {
 		} else if (x.getClass().equals(FunctionArgumentList.class)) {
 			return (FunctionArgumentList) x;
 		} else if (x.getClass().equals(FunctionTerm.class)) {
-			return (FunctionTerm) x;
+            return (FunctionTerm) x;
+        } else if (x.getClass().equals(Amount.class)) {
+            Amount amountX = (Amount) x;
+            return Double.valueOf((double) amountX.getEstimatedValue());
+
 		} else {
 			throw new RuntimeException("Unexpected input type: " + x.getClass());
 		}
@@ -294,7 +299,19 @@ public class ParseTreeEvaluator {
 			Matrix my = (Matrix) y;
 
 			return mx.plus(my);
-		} else {
+		} else if (x.getClass().equals(Amount.class)
+                && y.getClass().equals(Double.class)) {
+            Amount ax = (Amount) x;
+            double dy = getDouble(y);
+
+            return Double.valueOf(dy + (double) ax.getExactValue());
+        } else if (x.getClass().equals(Double.class)
+                && y.getClass().equals(Amount.class)) {
+            double dx = getDouble(x);
+            Amount ay = (Amount) y;
+
+            return Double.valueOf(dx + (double) ay.getExactValue());
+        } else {
 			throw new RuntimeException(
 					"Unsupport types scenario for method \"add\"");
 		}
@@ -371,9 +388,22 @@ public class ParseTreeEvaluator {
 			Matrix my = (Matrix) y;
 
 			return mx.times(my);
-		} else {
-			throw new RuntimeException(
-					"Unsupport types scenario for method \"multiply\"");
+		} else if (x.getClass().equals(Amount.class)
+                && y.getClass().equals(Double.class)) {
+            Amount ax = (Amount) x;
+            double dy = getDouble(y);
+
+            return Double.valueOf(dy * ax.getExactValue());
+        } else if (x.getClass().equals(Double.class)
+                && y.getClass().equals(Amount.class)) {
+            double dx = getDouble(x);
+            Amount ay = (Amount) y;
+
+            return Double.valueOf(dx * ay.getEstimatedValue());
+        } else {
+			throw new IllegalArgumentException (
+                    "Unsupport argument types scenario for method \"multiply\": " +
+                    x.getClass() + " & " + y.getClass());
 		}
 	}
 

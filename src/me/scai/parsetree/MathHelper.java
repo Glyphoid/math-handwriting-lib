@@ -367,10 +367,18 @@ public class MathHelper {
 		 return xa;
 	 }
 	 
-	 /* Equality of two doubles under a given absolute tolerance */ 
+	 /* Equality of two doubles under a given absolute/relative tolerance */
 	 public static boolean equalsTol(double x, double y, double absTol) {
-	     return Math.abs(x - y) < absTol;
+         final double avgMag = (0.5 * (Math.abs(x) + Math.abs(y)));
+
+         if (avgMag == 0.0) {
+             return Math.abs(x - y) < absTol;
+         } else {
+             return Math.abs(x - y) / avgMag < absTol;
+         }
 	 }
+
+
 
 
     /* Return the indices of the n biggest elements */
@@ -388,7 +396,6 @@ public class MathHelper {
         for (int i = 0; i < xs.length; ++i) {
             pv[i] = new DoublePairedValueIndex(xs[i], i);
         }
-
 
         Arrays.sort(pv);
 

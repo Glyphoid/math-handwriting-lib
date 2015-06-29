@@ -367,13 +367,28 @@ _STRINGIZE_ 	n0
 _MATH_TEX_      n0
 _EVAL_ 		 	STRING(n0)
 
---- # Variable with a subscript
+--- # Variable with a number subscript
 VARIABLE
 VARIABLE_SYMBOL
-DIGIT_STRING    : {AlignTopSouthPastMiddle(0), AlignBottomSouthPastBottom(0), PositionGenEast(0)} # Subscript
+DIGIT_STRING    : {AlignTopSouthPastMiddle(0), AlignBottomSouthPastBottom(0), PositionGenEast(0)} # Subscript number
 _STRINGIZE_  	n0 _UNDERSCORE_ n1
 _MATH_TEX_      n0 _ n1
-_EVAL_ 		 	FORM_SUBSCRIPTED_VAR_NAME(n0, n1)     # TODO: Add subscript
+_EVAL_ 		 	FORM_SUBSCRIPTED_VAR_NAME(n0, n1)
+
+--- # Variable with a symbol subscript: symbol is limited to a single token
+VARIABLE
+VARIABLE_SYMBOL
+VARIABLE_SYMBOL_SUBSCRIPT   : {AlignTopSouthPastMiddle(0), AlignBottomSouthPastBottom(0), PositionGenEast(0)} # Subscript symbol
+_STRINGIZE_  	n0 _UNDERSCORE_ n1
+_MATH_TEX_      n0 _ n1
+_EVAL_ 		 	FORM_SUBSCRIPTED_VAR_NAME(n0, n1)
+
+--- # Variable symbol as a subscript
+VARIABLE_SYMBOL_SUBSCRIPT
+VARIABLE_SYMBOL
+_STRINGIZE_ 	n0
+_MATH_TEX_      n0
+_EVAL_ 		 	STRING(n0)
 
 ---
 VARIABLE_EVALUATED

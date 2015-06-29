@@ -204,6 +204,10 @@ public class Test_TokenSetParser {
             
             /* Check eval result */
             if (tokenSetTrueEvalRes != null) {
+                if (tokenSetTrueEvalRes.getClass().equals(Float.class)) {
+                    tokenSetTrueEvalRes = Double.valueOf((Float) tokenSetTrueEvalRes);
+                }
+
                 if (tokenSetTrueEvalRes.getClass().equals(Double.class)) {
                     /* Check type match */
                     assertTrue(evalRes.getClass().equals(Double.class) || evalRes.getClass().equals(String.class));

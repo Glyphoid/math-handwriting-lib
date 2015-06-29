@@ -409,18 +409,24 @@ public class Test_QADataSet {
 
         /* Performance test: Relatively more complex token sets */
         QADataEntry[] entries_performance = {
-            new QADataEntry("sim_157", "((((1 / 2) + (1 / 3)) + (1 / 4)) + (1 / 5))").withEvalRes(1.2833333333333332f)
+            new QADataEntry("sim_157", "((((1 / 2) + (1 / 3)) + (1 / 4)) + (1 / 5))").withEvalRes(1.2833333333333332)
         };
         QADataSuites.put("performance", new QADataSuite(entries_performance, false));
 
         /* Predefined constants */
         QADataEntry[] entries_predefinedConstants = {
-            new QADataEntry("sim_158", "c").withEvalRes(299792458f)
+            new QADataEntry("sim_158", "c").withEvalRes(299792458.0), // c: speed of light. It might be okay to hard-code the value in this case
+            new QADataEntry("sim_159", "((1 / 2)*c)").withEvalRes(0.5 * 299792458.0),
+            new QADataEntry("sim_160", "(((1 / 2)*c) + ((1 / 3)*c))").withEvalRes(299792458.0 * 5.0 / 6.0),
+            new QADataEntry("sim_161", "(c / 4)").withEvalRes(299792458.0 / 4.0),
+            new QADataEntry("sim_162", "(gr_pi ^ 2)").withEvalRes(Math.PI * Math.PI),
+            new QADataEntry("sim_163", "(sqrt(e))").withEvalRes(Math.sqrt(Math.E)),
+            new QADataEntry("sim_164", "((1 / 6)*h)").withEvalRes(1.1043448833333333E-34), // h: Planck constant
+            new QADataEntry("sim_165", "N_A").withEvalRes(6.0221415E23), // Avogadro constant
+            new QADataEntry("sim_166", "(sqrt((N_A - 1)))").withEvalRes(7.760245807962529E11)
         };
         QADataSuites.put("predefinedConstants", new QADataSuite(entries_predefinedConstants, false));
     }
 	
 	/* ~Member variables */
 }
-
-
