@@ -1,5 +1,7 @@
 package me.scai.parsetree;
 
+import me.scai.parsetree.evaluation.ParseTreeEvaluator;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -86,8 +88,8 @@ public class Test_QADataSet {
     Map<String, QADataSuite> QADataSuites = new HashMap<String, QADataSuite>();
     
     QADataEntry[] entries = {
-            new QADataEntry("98", ParseTreeStringizer.parsingErrString),
-            new QADataEntry("99", ParseTreeStringizer.parsingErrString),
+            new QADataEntry("98", ParseTreeStringizer.STRINGIZATION_FAILED_STRING),
+            new QADataEntry("99", ParseTreeStringizer.STRINGIZATION_FAILED_STRING),
     };
     
     /* No-arg constructor */
@@ -426,6 +428,14 @@ public class Test_QADataSet {
             new QADataEntry("sim_166", "(sqrt((N_A - 1)))").withEvalRes(7.760245807962529E11)
         };
         QADataSuites.put("predefinedConstants", new QADataSuite(entries_predefinedConstants, false));
+
+        /* Token sets with incorrect syntax */
+        QADataEntry[] entries_incorrectSyntax = {
+           new QADataEntry("sim_167", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(ParseTreeEvaluator.EVAL_FAILED_STRING).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),
+           new QADataEntry("sim_168", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(ParseTreeEvaluator.EVAL_FAILED_STRING).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),
+           new QADataEntry("sim_169", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(ParseTreeEvaluator.EVAL_FAILED_STRING).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING)
+        };
+        QADataSuites.put("incorrectSyntax", new QADataSuite(entries_incorrectSyntax, false));
     }
 	
 	/* ~Member variables */

@@ -96,7 +96,7 @@ public class TokenSetParser implements ITokenSetParser {
 	}
 
 	@Override
-	public Node parse(CWrittenTokenSetNoStroke tokenSet) {
+	public Node parse(CWrittenTokenSetNoStroke tokenSet) throws TokenSetParserException {
 		init();
 
 		tokenSet.getAllTokensTerminalTypes(termSet);
@@ -545,7 +545,7 @@ public class TokenSetParser implements ITokenSetParser {
 
 
 	/* This implements a recursive descend parser */
-	private Node parse(CWrittenTokenSetNoStroke tokenSet, String lhs) {
+	private Node parse(CWrittenTokenSetNoStroke tokenSet, String lhs) throws TokenSetParserException {
 		/* Input sanity check */
 		if (tokenSet == null) {
             throw new IllegalArgumentException("Parsing null token set!");
@@ -678,7 +678,10 @@ public class TokenSetParser implements ITokenSetParser {
 
 						int[] t_idxValidProds = null;
 						t_idxValidProds = getFromTokenSetLHS2IdxValidProdsMap(tHashKey1);
-						/*  If this is a T, this returns null and leads to a crash. TODO: Fix it */
+
+                        if (t_idxValidProds == null) {
+                            throw new TokenSetParserException();
+                        }
 
 //						String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
                         String tHashKey2 = getHashCodeFromTokenSetAndIdxValidProds(t_remSet, t_idxValidProds);

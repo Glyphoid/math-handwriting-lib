@@ -1,10 +1,12 @@
 package me.scai.parsetree;
 
 import java.util.List;
+import java.util.Map;
 
 import me.scai.handwriting.CStroke;
 import me.scai.handwriting.CWrittenTokenSet;
-import com.google.gson.JsonObject;
+import me.scai.parsetree.evaluation.PlatoVarMap;
+import me.scai.parsetree.evaluation.ValueUnion;
 
 public interface HandwritingEngine {
     /* Add stroke to the token set */
@@ -45,6 +47,14 @@ public interface HandwritingEngine {
 
     /* Get the bounds of a token */
     public float[] getTokenBounds(int tokenIdx)
+        throws HandwritingEngineException;
+
+    /* Get the currently defined items */
+    public PlatoVarMap getVarMap()
+        throws HandwritingEngineException;
+
+    /* Get the currently defined item of the specified key */
+    public ValueUnion getFromVarMap(String varName)
         throws HandwritingEngineException;
 }
 

@@ -22,7 +22,7 @@ import org.junit.Test;
 
 
 public class Test_TokenSetParser {   
-	public static final String errStr = ParseTreeStringizer.parsingErrString;
+	public static final String errStr = ParseTreeStringizer.STRINGIZATION_FAILED_STRING;
 	public static final double evalResEqualityAbsTol = 1e-9;
 	
 	private static final String RESOURCES_DIR = "resources";
@@ -160,7 +160,12 @@ public class Test_TokenSetParser {
             /* Parse graphically */
             long millis_0 = System.currentTimeMillis();
 
-            Node parseRoot = tokenSetParser.parse(wts); /* Parsing action */
+            Node parseRoot = null;
+            try {
+                parseRoot = tokenSetParser.parse(wts); /* Parsing action */
+            } catch (TokenSetParserException exc) {
+
+            }
 
             long millis_1 = System.currentTimeMillis();
 
@@ -350,5 +355,10 @@ public class Test_TokenSetParser {
     @Test
     public void testParser_predefinedConstants() {
         testParser("predefinedConstants");
+    }
+
+    @Test
+    public void testParser_incorrectSyntax() {
+        testParser("incorrectSyntax");
     }
 }

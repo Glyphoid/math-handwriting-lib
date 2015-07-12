@@ -19,6 +19,9 @@ import me.scai.parsetree.scientific.ScientificConstants;
 import org.jscience.physics.amount.Amount;
 
 public class ParseTreeEvaluator {
+    /* Constants */
+    public static final String EVAL_FAILED_STRING = "[Evaluation failed]";
+
 	/* Member variables */
 	/* Constants */
 	// final static String passFuncName = "PASS";
@@ -27,7 +30,7 @@ public class ParseTreeEvaluator {
 	Map<String, String> sumString2FuncNameMap = new HashMap<>();
 	Map<String, int[]> sumString2NodeIdxMap = new HashMap<>();
 
-	Map<String, ValueUnion> varMap = new HashMap<>();
+	PlatoVarMap varMap = new PlatoVarMap();
 
 	private LinkedList<String> lhsStack = new LinkedList<String>();
 	private LinkedList<String[]> rhsStack = new LinkedList<String[]>();
@@ -81,6 +84,10 @@ public class ParseTreeEvaluator {
 	}
 	
 	public String evalRes2String(Object evalRes) {
+        if (evalRes == null) {
+            return EVAL_FAILED_STRING;
+        }
+
 	    String evalResStr = "";
         if (evalRes.getClass().equals(Matrix.class)) {
             evalResStr = matrix2String((Matrix) evalRes);
@@ -164,6 +171,10 @@ public class ParseTreeEvaluator {
 
 	/* Main method: eval: evaluate a parse tree */
 	public Object eval(Node n) throws ParseTreeEvaluatorException {
+        if (n == null) {
+            return null;
+        }
+
 		String sumString = n.prodSumString;
 		lhsStack.push(n.lhs);
 		rhsStack.push(n.rhsTypes);
@@ -610,16 +621,24 @@ public class ParseTreeEvaluator {
 
 		/* Get the value; Enter the variable name and value */
 		String s = ""; /* TODO: Non-double type right hand side */
+
 		if (b.getClass().equals(Matrix.class)) {
-			varMap.put(varName, new ValueUnion((Matrix) b));
+			varMap.addVar(varName, new ValueUnion((Matrix) b));
 			s = matrix2String((Matrix) b);
 		} else if (b.getClass().equals(String.class)) {
-			varMap.put(varName, new ValueUnion(Double.parseDouble((String) b)));
+            varMap.addVar(varName, new ValueUnion(Double.parseDouble((String) b)));
 			s = (String) b;
 		} else if (b.getClass().equals(Double.class)) {
-			varMap.put(varName, new ValueUnion((Double) b));
-			s = String.format("%f", (Double) b);
-		} else {
+            varMap.addVar(varName, new ValueUnion((Double) b));
+            s = String.format("%f", (Double) b);
+		} else if (b.getClass().equals(String.class)) {
+		    // TODO: class == String: Better make sure that this doesn't happen.
+            s = (String) b;
+
+            try {
+                varMap.addVar(varName, new ValueUnion(Double.parseDouble(s)));
+            } catch (Throwable throwable) {}
+        } else {
 			throw new RuntimeException("Unexpected value argument type: "
 					+ b.getClass());
 		}
@@ -645,7 +664,7 @@ public class ParseTreeEvaluator {
 		}
 
 		/* Enter the variable name and value */
-		varMap.put(varName, new ValueUnion(val));
+		varMap.addVar(varName, new ValueUnion(val));
 
 		return val;
 	}
@@ -670,9 +689,9 @@ public class ParseTreeEvaluator {
 		if (argIdx != -1) {
 		    String tempVarName = EvaluatorHelper.genFuncArgName(this.funcNameStack.size() - 1, argIdx);
 //		    ValueUnion vu = varMap.get(tempVarName);
-		    return varMap.get(tempVarName);
-		} else if (varMap.containsKey(varName)) {
-			return varMap.get(varName);
+		    return varMap.getVarValue(tempVarName);
+		} else if (varMap.containsVarName(varName)) {
+			return varMap.getVarValue(varName);
 		} else {
 			return new ValueUnion(0.0); /* TODO: Throw an error? */
 		}
@@ -782,13 +801,12 @@ public class ParseTreeEvaluator {
 	public FunctionTerm define_user_function(Object funcTermObj, Object nodeObj) {
 		FunctionTerm funcTerm = (FunctionTerm) funcTermObj;
 
-		// System.out.println("Type of nodeObj = " + nodeObj.getClass());
 		Node node = (Node) nodeObj;
         
 		funcTerm.defineBody(node);
 
 		/* Register the function */
-		varMap.put(funcTerm.getFunctionName(), new ValueUnion(funcTerm));
+		varMap.addVar(funcTerm.getFunctionName(), new ValueUnion(funcTerm));
 
 		return funcTerm;
 	}
@@ -797,7 +815,7 @@ public class ParseTreeEvaluator {
 			throws ParseTreeEvaluatorException {
 		FunctionTerm funcTermInput = (FunctionTerm) funcTermObj;
 		String functionName = funcTermInput.getFunctionName();
-		ValueUnion funcTermStoredVal = varMap.get(functionName);
+		ValueUnion funcTermStoredVal = varMap.getVarValue(functionName);
 		if (funcTermStoredVal == null) {
 			throw new UndefinedFunctionException("Undefined function: \"" + functionName + "\"");
 		}
@@ -870,13 +888,12 @@ public class ParseTreeEvaluator {
 	    varMap.clear();
 	}
 
-
-    public Map<String, ValueUnion> getVarMap() {
+    public PlatoVarMap getVarMap() {
         return varMap;
     }
 
     public ValueUnion getFromVarMap(final String varName) {
-        return varMap.get(varName);
+        return varMap.getVarValue(varName);
     }
 
 	/* ~Methods */

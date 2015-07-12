@@ -6,6 +6,7 @@ public class ParseTreeMathTexifier {
 	/* Member variables */
 	/* Constants */
 	public final static String parsingErrString = "[Parsing failed: Syntax error]";
+    public final static String MATH_TEXIFICATION_FAILED_STRING = "[Conversion to Math Tex failed]";
 	
 	private HashMap<String, String []> sumString2MathTexInstrMap = new HashMap<String, String []>();/* For stringization to Math TeX noatation */
 	private HashMap<String, String> terminal2TexNotationMap = new HashMap<String, String>();
@@ -68,7 +69,7 @@ public class ParseTreeMathTexifier {
 	/* Currently based on recursion. */
 	public String texify(Node n) {
 		if ( n == null ) {
-			return parsingErrString;
+			return MATH_TEXIFICATION_FAILED_STRING;
 		}
 					
 		String s = "";

@@ -13,12 +13,19 @@ public class ValueUnion {
 
 	private ValueType valueType;
 	private Object value;
+    private String description = "";
 
 	/* Constructors */
 	public ValueUnion(double dv) {
 		valueType = ValueType.Double;
 		value = dv;
 	}
+
+    public ValueUnion(double dv, String description) {
+        valueType = ValueType.Double;
+        value = dv;
+        this.description = description;
+    }
 
 	public ValueUnion(Matrix mv) {
 		valueType = ValueType.Matrix;
@@ -35,17 +42,27 @@ public class ValueUnion {
         value = physicalAmount;
     }
 
+    public ValueUnion(final Amount physicalAmount, final String description) {
+        this.valueType   = ValueType.PhysicalQuantity;
+        this.value       = physicalAmount;
+        this.description = description;
+    }
+
 	/* Value getters */
 	public Object get() {
 		return value;
 	}
 
 	public double getDouble() {
-		if (valueType != ValueType.Double) {
-			throw new RuntimeException("Incorrect value type");
-		}
+		if (valueType == ValueType.Double) {
+            return (Double) value;
+        } else if (valueType == ValueType.PhysicalQuantity) {
+            Amount valueAmount = (Amount) value;
+            return valueAmount.getEstimatedValue();
+		} else {
+            throw new RuntimeException("Incorrect value type for getDouble(): " + ValueType.Double.toString());
+        }
 
-		return (Double) value;
 	}
 
 	public Matrix getMatrix() {
@@ -70,5 +87,13 @@ public class ValueUnion {
         }
 
         return (Amount) value;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public ValueType getValueType() {
+        return valueType;
     }
 }
