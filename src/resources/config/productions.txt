@@ -46,8 +46,8 @@ _MATH_TEX_      n0 { n1 }
 _EVAL_ 			n1
 
 --- # 6
-EXPONENTIATION		(ASSOC: ASSOC_RIGHT_2B: EXPONENTIATION) # Base ^ Exponent.
-EXPR_LV4			# The head is the base.
+EXPONENTIATION		# (ASSOC: ASSOC_RIGHT_2B: EXPONENTIATION) # Base ^ Exponent.
+EXPR_LV0_6			# The head is the base.
 EXPR_LV4 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
 _STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
 _MATH_TEX_      { n0 } ^ { n1 }
@@ -61,23 +61,32 @@ _STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
 _MATH_TEX_      { n0 } ^ { n1 }
 _EVAL_			EXPONENTIATION(n0, n1)
 
+
+
 --- # 8
-EXPR_LV1			# Nodes that can be the argument of a function
+EXPR_LV0_6			# Nodes that can be the argument of a function
 DECIMAL_NUMBER
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
 --- # 9
-EXPR_LV1
+EXPR_LV0_6
 VARIABLE_EVALUATED
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 10
+--- # 36
+EXPR_LV0_6
+SQROOT_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_ 			n0
+
+--- # 23
 EXPR_LV1
-EXPONENTIATION
+EXPR_LV0_6
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
@@ -95,13 +104,6 @@ FRACTION_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
-
---- # 36
-EXPR_LV1
-SQROOT_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_ 			n0
 
 --- #
 EXPR_LV1
@@ -137,11 +139,25 @@ _STRINGIZE_ 	( n0 )
 _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
 
+---
+EXPR_LV1_5
+EXPR_LV1
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+---
+EXPR_LV1_5
+EXPONENTIATION
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
 --- # 15
 MULTIPLICATION		(ASSOC: ASSOC_LEFT_3B: MULTIPLICATION)
 MULT_OP
-EXPR_LV1 : {AlignMiddle(0), PositionWest(0)} # 1st number
-EXPR_LV1 : {AlignMiddle(0), PositionEast(0)} # 2nd number
+EXPR_LV1_5 : {AlignMiddle(0), PositionWest(0)} # 1st number
+EXPR_LV1_5 : {AlignMiddle(0), PositionEast(0)} # 2nd number
 _STRINGIZE_		( n1 _SPACE_ * _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_MULTIPLY_OP(n0) { n2 }
 _EVAL_			MULTIPLY(n1, n2)
@@ -233,6 +249,13 @@ _EVAL_			n0
 --- # 24
 EXPR_LV2
 MULTIPLICATION
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+--- # 24.1
+EXPR_LV2
+EXPONENTIATION
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0

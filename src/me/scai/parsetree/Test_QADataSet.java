@@ -165,7 +165,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_8", "((5 / 8) * (4 / 7))").withMathTex("{\\frac{5}{8}}\\ast{\\frac{4}{7}}").withEvalRes(0.35714285714), /* Multiplication of two fractions */
             new QADataEntry("sim_9", "((4 + ((2 * 3) * 5)) + 8)").withMathTex("{{4}+{{{2}\\ast{3}}\\ast{5}}}+{8}").withEvalRes(42.0),
             //new QADataEntry("sim_10", "((9 - (4 * 8)) + 2)"), /* Why does this token set cause error? */
-            new QADataEntry("sim_11", "((1 / 2) ^ 3)").withEvalRes("{\\frac{1}{2}}^{3}").withEvalRes(0.125), /* Exponentiation of a fraction */
+//            new QADataEntry("sim_11", "((1 / 2) ^ 3)").withEvalRes("{\\frac{1}{2}}^{3}").withEvalRes(0.125), /* Exponentiation of a fraction */ //TODO: Confirm that this is not valid grammar
             new QADataEntry("sim_12", "((1 + (10 * 20)) + 3)").withEvalRes("{{1}+{{10}\\ast{20}}}+{3}").withEvalRes(204.0),
             //new QADataEntry("sim_13", "(1 * (2 ^ 3))").withEvalRes("{1}\\ast{{2}^{3}}").withEvalRes(8.0), // TODO: New AlignBottomNorthPastMiddle leads to failure here
             new QADataEntry("sim_14", "((4 ^ 5) * (2 ^ 3))").withEvalRes("{{4}^{5}}\\ast{{2}^{3}}").withEvalRes(8192.0),
@@ -232,8 +232,13 @@ public class Test_QADataSet {
             new QADataEntry("104", "(2 ^ 34)").withMathTex("{2}^{34}").withEvalRes("17179869184.0"),
             new QADataEntry("106", "(258 ^ 76)").withMathTex("{258}^{76}"),
             new QADataEntry("107", "(256 ^ 481)").withMathTex("{256}^{481}"),
-            new QADataEntry("114", "(2 ^ (3 ^ 4))").withMathTex("{2}^{{3}^{4}}"), /* AssocRight2B */
-            new QADataEntry("115", "(0.5 ^ (2 ^ 3))").withMathTex("{0.5}^{{2}^{3}}").withEvalRes(0.00390625), /* AssocRight2B */
+            new QADataEntry("114", "(2 ^ (3 ^ 4))").withMathTex("{2}^{{3}^{4}}"),
+            new QADataEntry("115", "(0.5 ^ (2 ^ 3))").withMathTex("{0.5}^{{2}^{3}}").withEvalRes(0.00390625),
+            new QADataEntry("sim_170", "(1 + (2 ^ 3))").withMathTex("{1}+{{2}^{3}}").withEvalRes(9),
+            new QADataEntry("sim_171", "((1 + 2) + (B ^ 4))").withMathTex("{{1}+{2}}+{{B}^{4}}").withEvalRes(3),
+            new QADataEntry("sim_172", "(a*(b ^ 2))").withMathTex("{a}{{b}^{2}}").withEvalRes(0),
+            new QADataEntry("sim_173", "((2 ^ 7) / 8)").withMathTex("\\frac{{2}^{7}}{8}").withEvalRes(16),
+            new QADataEntry("sim_174", "((x ^ 2)*(y ^ 3))").withMathTex("{{x}^{2}}{{y}^{3}}").withEvalRes(0),
         };
         QADataSuites.put("exponentiation", new QADataSuite(entries_exponentiation, false));
         

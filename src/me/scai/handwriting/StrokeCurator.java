@@ -1,5 +1,8 @@
 package me.scai.handwriting;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.util.List;
 
 public interface StrokeCurator {
@@ -46,4 +49,18 @@ public interface StrokeCurator {
 	
 	/* Force setting the recognition winner */
 	public void forceSetRecogWinner(int tokenIdx, String recogWinner);
+
+    /* Serialization methods */
+    /* Get serialized form of the strokes */
+    public List<String> getSerializedStrokes();
+
+    public String getSerializedTokenSet();
+
+    public String getSerializedConstStrokeIndices();
+
+    public JsonElement getStateSerialization();
+    public String getStateSerializationString();
+
+    /* Injection of serialized state */
+    public void injectSerializedState(JsonObject json);
 }

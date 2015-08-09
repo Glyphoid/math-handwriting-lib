@@ -559,8 +559,8 @@ public class GraphicalProduction {
 			 t_assocType == AssocType.AssocRight2B) {
 			if ( t_rhs.length != 2 )
 				throw new RuntimeException("Under the current association type, the number of rhs (" + t_rhs.length + ") is incorrect.");
-			if ( !t_rhs[0].equals(t_rhs[1]) )
-				throw new RuntimeException("Under the current association type, it is unacceptable that the 2nd and 3rd RHS items are different");
+//			if ( !t_rhs[0].equals(t_rhs[1]) )
+//				throw new RuntimeException("Under the current association type, it is unacceptable that the 1st and 2nd RHS items are different");
 		}
 		else if ( t_assocType == AssocType.AssocLeft3B ) {
 			if ( t_rhs.length != 3 )
