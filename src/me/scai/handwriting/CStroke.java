@@ -9,8 +9,8 @@ public class CStroke {
 	private LinkedList<Float> ys = new LinkedList<Float>();
 	private boolean bNormalized = false;
 	
-	public float min_x = Float.MAX_VALUE, max_x = Float.MIN_VALUE; /* Record bounds */
-	public float min_y = Float.MAX_VALUE, max_y = Float.MIN_VALUE; /* Record bounds */
+	public float min_x = Float.POSITIVE_INFINITY, max_x = Float.NEGATIVE_INFINITY; /* Record bounds */
+	public float min_y = Float.POSITIVE_INFINITY, max_y = Float.NEGATIVE_INFINITY; /* Record bounds */
 	/* ~Member variables */
 
 	/* Constructor: no initial point: empty initially */
