@@ -56,5 +56,8 @@ public interface HandwritingEngine {
     /* Get the currently defined item of the specified key */
     public ValueUnion getFromVarMap(String varName)
         throws HandwritingEngineException;
+
+    public void removeEngine()
+        throws HandwritingEngineException;
 }
 
