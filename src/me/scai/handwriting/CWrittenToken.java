@@ -74,7 +74,7 @@ public class CWrittenToken {
         tokenBounds[0] = Float.POSITIVE_INFINITY;
         tokenBounds[1] = Float.POSITIVE_INFINITY;
         tokenBounds[2] = Float.NEGATIVE_INFINITY;
-        tokenBounds[2] = Float.NEGATIVE_INFINITY;
+        tokenBounds[3] = Float.NEGATIVE_INFINITY;
 	}
 	
 	/* Constructor: From JSON string */
