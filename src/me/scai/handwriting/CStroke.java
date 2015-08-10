@@ -46,10 +46,18 @@ public class CStroke {
 		xs.add(x);
 		ys.add(y);
 		
-		if ( x < min_x ) min_x = x;
-		if ( x > max_x ) max_x = x;
-		if ( y < min_y ) min_y = y;
-		if ( y > max_y ) max_y = y;
+		if ( x < min_x ) {
+            min_x = x;
+        }
+		if ( x > max_x ) {
+            max_x = x;
+        }
+		if ( y < min_y ) {
+            min_y = y;
+        }
+		if ( y > max_y ) {
+            max_y = y;
+        }
 	}
 	
 	/* Get the number of points */

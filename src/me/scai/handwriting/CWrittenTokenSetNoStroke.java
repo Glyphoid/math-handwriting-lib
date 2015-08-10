@@ -59,8 +59,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		
 	@Override
 	public void calcBounds() {
-		min_x = min_y = Float.MAX_VALUE;
-		max_x = max_y = Float.MIN_VALUE;
+		min_x = min_y = Float.POSITIVE_INFINITY;
+		max_x = max_y = Float.NEGATIVE_INFINITY;
 		
 		for (int i = 0; i < tokens.size(); ++i) {
 			float [] bounds = tokens.get(i).getBounds();
@@ -286,8 +286,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		tokens.clear();
 		tokenIDs.clear();
 		
-		min_x = min_y = Float.MAX_VALUE;
-		max_x = max_y = Float.MIN_VALUE;
+		min_x = min_y = Float.POSITIVE_INFINITY;
+		max_x = max_y = Float.NEGATIVE_INFINITY;
 		
 		nt = 0;
 	}

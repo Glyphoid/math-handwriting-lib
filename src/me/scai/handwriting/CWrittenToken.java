@@ -71,10 +71,10 @@ public class CWrittenToken {
 	
 	private void initializeTokenBounds() {
 	    /* Initialize the token bounds: [min_x, min_y, max_x, max_y] */        
-        tokenBounds[0] = Float.MAX_VALUE;
-        tokenBounds[1] = Float.MAX_VALUE;
-        tokenBounds[2] = Float.MIN_VALUE;
-        tokenBounds[2] = Float.MIN_VALUE;
+        tokenBounds[0] = Float.POSITIVE_INFINITY;
+        tokenBounds[1] = Float.POSITIVE_INFINITY;
+        tokenBounds[2] = Float.NEGATIVE_INFINITY;
+        tokenBounds[2] = Float.NEGATIVE_INFINITY;
 	}
 	
 	/* Constructor: From JSON string */
