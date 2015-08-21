@@ -3,6 +3,7 @@ package me.scai.parsetree;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
 import me.scai.handwriting.CStroke;
 import me.scai.handwriting.CWrittenTokenSet;
 import me.scai.parsetree.evaluation.PlatoVarMap;
@@ -55,6 +56,10 @@ public interface HandwritingEngine {
 
     /* Get the currently defined item of the specified key */
     public ValueUnion getFromVarMap(String varName)
+        throws HandwritingEngineException;
+
+    /* Inject state data */
+    public void injectState(JsonObject stateData)
         throws HandwritingEngineException;
 
     public void removeEngine()

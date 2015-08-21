@@ -224,8 +224,7 @@ public class ParseTreeEvaluator {
 
 			try {
 				evalRes = m.invoke(this, args);
-			} 
-			catch (InvocationTargetException iteExc) {
+			}  catch (InvocationTargetException iteExc) {
 				throw new ParseTreeEvaluatorException(
 						"Evaluation failed due to InvocationTargetException");
 			} 
@@ -251,7 +250,9 @@ public class ParseTreeEvaluator {
 			return ((Double) x);
 		} else if (x.getClass().equals(String.class)) {
 			return Double.parseDouble((String) x);
-		} else {
+		} else if (x.getClass().equals(ValueUnion.class)) {
+            return ((ValueUnion) x).getDouble();
+        } else {
 			throw new RuntimeException("Unexpected type: " + x.getClass());
 		}
 	}

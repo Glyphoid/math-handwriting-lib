@@ -61,8 +61,6 @@ _STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
 _MATH_TEX_      { n0 } ^ { n1 }
 _EVAL_			EXPONENTIATION(n0, n1)
 
-
-
 --- # 8
 EXPR_LV0_6			# Nodes that can be the argument of a function
 DECIMAL_NUMBER
@@ -83,6 +81,13 @@ SQROOT_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_ 			n0
+
+--- # 36
+EXPR_LV0_6
+VARIABLE_EXPONENTIATION
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0 # EVALUATE_SIGMA_TERM(n0)
 
 --- # 23
 EXPR_LV1
@@ -105,13 +110,13 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- #
-EXPR_LV1
-USER_FUNCTION_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			EVALUATE_USER_FUNCTION(n0)
-
+# --- #
+# EXPR_LV1
+# USER_FUNCTION_TERM
+# _STRINGIZE_		n0
+# _MATH_TEX_      n0
+# _EVAL_			EVALUATE_USER_FUNCTION(n0)
+#
 --- # 12
 EXPR_LV1			# Addition with parentheses
 ADDITION
@@ -163,7 +168,7 @@ _MATH_TEX_      { n1 } GET_TEX_MULTIPLY_OP(n0) { n2 }
 _EVAL_			MULTIPLY(n1, n2)
 
 ---
-VARIABLE_EXPONENTIATION    # The exponentiation of a variable, e.g., a^2, a^b, a^sqrt(a), a^(1/3) (without the parentheses) 
+VARIABLE_EXPONENTIATION    # The exponentiation of a variable, e.g., a^2, a^b, a^sqrt(a), a^(1/3) (without the parentheses). TODO: Given that it includes so many different types of stuff now, perhaps it should be renamed
 VARIABLE_EVALUATED
 EXPR_LV4 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
 _STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
@@ -190,6 +195,13 @@ USER_FUNCTION_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			EVALUATE_USER_FUNCTION(n0)
+
+--- # 36
+VARIABLE_EXPONENTIATION
+SIGMA_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_SIGMA_TERM(n0)
 
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
@@ -376,13 +388,13 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 
-EXPR_LV1
-MATH_FUNCTION_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			n0
-
+# --- #
+# EXPR_LV1
+# MATH_FUNCTION_TERM
+# _STRINGIZE_		n0
+# _MATH_TEX_      n0
+# _EVAL_			n0
+#
 --- # 41
 VARIABLE
 VARIABLE_SYMBOL
@@ -649,10 +661,3 @@ USER_FUNCTION_DEF
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
-
---- #
-ROOT
-SIGMA_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			EVALUATE_SIGMA_TERM(n0)

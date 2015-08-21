@@ -731,6 +731,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         /* Deserialization */
         @Override
         public void injectSerializedState(JsonObject state) {
+            /* Clear state before injecting the state */
+            clear();
+
             /* strokes */
             if (!(state.has(SERIALIZATION_STROKES_KEY) && state.get(SERIALIZATION_STROKES_KEY).isJsonArray())) {
                 throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_STROKES_KEY);
@@ -740,44 +743,15 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             strokes = new LinkedList<>();
             for (int i = 0; i < jsonStrokes.size(); ++i) {
                 try {
-                    strokes.add(CStrokeJsonHelper.json2CStroke(gson.toJson(jsonStrokes.get(i))));
+                    CStroke stroke = CStrokeJsonHelper.json2CStroke(gson.toJson(jsonStrokes.get(i)));
+
+                    addStroke(stroke);
                 } catch (CStrokeJsonHelper.CStrokeJsonConversionException exc) {
                     throw new RuntimeException("Failed to convert stroke of index " + i + " to CStroke, due to: " + exc.getMessage());
                 }
             }
 
-            /* strokesUN */
-            if (!(state.has(SERIALIZATION_STROKES_UN_KEY) && state.get(SERIALIZATION_STROKES_UN_KEY).isJsonArray())) {
-                throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_STROKES_UN_KEY);
-            }
-
-            JsonArray jsonStrokesUN = state.get(SERIALIZATION_STROKES_UN_KEY).getAsJsonArray();
-            strokesUN = new LinkedList<>();
-            for (int i = 0; i < jsonStrokesUN.size(); ++i) {
-                try {
-                    strokesUN.add(CStrokeJsonHelper.json2CStroke(gson.toJson(jsonStrokesUN.get(i))));
-                } catch (CStrokeJsonHelper.CStrokeJsonConversionException exc) {
-                    throw new RuntimeException("Failed to convert stroke of index " + i + " to CStroke, due to: " + exc.getMessage());
-                }
-            }
-
-            /* Token set */
-            if (!(state.has(SERIALIZATION_WRITTEN_TOKEN_SET_KEY) && state.get(SERIALIZATION_WRITTEN_TOKEN_SET_KEY).isJsonObject())) {
-                throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_STROKES_KEY);
-            }
-
-            wtSet = CWrittenTokenSetJsonHelper.jsonObj2CWrittenTokenSet(state.get(SERIALIZATION_WRITTEN_TOKEN_SET_KEY).getAsJsonObject());
-
-            wtRecogWinners = new LinkedList<>();
-            wtRecogPs      = new LinkedList<>();
-    //        wtRecogMaxPs   = new LinkedList<>();
-
-            for (int i = 0; i < wtSet.getNumTokens(); ++i) {
-                wtRecogWinners.add(wtSet.recogWinners.get(i));
-                wtRecogPs.add(wtSet.recogPs.get(i));
-            }
-
-            /* Constituent stroke indices */
+            /* Merge according to constituent stroke indices */
             if (!(state.has(SERIALIZATION_CONST_STROKE_INDICES_KEY) && state.get(SERIALIZATION_CONST_STROKE_INDICES_KEY).isJsonArray())) {
                 throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_CONST_STROKE_INDICES_KEY);
             }
@@ -786,8 +760,6 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             if (jsonWtConstStrokeIdx == null) {
                 throw new RuntimeException("jsonWtConstStrokeIdx");
             }
-
-            wtConstStrokeIdx = new LinkedList<>();
 
             for (int i = 0; i < jsonWtConstStrokeIdx.size(); ++i) {
                 if (!jsonWtConstStrokeIdx.get(i).isJsonArray()) {
@@ -801,75 +773,28 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                     strokeIndices[j] = jsonStrokeIndices.get(j).getAsInt();
                 }
 
-                wtConstStrokeIdx.add(strokeIndices);
+                mergeStrokesAsToken(strokeIndices);
             }
 
-            /* wtRecogPs */
-            JsonArray jsonWtRecogPs = state.get(SERIALIZATION_WT_RECOG_PS_KEY).getAsJsonArray();
-            if (jsonWtRecogPs == null) {
-                throw new RuntimeException("jsonWtRecogPs");
+            /* Force set recognition winners */
+            if (!(state.has(SERIALIZATION_WT_RECOG_WINNERS_KEY) && state.get(SERIALIZATION_WT_RECOG_WINNERS_KEY).isJsonArray())) {
+                throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_WT_RECOG_WINNERS_KEY);
             }
 
-            wtRecogPs = new LinkedList<>();
-            for (int i = 0; i < jsonWtRecogPs.size(); ++i) {
-                if ( !jsonWtRecogPs.get(i).isJsonArray() ) { //DEBUG
-                    System.out.println("jsonWtRecogPs.get(i) is not JsonArray: " + jsonWtRecogPs.get(i)); //DEBUG
-                    wtRecogPs.add(new double[0]);
-                } else {
-                    JsonArray pArray = jsonWtRecogPs.get(i).getAsJsonArray();
-                    double[] ps = new double[pArray.size()];
+            if (!(state.has(SERIALIZATION_WT_RECOG_PS_KEY) && state.get(SERIALIZATION_WT_RECOG_PS_KEY).isJsonArray())) {
+                throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_WT_RECOG_PS_KEY);
+            }
 
-                    for (int j = 0; j < pArray.size(); ++j) {
-                        ps[j] = pArray.get(j).getAsDouble();
-                    }
+            JsonArray jsonRecogWinners = state.get(SERIALIZATION_WT_RECOG_WINNERS_KEY).getAsJsonArray();
+//            JsonArray jsonWtRecogPs = state.get(SERIALIZATION_WT_RECOG_PS_KEY).getAsJsonArray();
 
-                    wtRecogPs.add(ps);
+            List<String> currRecogWinners = getWrittenTokenRecogWinners();
+            for (int i = 0; i < jsonRecogWinners.size(); ++i) {
+                if ( !currRecogWinners.get(i).equals(jsonRecogWinners.get(i).getAsString()) ) {
+                    forceSetRecogWinner(i, jsonRecogWinners.get(i).getAsString());
                 }
             }
 
-            /* wtRecogMaxPs */
-            JsonArray jsonWtRecogMaxPs = state.get(SERIALIZATION_WT_RECOG_MAX_PS_KEY).getAsJsonArray();
-            if (jsonWtRecogMaxPs == null) {
-                throw new RuntimeException("jsonWtRecogMaxPs");
-            }
-
-            wtRecogMaxPs = new LinkedList<>();
-            for (int i = 0; i < jsonWtRecogMaxPs.size(); ++i) {
-                wtRecogMaxPs.add(jsonWtRecogMaxPs.get(i).getAsDouble());
-            }
-
-            /* strokeState */
-            JsonArray jsonStrokeState = state.get(SERIALIZATION_STROKE_STATE_KEY).getAsJsonArray();
-            if (jsonStrokeState == null) {
-                throw new RuntimeException("jsonStrokeState");
-            }
-
-            strokeState = new LinkedList<>();
-            for (int i = 0; i < jsonStrokeState.size(); ++i) {
-                strokeState.add(jsonStrokeState.get(i).getAsInt());
-            }
-
-//            /* wtRecogWinners */
-//            wtRecogWinners = gson.fromJson(state.get(SERIALIZATION_WT_RECOG_WINNERS_KEY), wtRecogWinners.getClass());
-
-            /* wtCtrXs and wtCtrYs */
-            JsonArray jsonWtCtrXs = state.get(SERIALIZATION_WT_CTR_XS_KEY).getAsJsonArray();
-            JsonArray jsonWtCtrYs = state.get(SERIALIZATION_WT_CTR_YS_KEY).getAsJsonArray();
-            if (jsonWtCtrXs == null) {
-                throw new RuntimeException("jsonWtCtrXs");
-            }
-            if (jsonWtCtrXs == null) {
-                throw new RuntimeException("jsonWtCtrXs");
-            }
-
-
-            assert jsonWtCtrXs.size() == jsonWtCtrYs.size();
-            wtCtrXs = new LinkedList<>();
-            wtCtrYs = new LinkedList<>();
-            for (int i = 0; i < jsonWtCtrXs.size(); ++i) {
-                wtCtrXs.add(jsonWtCtrXs.get(i).getAsFloat());
-                wtCtrYs.add(jsonWtCtrYs.get(i).getAsFloat());
-            }
         }
 
         /* ~Methods */
