@@ -110,13 +110,6 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
-# --- #
-# EXPR_LV1
-# USER_FUNCTION_TERM
-# _STRINGIZE_		n0
-# _MATH_TEX_      n0
-# _EVAL_			EVALUATE_USER_FUNCTION(n0)
-#
 --- # 12
 EXPR_LV1			# Addition with parentheses
 ADDITION
@@ -188,6 +181,15 @@ MATH_FUNCTION_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
+
+--- # 14            # Math function term with parentheses around it
+VARIABLE_EXPONENTIATION
+MATH_FUNCTION_TERM
+PARENTHESIS_L : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
+PARENTHESIS_R : {AlignMiddle(0), PositionEast(0)}	# Right parenthesis
+_STRINGIZE_ 	( n0 )
+_MATH_TEX_      \left( n0 \right)
+_EVAL_ 			n0
 
 ---
 VARIABLE_EXPONENTIATION
@@ -388,13 +390,6 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
-# --- #
-# EXPR_LV1
-# MATH_FUNCTION_TERM
-# _STRINGIZE_		n0
-# _MATH_TEX_      n0
-# _EVAL_			n0
-#
 --- # 41
 VARIABLE
 VARIABLE_SYMBOL

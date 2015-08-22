@@ -319,7 +319,10 @@ public class Test_QADataSet {
             new QADataEntry("sim_89", "(sin(A) + cos(B))").withMathTex("{\\sin{\\left(A\\right)}}+{\\cos{\\left(B\\right)}}"),
             new QADataEntry("sim_90", "(2*sin(gr_al))").withMathTex("{2}{\\sin{\\left(\\alpha\\right)}}"),
             new QADataEntry("sim_86", "ln(88)").withMathTex("\\ln{\\left(88\\right)}").withEvalRes(4.47733681448),
-            // new QADataEntry("sim_91", "(sin(A)*cos(B))", "{\\sin{\\left(A\\right)}}{\\cos{\\left(B\\right)}}"), //TODO
+//              new QADataEntry("sim_91", "(sin(A)*cos(B))", "{\\sin{\\left(A\\right)}}{\\cos{\\left(B\\right)}}"), //TODO
+            new QADataEntry("sim_183", "cos((0*sin(1)))").withMathTex("\\cos{{0}{\\sin{1}}}").withEvalRes(1.0),
+            new QADataEntry("sim_184", "((cos(a))*(sin(b)))").withMathTex("{\\left(\\cos{a}\\right)}{\\left(\\sin{b}\\right)}").withEvalRes(0.0), // TODO
+            new QADataEntry("sim_185", "((sin(A))*(cos(B)))").withMathTex("{\\left(\\sin{A}\\right)}{\\left(\\cos{B}\\right)}").withEvalRes(0.0)
         };
         QADataSuites.put("function", new QADataSuite(entries_function, false));
         
