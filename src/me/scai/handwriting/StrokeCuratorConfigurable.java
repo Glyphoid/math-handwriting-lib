@@ -1,5 +1,6 @@
 package me.scai.handwriting;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ArrayList;
@@ -321,24 +322,24 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         }
 
         @Override
-        public int [] removeLastToken() {
-            if ( wtSet.empty() )
-                return null;
+        public int [] removeToken(int idxToken) {
+            if ( idxToken >= wtSet.getNumTokens() ) {
+                throw new IllegalArgumentException("idxToken exceeds number of tokens");
+            }
 
-            int i = wtSet.nTokens() - 1;
+            wtCtrXs.remove(idxToken);
+            wtCtrYs.remove(idxToken);
 
-            wtCtrXs.remove(i);
-            wtCtrYs.remove(i);
-
-            wtSet.deleteToken(i);
-            wtRecogWinners.remove(i);
-            wtRecogPs.remove(i);
-            wtRecogMaxPs.remove(i);
+            wtSet.deleteToken(idxToken);
+            wtRecogWinners.remove(idxToken);
+            wtRecogPs.remove(idxToken);
+            wtRecogMaxPs.remove(idxToken);
 
             /* Make copy of the constituent indices */
-            int [] constIdx = new int[wtConstStrokeIdx.get(i).length];
-            for (int n = 0; n < constIdx.length; ++n)
-                constIdx[n] = wtConstStrokeIdx.get(i)[n];
+            int[] constIdx = new int[wtConstStrokeIdx.get(idxToken).length];
+            for (int n = 0; n < constIdx.length; ++n) {
+                constIdx[n] = wtConstStrokeIdx.get(idxToken)[n];
+            }
 
             for (int n = constIdx.length - 1; n >= 0; --n) {
                 strokes.remove(constIdx[n]);
@@ -346,9 +347,67 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                 strokeState.remove(constIdx[n]);
             }
 
-            wtConstStrokeIdx.remove(i);
+            wtConstStrokeIdx.remove(idxToken);
+
+            /* Some of the remaining stroke indicies may need to be decremented */
+            for (int j = 0; j < wtConstStrokeIdx.size(); ++j) {
+                int[] strokeIndices = wtConstStrokeIdx.get(j);
+
+                for (int k = 0; k < strokeIndices.length; ++k) {
+                    strokeIndices[k] = getDecrementedStrokeIndexAfterStrokesRemoval(strokeIndices[k], constIdx);
+                }
+            }
 
             return constIdx;
+        }
+
+        private int getDecrementedStrokeIndexAfterStrokesRemoval(int oldIdx, int[] removedIndices) {
+            assert(removedIndices.length > 0);
+
+            Arrays.sort(removedIndices);
+
+            int nBelowOldIdx = 0;
+            for (int removedIndex : removedIndices) {
+                if (removedIndex < oldIdx) {
+                    nBelowOldIdx++;
+                }
+            }
+
+            return oldIdx - nBelowOldIdx;
+        }
+
+        @Override
+        public int [] removeLastToken() {
+            final int idxToken = wtSet.nTokens() - 1;
+
+            return removeToken(idxToken);
+//            if ( wtSet.empty() )
+//                return null;
+//
+//            int i = wtSet.nTokens() - 1;
+//
+//            wtCtrXs.remove(i);
+//            wtCtrYs.remove(i);
+//
+//            wtSet.deleteToken(i);
+//            wtRecogWinners.remove(i);
+//            wtRecogPs.remove(i);
+//            wtRecogMaxPs.remove(i);
+//
+//            /* Make copy of the constituent indices */
+//            int [] constIdx = new int[wtConstStrokeIdx.get(i).length];
+//            for (int n = 0; n < constIdx.length; ++n)
+//                constIdx[n] = wtConstStrokeIdx.get(i)[n];
+//
+//            for (int n = constIdx.length - 1; n >= 0; --n) {
+//                strokes.remove(constIdx[n]);
+//                strokesUN.remove(constIdx[n]);
+//                strokeState.remove(constIdx[n]);
+//            }
+//
+//            wtConstStrokeIdx.remove(i);
+//
+//            return constIdx;
         }
 
         @Override
@@ -781,9 +840,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                 throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_WT_RECOG_WINNERS_KEY);
             }
 
-            if (!(state.has(SERIALIZATION_WT_RECOG_PS_KEY) && state.get(SERIALIZATION_WT_RECOG_PS_KEY).isJsonArray())) {
-                throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_WT_RECOG_PS_KEY);
-            }
+//            if (!(state.has(SERIALIZATION_WT_RECOG_PS_KEY) && state.get(SERIALIZATION_WT_RECOG_PS_KEY).isJsonArray())) {
+//                throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_WT_RECOG_PS_KEY);
+//            }
 
             JsonArray jsonRecogWinners = state.get(SERIALIZATION_WT_RECOG_WINNERS_KEY).getAsJsonArray();
 //            JsonArray jsonWtRecogPs = state.get(SERIALIZATION_WT_RECOG_PS_KEY).getAsJsonArray();

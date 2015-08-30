@@ -87,7 +87,7 @@ EXPR_LV0_6
 VARIABLE_EXPONENTIATION
 _STRINGIZE_		n0
 _MATH_TEX_      n0
-_EVAL_			n0 # EVALUATE_SIGMA_TERM(n0)
+_EVAL_			n0
 
 --- # 23
 EXPR_LV1
@@ -205,6 +205,13 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			EVALUATE_SIGMA_TERM(n0)
 
+--- # 36
+VARIABLE_EXPONENTIATION
+PI_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_PI_TERM(n0)
+
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
 VARIABLE_EXPONENTIATION                                     # Left variable
@@ -318,7 +325,6 @@ _EVAL_			DIVIDE(n2, n1)
 --- # 30
 SQROOT
 ROOT_OP
-# EXPR_LV4 : {AlignBottom(0), AlignLeftWithin(0), AlignRightWithin(0), HeightRelationLess(0)}
 EXPR_LV4 : {AlignBottomWithin(0), AlignLeftWithin(0), AlignRightWithin(0), HeightRelationLess(0)}
 _STRINGIZE_		( sqrt _OPEN_PAREN_ n1 _CLOSE_PAREN_ )
 _MATH_TEX_      \sqrt { n1 }
@@ -576,12 +582,22 @@ _EVAL_			DEFINE_USER_FUNCTION(n1, n2)
 ---
 SIGMA_TERM  # The head part of the Sigma sum term: Sigma, the assignment and lower bound (e.g., i = 1) and upper bound (e.g, 10)
 TERMINAL(gr_Si)
-ASSIGNMENT_STATEMENT    : {AlignCenter(0), PositionNorth(0)} # Assignment and lower bound 
-EXPR_LV4			    : {AlignCenter(0), PositionSouth(0)} # Upper bound
+ASSIGNMENT_STATEMENT    : {AlignCenter(0), WidthRelationLess(0), PositionNorth(0)} # Assignment and lower bound
+EXPR_LV4			    : {AlignCenter(0), WidthRelationLess(0), PositionSouth(0)} # Upper bound
 EXPR_LV4                : {AlignMiddle(0), PositionEast(0)}  # Body of the Sigma sum
-_STRINGIZE_		Sigma ( n1 _SPACE_ : _SPACE_ ( n2 ) ) ( n3 )
+_STRINGIZE_		Sum ( n1 _SPACE_ : _SPACE_ ( n2 ) ) ( n3 )
 _MATH_TEX_      \sum \limits_ { n1 } ^ { n2 } { n3 }
 _EVAL_			DEF_SIGMA_TERM(n1, n2, n3)
+
+---
+PI_TERM  # The head part of the Pi product term: Pi, the assignment and lower bound (e.g., i = 1) and upper bound (e.g, 10)
+TERMINAL(gr_Pi)
+ASSIGNMENT_STATEMENT    : {AlignCenter(0), PositionNorth(0)} # Assignment and lower bound
+EXPR_LV4			    : {AlignCenter(0), PositionSouth(0)} # Upper bound
+EXPR_LV4                : {AlignMiddle(0), PositionEast(0)}  # Body of the Pi product
+_STRINGIZE_		Prod ( n1 _SPACE_ : _SPACE_ ( n2 ) ) ( n3 )
+_MATH_TEX_      \prod \limits_ { n1 } ^ { n2 } { n3 }
+_EVAL_			DEF_PI_TERM(n1, n2, n3)
 
 --- #
 ROW_CONTENT

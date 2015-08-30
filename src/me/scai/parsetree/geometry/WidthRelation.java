@@ -40,24 +40,28 @@ public class WidthRelation extends GeometricRelation {
 		float v;
 		if ( widthRelationType == WidthRelationType.WidthRelationEqual ) {
 			v = 1.0f - Math.abs(wTested - wInRel) / wMean;
-			if ( v > 0.75f ) /* Slack */
-				v = 1.0f;
-		}
-		else if ( widthRelationType == WidthRelationType.WidthRelationGreater  ) {
+			if ( v > 0.75f ) { /* Slack */
+                v = 1.0f;
+            }
+		} else if ( widthRelationType == WidthRelationType.WidthRelationGreater  ) {
 			v = (wTested - wInRel) / wInRel;
-			if ( v > 0.5f )
-				v = 1.0f;
-		}
-		else /* widthRelationType == WidthRelationType.WidthRelationLess */ {
+			if ( v > 0.5f ) {
+                v = 1.0f;
+            }
+		} else {
+            assert widthRelationType == WidthRelationType.WidthRelationLess;
+
 			v = (wInRel - wTested) / wInRel;
-			if ( v > 0.5f )
-				v = 1.0f;
+			if ( v > 0.5f ) {
+                v = 1.0f;
+            }
 		}
 		
-		if ( v > 1.0f )
-			v = 1.0f;
-		else if ( v < 0.0f )
-			v = 0.0f;
+		if ( v > 1.0f ) {
+            v = 1.0f;
+        } else if ( v < 0.0f ) {
+            v = 0.0f;
+        }
 		
 		return v;
 	}

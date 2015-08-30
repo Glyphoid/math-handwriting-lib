@@ -20,8 +20,16 @@ public interface StrokeCurator {
 	
 	/* Remove the last stroke */
 //	void removeLastStroke();
-	
-	/* Remove the last token */
+
+    /**
+     * Remove i-th token
+     * @param     idxToken: Index to the token
+     * @return    Indices to constituent strokes that made up the removed token */
+    public int [] removeToken(int idxToken);
+
+	/**
+	 * Remove the last token
+	 * @return    Indices to constituent strokes that made up the removed token */
 	public int [] removeLastToken();
 	
 	/* Delete all strokes */

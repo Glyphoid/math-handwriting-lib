@@ -386,7 +386,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_121", "((2*f(3)) + (4*g(5)))").withMathTex("{{2}{f{\\left(3\\right)}}}+{{4}{g{\\left(5\\right)}}}"), // Custom function term as level-1 expression
             new QADataEntry("sim_175", "(p(x) = (3*(x ^ 2)))").withMathTex("{p{\\left(x\\right)}}={{3}{{x}^{2}}}"),
             new QADataEntry("sim_176", "p(4)").withEvalRes(48.0),
-            new QADataEntry("sim_182", "p(Sigma((b = 1) : (2))(b))").withMathTex("p{\\left(\\sum\\limits_{{b}={1}}^{2}{b}\\right)}").withEvalRes(27.0),
+            new QADataEntry("sim_182", "p(Sum((b = 1) : (2))(b))").withMathTex("p{\\left(\\sum\\limits_{{b}={1}}^{2}{b}\\right)}").withEvalRes(27.0),
             new QADataEntry("sim_177", "(q(x) = (((3*x) + (x ^ 2)) / (sqrt(x))))").withMathTex("{q{\\left(x\\right)}}={\\frac{{{3}{x}}+{{x}^{2}}}{\\sqrt{x}}}"),
             new QADataEntry("sim_178", "q((3 + 1))").withEvalRes(14.0),
             new QADataEntry("sim_179", "q((p(1) + 1))").withMathTex("q{\\left({p{\\left(1\\right)}}+{1}\\right)}").withEvalRes(14.0)
@@ -407,21 +407,29 @@ public class Test_QADataSet {
         
         /* Sigma-pi term: Stateful */
         QADataEntry[] entries_sigmaPiTerm = {
-            new QADataEntry("sim_124", "Sigma((i = 1) : (8))(i)").withMathTex("\\sum\\limits_{{i}={1}}^{8}{i}").withEvalRes(36.0),     // Sigma sum term
-            new QADataEntry("sim_125", "Sigma((n = -2) : ((sqrt(4))))((n ^ 2))").withMathTex("\\sum\\limits_{{n}={-{2}}}^{\\sqrt{4}}{{n}^{2}}").withEvalRes(10.0),     // Sigma sum term
-            new QADataEntry("sim_180", "(3*Sigma((a = 1) : (2))(a))").withMathTex("{3}{\\sum\\limits_{{a}={1}}^{2}{a}}").withEvalRes(9.0),
-            new QADataEntry("sim_181", "(1 + Sigma((a = 2) : (3))(a))").withMathTex("{1}+{\\sum\\limits_{{a}={2}}^{3}{a}}").withEvalRes(6.0)
+            /* Sigma sum term */
+            new QADataEntry("sim_124", "Sum((i = 1) : (8))(i)").withMathTex("\\sum\\limits_{{i}={1}}^{8}{i}").withEvalRes(36.0),
+            new QADataEntry("sim_125", "Sum((n = -2) : ((sqrt(4))))((n ^ 2))").withMathTex("\\sum\\limits_{{n}={-{2}}}^{\\sqrt{4}}{{n}^{2}}").withEvalRes(10.0),     // Sigma sum term
+            new QADataEntry("sim_180", "(3*Sum((a = 1) : (2))(a))").withMathTex("{3}{\\sum\\limits_{{a}={1}}^{2}{a}}").withEvalRes(9.0),
+            new QADataEntry("sim_181", "(1 + Sum((a = 2) : (3))(a))").withMathTex("{1}+{\\sum\\limits_{{a}={2}}^{3}{a}}").withEvalRes(6.0),
+            new QADataEntry("sim_187", "Sum((a = 1) : (2))(Sum((b = 1) : (3))((a*b)))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{a}{b}}}"), // TODO .withEvalRes(18.0), not 28.0
+//            new QADataEntry("sim_188", "Sum((a = 1) : (2))(Sum((b = 1) : (3))((a*b)))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{a}{b}}}"), // TODO
+//            new QADataEntry("sim_189", "Sum((a = 1) : (2))(Sum((b = 1) : (3))((a*b)))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{a}{b}}}"), // TODO
+
+            /* Pi product term */
+            new QADataEntry("sim_186", "Prod((a = 1) : (3))(a)").withMathTex("\\prod\\limits_{{a}={1}}^{3}{a}").withEvalRes(6.0)
         };
         QADataSuites.put("sigmaPiTerm", new QADataSuite(entries_sigmaPiTerm, true));
+
         
         /* Sigma-pi term evaluation context closure */
         QADataEntry[] entries_sigmaPiTermEvaluationContextClosure = {
             new QADataEntry("sim_133", "(a = 2)").withMathTex("{a}={2}").withEvalRes(2.0),
             new QADataEntry("sim_135", "(i = 7)").withMathTex("{i}={7}").withEvalRes(7.0),
             new QADataEntry("sim_136", "i").withMathTex("i").withEvalRes(7.0),
-            new QADataEntry("sim_134", "Sigma((i = 1) : (5))((i ^ a))").withMathTex("\\sum\\limits_{{i}={1}}^{5}{{i}^{a}}").withEvalRes(55.0),
+            new QADataEntry("sim_134", "Sum((i = 1) : (5))((i ^ a))").withMathTex("\\sum\\limits_{{i}={1}}^{5}{{i}^{a}}").withEvalRes(55.0),
             new QADataEntry("sim_136", "i").withMathTex("i").withEvalRes(7.0),
-            new QADataEntry("sim_134", "Sigma((i = 1) : (5))((i ^ a))").withMathTex("\\sum\\limits_{{i}={1}}^{5}{{i}^{a}}").withEvalRes(55.0),
+            new QADataEntry("sim_134", "Sum((i = 1) : (5))((i ^ a))").withMathTex("\\sum\\limits_{{i}={1}}^{5}{{i}^{a}}").withEvalRes(55.0),
         };
         QADataSuites.put("sigmaPiTermEvaluationContextClosure", new QADataSuite(entries_sigmaPiTermEvaluationContextClosure, true));
 

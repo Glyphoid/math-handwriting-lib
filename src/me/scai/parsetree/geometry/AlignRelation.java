@@ -137,6 +137,7 @@ public class AlignRelation extends GeometricRelation {
             else if ( alignType == AlignType.AlignBottomWithin ) {
                 edgeDiff = bndsInRel[3] - bndsTested[3];
                 v = edgeDiff / (szMean * 0.05f); /* TODO: 0.05 is somewhat ad hoc - Correct it */
+
             }
 			else if ( alignType == AlignType.AlignTopNorthPastTop ||
                       alignType == AlignType.AlignBottomSouthPastBottom ) {

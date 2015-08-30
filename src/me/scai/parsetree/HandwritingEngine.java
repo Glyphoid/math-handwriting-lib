@@ -18,6 +18,10 @@ public interface HandwritingEngine {
     public void removeLastToken()
         throws HandwritingEngineException;
 
+    /* Remove i-th token */
+    public void removeToken(int idxToken)
+        throws HandwritingEngineException;
+
     /* Move a token
      * @returns  old bounds
      */

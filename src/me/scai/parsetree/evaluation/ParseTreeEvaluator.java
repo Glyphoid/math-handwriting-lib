@@ -206,7 +206,9 @@ public class ParseTreeEvaluator {
 
 				if (lhsStackTop().equals("USER_FUNCTION_DEF") && j == 1 || 
 				        lhsStackTop().equals("SIGMA_TERM") && j == 0 ||
-				        lhsStackTop().equals("SIGMA_TERM") && j == 2) {
+				        lhsStackTop().equals("SIGMA_TERM") && j == 2 || // Body of the Sigma term. Pass as is. Do not evaluate.
+                        lhsStackTop().equals("PI_TERM") && j == 0 ||
+                        lhsStackTop().equals("PI_TERM") && j == 2) { // Body of the Pi term. Pass as is. Do not evaluate.
 					/* Special case for function body definition */
 					/* TODO: Do not hard code this */
 					args[j] = n.ch[chIdx];
@@ -859,8 +861,31 @@ public class ParseTreeEvaluator {
 	    /* Define the body */
 	    sigmaTerm.defineBody((Node) bodyObj);
 	    
-	    return sigmaTerm; /* TODO */
+	    return sigmaTerm;
 	}
+
+    public Object def_pi_term(Object assignStatementObj, Object upperLimitObj, Object bodyObj)
+            throws ParseTreeEvaluatorException {
+        Node assignStatement = (Node) assignStatementObj;
+        Node argNameNode = assignStatement.ch[1].ch[0]; /* TODO: Get rid of grammar dependency */
+        FunctionArgumentList argList = new FunctionArgumentList(argNameNode.termName);
+
+        Node lowerLimitNode = assignStatement.ch[2];	/* TODO: Get rid of grammar dependency */
+        double lowerLimit = getDouble(this.eval(lowerLimitNode));
+
+        double upperLimit = getDouble(upperLimitObj);
+
+        ArgumentRange argRange = new UniformArgumentRange(lowerLimit, 1.0, upperLimit);
+        List<ArgumentRange> argRanges = new ArrayList<>();
+        argRanges.add(argRange);
+
+        PiTerm piTerm = new PiTerm("_pi_term_", argList, argRanges); /* TODO: name that makes more sense */
+
+	    /* Define the body */
+        piTerm.defineBody((Node) bodyObj);
+
+        return piTerm;
+    }
 	
 	public Object evaluate_sigma_term(Object sigmaTermObj)
             throws ParseTreeEvaluatorException {
@@ -883,7 +908,29 @@ public class ParseTreeEvaluator {
                 
         return retVal;
     }
-	
+
+    public Object evaluate_pi_term(Object piTermObj)
+            throws ParseTreeEvaluatorException {
+        PiTerm piTerm = (PiTerm) piTermObj;
+
+        /* TODO: Function overloading by arguments */
+
+//        ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
+
+        int funcStackPos = funcNameStack.size();
+        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, piTerm.argList.numArgs()));
+
+        /* Push function name to call stack */
+        funcNameStack.add("PiTerm_" + piTerm.hashCode()); /* TODO: Better naming */
+
+        Object retVal = piTerm.evaluate(this, funcArgNames);
+
+        /* Pop from call stack */
+        funcNameStack.pop();
+
+        return retVal;
+    }
+
 	/* Clear variable map: Including user-defined variables and functions */
 	public void clearUserData() {
 	    varMap.clear();
