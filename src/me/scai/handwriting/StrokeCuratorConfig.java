@@ -32,32 +32,38 @@ class TokenPairRule {
 			float val = 0.0F;
 			if (predType.equals("relativeWidthDifference")) {
 				val = GeometryHelper.absoluteRelativeDifference(boundsA[2] - boundsA[0], boundsB[2] - boundsB[0]);
-			}
-			else if (predType.equals("relativeHeightDifference")) {
+			} else if (predType.equals("relativeHeightDifference")) {
 				val = GeometryHelper.absoluteRelativeDifference(boundsA[3] - boundsA[1], boundsB[3] - boundsB[1]);
-			}			
-			else if (predType.equals("relativeLeftXOffset")) {
+			} else if (predType.equals("relativeLeftXOffset")) {
 				val = GeometryHelper.absoluteRelativeLeftXOffset(boundsA, boundsB);
-			}
-			else if (predType.equals("relativeRightXOffset")) {
+			} else if (predType.equals("relativeRightXOffset")) {
 				val = GeometryHelper.absoluteRelativeRightXOffset(boundsA, boundsB);
-			}
-			else if (predType.equals("relativeRightToLeftOffset")) {
+			} else if (predType.equals("relativeRightToLeftOffset")) {
 				val = GeometryHelper.relativeRightToLeftOffset(boundsA, boundsB);
-			}
-			else if (predType.equals("relativeTopYOffset")) {
+			} else if (predType.equals("relativeTopYOffset")) {
 				val = GeometryHelper.absoluteRelativeTopYOffset(boundsA, boundsB);
-			}
-			else if (predType.equals("relativeBottomYOffset")) {
+			} else if (predType.equals("relativeBottomYOffset")) {
 				val = GeometryHelper.absoluteRelativeBottomYOffset(boundsA, boundsB);
-			}
-			else if (predType.equals("numTokensInBetweenX")) {
+			} else if (predType.equals("numTokensInBetweenX")) {
 				val = (float) GeometryHelper.getNumTokensInBetween("X", boundsA, boundsB, wtCtrXs, wtCtrYs);				
-			}
-			else if (predType.equals("numTokensInBetweenY")) {
+			} else if (predType.equals("numTokensInBetweenY")) {
 				val = (float) GeometryHelper.getNumTokensInBetween("Y", boundsA, boundsB, wtCtrXs, wtCtrYs);				
-			}
-			else {
+			} else if (predType.equals("isWidthAContainingWidthB")) {
+                if (GeometryHelper.pctOverlap(boundsA[0], boundsA[2], boundsB[0], boundsB[2], false) == 1.0f) {
+                    val = 1.0f;
+                } else {
+                    val = 0.0f;
+                }
+
+            } else if (predType.equals("isHeightABelowHeightBNonOverlapping")) {
+                if (GeometryHelper.pctOverlap(boundsA[1], boundsA[3], boundsB[1], boundsB[3], false) == 0.0f
+                    && boundsA[1] > boundsB[3]) {
+                    val = 1.0f;
+                } else {
+                    val = 0.0f;
+                }
+
+            } else {
 				val = 0.0F; /* TODO: Implement */
 			}
 			

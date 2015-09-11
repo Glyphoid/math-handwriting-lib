@@ -26,8 +26,29 @@
                         "numTokensInBetweenX == 0"
                     ],
                 "recommendation" : "mergeAs: \"root\""
+            },
+            {
+                "tokenA" : "gr_io",
+                "tokenB" : ".",
+                "predicaments" :
+                    [
+                        "isWidthAContainingWidthB == 1",
+                        "isHeightABelowHeightBNonOverlapping == 1",
+                        "numTokensInBetweenY == 0"
+                    ],
+                "recommendation" : "mergeAs: \"i\""
+            },
+            {
+                "tokenA" : "j",
+                "tokenB" : ".",
+                "predicaments" :
+                    [
+                        "isWidthAContainingWidthB == 1",
+                        "isHeightABelowHeightBNonOverlapping == 1",
+                        "numTokensInBetweenY == 0"
+                    ],
+                "recommendation" : "mergeAs: \"j\""
             }
-            
         ],
     "mergePartners":        
         {
