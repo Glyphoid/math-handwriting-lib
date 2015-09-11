@@ -690,7 +690,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		/* Token engine settings */
 		final boolean bLoadEngineFromDisk = false; /* false: train; true: test */
 		
-		final int hiddenLayerSize1 = 140; /* Orig: 100 */
+		final int hiddenLayerSize1 = 185; /* Orig: 100 --> 140 */
 		final int hiddenLayerSize2 = 0;
 		final int trainMaxIter = 200;
 		final double trainThreshErr = 0.001;
@@ -725,7 +725,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 					trainMaxIter, 
 					trainThreshErr);
 			
-			/* Load token degeneracy */
+			/* Load terminal set and token degeneracy */
 			final String RESOURCES_DIR = "resources";
 			final String RESOURCES_CONFIG_DIR = "config";
 			final String TERMINAL_CONFIG_FN = "terminals.json";	

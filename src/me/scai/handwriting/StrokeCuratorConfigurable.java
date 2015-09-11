@@ -867,4 +867,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         public float getMergePValueRatioThresh() {
             return mergePValueRatioThresh;
         }
+
+        @Override
+        public List<String> getAllTokenNames() {
+            return tokenEngine.getAllTokenNames();
+        }
 }

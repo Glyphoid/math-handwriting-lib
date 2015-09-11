@@ -71,4 +71,9 @@ public interface StrokeCurator {
 
     /* Injection of serialized state */
     public void injectSerializedState(JsonObject json);
+
+    /**
+     * Get all possible toke names (NOT display names)
+     */
+    public abstract List<String> getAllTokenNames();
 }

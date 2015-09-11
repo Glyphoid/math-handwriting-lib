@@ -68,5 +68,11 @@ public interface HandwritingEngine {
 
     public void removeEngine()
         throws HandwritingEngineException;
+
+    /**
+     * @return All possible toke names (Not their display names)
+     */
+    public List<String> getAllTokenNames()
+        throws HandwritingEngineException;
 }
 

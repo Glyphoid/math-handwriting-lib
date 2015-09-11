@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import org.encog.neural.networks.BasicNetwork;
 
@@ -64,10 +65,14 @@ public abstract class TokenRecogEngine implements Serializable {
                             double t_threshErrRate) {}
 	
 	/* Non-abstract methods */
-	/* Get the i-th token name */	
+	/* Get the i-th token name */
 	public String getTokenName(int i) {
 		return tokenNames.get(i);
 	}
+
+    public List<String> getAllTokenNames() {
+        return tokenNames;
+    }
 		
 	public int getTrainMaxIter() {
 		return trainMaxIter;
