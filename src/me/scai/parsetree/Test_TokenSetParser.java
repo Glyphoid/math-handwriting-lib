@@ -321,7 +321,17 @@ public class Test_TokenSetParser {
 	public void testParser_function() {
 	    testParser("function");
 	}
-	
+
+    @Test
+    public void testParser_basicMatrix() {
+        testParser("basicMatrix");
+    }
+
+    @Test
+    public void testParser_matrixWithHoles() {
+        testParser("matrixWithHoles");
+    }
+
 	@Test
     public void testParser_basicMatrixStateful() {
         testParser("basicMatrixStateful");

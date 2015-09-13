@@ -120,10 +120,11 @@ public class GeometryHelper {
 //		if ( pm < 1.0f )
 //			pm = 0.0f;
 		
-		if ( pm > 1.0f )
-			pm = 1.0f;
-		else if ( pm < 0.0f )
-			pm = 0.0f;
+		if ( pm > 1.0f ) {
+            pm = 1.0f;
+        } else if ( pm < 0.0f ) {
+            pm = 0.0f;
+        }
 		
 		return pm;
 	}

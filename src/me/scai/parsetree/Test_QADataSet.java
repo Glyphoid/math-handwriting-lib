@@ -321,7 +321,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_86", "ln(88)").withMathTex("\\ln{\\left(88\\right)}").withEvalRes(4.47733681448),
 //              new QADataEntry("sim_91", "(sin(A)*cos(B))", "{\\sin{\\left(A\\right)}}{\\cos{\\left(B\\right)}}"), //TODO
             new QADataEntry("sim_183", "cos((0*sin(1)))").withMathTex("\\cos{{0}{\\sin{1}}}").withEvalRes(1.0),
-            new QADataEntry("sim_184", "((cos(a))*(sin(b)))").withMathTex("{\\left(\\cos{a}\\right)}{\\left(\\sin{b}\\right)}").withEvalRes(0.0), // TODO
+            new QADataEntry("sim_184", "((cos(a))*(sin(b)))").withMathTex("{\\left(\\cos{a}\\right)}{\\left(\\sin{b}\\right)}").withEvalRes(0.0),
             new QADataEntry("sim_185", "((sin(A))*(cos(B)))").withMathTex("{\\left(\\sin{A}\\right)}{\\left(\\cos{B}\\right)}").withEvalRes(0.0)
         };
         QADataSuites.put("function", new QADataSuite(entries_function, false));
@@ -334,22 +334,33 @@ public class Test_QADataSet {
             new QADataEntry("sim_73", "[1, 2, 3]").withMathTex("\\begin{bmatrix}1&2&3\\end{bmatrix}"),   // Row vector
             new QADataEntry("sim_74", "[12, 34]",  "\\begin{bmatrix}12&34\\end{bmatrix}"),   // Row vector
             new QADataEntry("sim_75", "[(1 / 2), (3 / 5)]").withMathTex("\\begin{bmatrix}\\frac{1}{2}&\\frac{3}{5}\\end{bmatrix}"), // Row vector with fractions
-            new QADataEntry("sim_76", "[(3 ^ 4), 5]").withMathTex("\\begin{bmatrix}{3}^{4}&5\\end{bmatrix}"),                 // Row vector with exponentiation
             new QADataEntry("sim_77", "[a, b]").withMathTex("\\begin{bmatrix}a&b\\end{bmatrix}"),                       // Row vector with symbols
             new QADataEntry("sim_78", "[(a*b)]").withMathTex("\\begin{bmatrix}{a}{b}\\end{bmatrix}"),                    // Row vector with symbols
             new QADataEntry("sim_79", "[(a*b), c, (x*y)]").withMathTex("\\begin{bmatrix}{a}{b}&c&{x}{y}\\end{bmatrix}"),           // Row vector with symbols
             new QADataEntry("sim_80", "[1, 2; 3, 4]").withMathTex("\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}"),                // Matrix: 2x2
             new QADataEntry("sim_81", "[(a*b), c; x, (y*z)]").withMathTex("\\begin{bmatrix}{a}{b}&c\\\\x&{y}{z}\\end{bmatrix}"),      // Matrix: 2x2, with symbols
             new QADataEntry("sim_82", "[(a*b), c; x, (y*u)]").withMathTex("\\begin{bmatrix}{a}{b}&c\\\\x&{y}{u}\\end{bmatrix}"),      // Matrix: 2x2, with symbols
-            new QADataEntry("sim_83", "[(1 / 2), 3; 4, 9]").withMathTex("\\begin{bmatrix}\\frac{1}{2}&3\\\\4&9\\end{bmatrix}"),     // Matrix: 2x2, with symbols and fraction
             new QADataEntry("sim_84", "[(a ^ 2), b; 0, (a ^ 3)]").withMathTex("\\begin{bmatrix}{a}^{2}&b\\\\0&{a}^{3}\\end{bmatrix}"),  // Matrix: 2x2, with symbols and fraction
             new QADataEntry("sim_85", "[2, 4, 6; 1, 3, 5; 0, 7, 9]").withMathTex("\\begin{bmatrix}2&4&6\\\\1&3&5\\\\0&7&9\\end{bmatrix}"), // Matrix: 3x3, with symbols and fraction
             new QADataEntry("sim_92", "[(2 ^ 3); (3 ^ 4)]").withMathTex("\\begin{bmatrix}{2}^{3}\\\\{3}^{4}\\end{bmatrix}"),
             new QADataEntry("sim_93", "[(A ^ 2); (B ^ 3)]").withMathTex("\\begin{bmatrix}{A}^{2}\\\\{B}^{3}\\end{bmatrix}"),
-            // new QADataEntry("sim_94", "[(x ^ 2); (y ^ 3)]"), //TODO
+            new QADataEntry("sim_94", "[(x ^ 2); (y ^ 3)]"),
+            new QADataEntry("sim_83", "[(1 / 2), 3; 4, 9]").withMathTex("\\begin{bmatrix}\\frac{1}{2}&3\\\\4&9\\end{bmatrix}"),
+            new QADataEntry("sim_190", "[(x ^ 2), (1 / y); 3, 4]").withMathTex("\\begin{bmatrix}{x}^{2}&\\frac{1}{y}\\\\3&4\\end{bmatrix}"),
+            new QADataEntry("sim_191", "[(sqrt((1 + 2))), (sqrt(3)); 4, (sqrt(5))]").withMathTex("\\begin{bmatrix}\\sqrt{{1}+{2}}&\\sqrt{3}\\\\4&\\sqrt{5}\\end{bmatrix}"),
+            new QADataEntry("sim_193", "[(1 / 2), (3 / 4); (5 / 6), (7 / 8)]").withMathTex("\\begin{bmatrix}\\frac{1}{2}&\\frac{3}{4}\\\\\\frac{5}{6}&\\frac{7}{8}\\end{bmatrix}"),
+//            new QADataEntry("sim_192", "[(sqrt((1 + 2))), (sqrt(3)); 4, (sqrt(5))]").withMathTex("\\begin{bmatrix}\\sqrt{{1}+{2}}&\\sqrt{3}\\\\4&\\sqrt{5}\\end{bmatrix}") //TODO: This takes too long to parse.
         };
         QADataSuites.put("basicMatrix", new QADataSuite(entries_basicMatrix, false));
-        
+
+        /* Matrix with holes */
+        QADataEntry[] entries_matrixWithHoles = {
+//                new QADataEntry("sim_76", "[(3 ^ 4), 5]").withMathTex("\\begin{bmatrix}{3}^{4}&5\\end{bmatrix}"),                //TODO: With empty (zero) elments // Row vector with exponentiation
+//                new QADataEntry("sim_194", "[2, 3]").withMathTex("\\begin{bmatrix}{3}^{4}&5\\end{bmatrix}"),                //TODO: With empty (zero) elments // Row vector with exponentiation
+                new QADataEntry("sim_195", "[0, 2, 4]")
+        };
+        QADataSuites.put("matrixWithHoles", new QADataSuite(entries_matrixWithHoles, false));
+
         /* Basic Matrix: Stateful */
         QADataEntry[] entries_basicMatrixStateful = {
             new QADataEntry("sim_95", "(A = [1, 2; 3, 4])").withMathTex("{A}={\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}}"),  // Assignment of matrix value

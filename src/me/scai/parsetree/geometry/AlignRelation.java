@@ -15,9 +15,11 @@ public class AlignRelation extends GeometricRelation {
 		AlignRightWithin,
         AlignBottomWithin,
 		AlignCenter,   /* Center of the left-right dimension */
+        AlignWidthOverlapGreaterThanHalf,
 		AlignWidthInclusion, /* Within the width range of the in-rel */
 		AlignBottomNorthPastMiddle, /* The bottom of the token should be more north than the middle of the in-rel token */
         AlignTopSouthPastMiddle,    /* The top of the token should be more south than the middle of the in-rel token */
+        AlignTopSouthPastMiddleNotTooFarSouth, /* Same as AlignTopSouthPastMiddle, but the top cannot be too far down */
 		AlignTopNorthPastTop, 		/* The top of the token should be more north than the top of the in-rel token */
         AlignBottomSouthPastBottom  /* The bottom of the token should be more south than the bottom of the in-rel token */
 	};
@@ -75,6 +77,7 @@ public class AlignRelation extends GeometricRelation {
 			 alignType == AlignType.AlignHeightInclusion || 
 			 alignType == AlignType.AlignBottomNorthPastMiddle ||
              alignType == AlignType.AlignTopSouthPastMiddle ||
+             alignType == AlignType.AlignTopSouthPastMiddleNotTooFarSouth ||
 			 alignType == AlignType.AlignTopNorthPastTop ||
              alignType == AlignType.AlignBottomSouthPastBottom ) { /* Align in the vertical dimension */
 			/* sz is height */
@@ -108,18 +111,25 @@ public class AlignRelation extends GeometricRelation {
 				v = 1 - edgeDiff / szMean;
 			}
 			else if ( alignType == AlignType.AlignBottomNorthPastMiddle ||
-                      alignType == AlignType.AlignTopSouthPastMiddle ) {
+                      alignType == AlignType.AlignTopSouthPastMiddle ||
+                      alignType == AlignType.AlignTopSouthPastMiddleNotTooFarSouth ) {
                 // New AlignBottomNorthPastMiddle
                 if ( alignType == AlignType.AlignBottomNorthPastMiddle ) {
                     float sb = bndsInRel[3] - pastMiddleDisplacementLB * szInRel;
                     float nb = bndsInRel[3] - pastMiddleDisplacementUB * szInRel;
 
                     v = (sb - bndsTested[3]) / (sb - nb);
-                } else { // AlignTopSouthPastMiddle
+                } else { // AlignTopSouthPastMiddle OR AlignTopSouthPastMiddleNotTooFarDown
                     float sb = bndsInRel[1] + pastMiddleDisplacementUB * szInRel;
                     float nb = bndsInRel[1] + pastMiddleDisplacementLB * szInRel;
 
                     v = (bndsTested[1] - nb) / (sb - nb);
+
+                    if (alignType == AlignType.AlignTopSouthPastMiddleNotTooFarSouth) {
+                        if (bndsTested[1] - bndsInRel[3] > szInRel * 1.0f) {     // This is the criterion for being too far south
+                            v = 0.0f;
+                        }
+                    }
                 }
 
                 // Old AlignBottomNorthPastMiddle
@@ -144,6 +154,9 @@ public class AlignRelation extends GeometricRelation {
                 if ( alignType == AlignType.AlignTopNorthPastTop ) {
                     float sb = bndsInRel[1] + pastEdgeDisplacementUB * szTested;
                     float nb = bndsInRel[1] + pastEdgeDisplacementLB * szTested;
+
+//                    float sb = bndsInRel[1] + pastEdgeDisplacementUB * szInRel;
+//                    float nb = bndsInRel[1] + pastEdgeDisplacementLB * szInRel;
 
                     v = (sb - bndsTested[1]) / (sb - nb);
                 } else { // AlignBottomSouthPastBottom
@@ -183,6 +196,10 @@ public class AlignRelation extends GeometricRelation {
 			                        (bndsInRel[0] + bndsInRel[2]) * 0.5f);
 				v = 1 - edgeDiff / szMean;
 			}
+            else if ( alignType == AlignType.AlignWidthOverlapGreaterThanHalf) {
+                v = GeometryHelper.pctOverlap(bndsInRel[0], bndsInRel[2], bndsTested[0], bndsTested[2], true);
+                v = v / 0.5f;
+            }
 			else if ( alignType == AlignType.AlignWidthInclusion ) {
 				float [] limsTested = new float[2];
 				float [] limsInRel = new float[2];

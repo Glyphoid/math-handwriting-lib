@@ -159,7 +159,7 @@ public class GraphicalProduction {
 	 *               information. 
 	 *               
 	 * Side effect input:
-	 *         remaainingSets: token sets after the head node is 
+	 *         remainingSets: token sets after the head node is
 	 *         parsed out. null if parsing is unsuccessful. 
 	 */
 	public Node attempt(final CWrittenTokenSetNoStroke tokenSet,

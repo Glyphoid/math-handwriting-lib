@@ -14,7 +14,9 @@ public class PositionRelation extends GeometricRelation {
 		PositionSouth,
 		PositionGenSouth, 
 		PositionNorth,
-		PositionGenNorth
+        PositionNorthNonOverlapping,
+		PositionGenNorth,
+        PositionGenNorthNonOverlapping
 		//PositionNorthwest, // TODO 
 		//PositionSoutheast, // TODO
 	}
@@ -83,9 +85,11 @@ public class PositionRelation extends GeometricRelation {
 			
 		}
 		else if ( positionType == PositionType.PositionSouth || 
-				  positionType == PositionType.PositionNorth || 
+				  positionType == PositionType.PositionNorth ||
+                  positionType == PositionType.PositionNorthNonOverlapping ||
 				  positionType == PositionType.PositionGenSouth || 
-				  positionType == PositionType.PositionGenNorth) {	/* sz is width */
+				  positionType == PositionType.PositionGenNorth ||
+                  positionType == PositionType.PositionGenNorthNonOverlapping) {	/* sz is width */
 			/* Staying bounds are left and right */
 			oldStayBnds[0] = bndsTested[0];
 			oldStayBnds[1] = bndsTested[2];
@@ -94,7 +98,9 @@ public class PositionRelation extends GeometricRelation {
 			newStayBnds[1] = bndsInRel[2];
 			
 			if ( positionType == PositionType.PositionNorth ||
-				 positionType == PositionType.PositionGenNorth) { 
+                 positionType == PositionType.PositionNorthNonOverlapping ||
+				 positionType == PositionType.PositionGenNorth ||
+                 positionType == PositionType.PositionGenNorthNonOverlapping) {
 //			if ( positionType == PositionType.PositionSouth ||
 //			     positionType == PositionType.PositionGenSouth) {
 				/* InRel is on the smaller side */	
@@ -118,29 +124,37 @@ public class PositionRelation extends GeometricRelation {
 		if ( positionType == PositionType.PositionGenEast || 
 			 positionType == PositionType.PositionGenWest ||
 			 positionType == PositionType.PositionGenNorth ||
+             positionType == PositionType.PositionGenNorthNonOverlapping ||
 		     positionType == PositionType.PositionGenSouth ) {
 			stayScore = 1.0f;
-		}
-		else {
+		} else {
 			stayScore = GeometryHelper.pctOverlap(oldStayBnds, newStayBnds);
 			if ( stayScore > 0.5f )
 				stayScore = 1.0f;
 		}
 		
 		float moveScore = GeometryHelper.pctMove(lesserMoveBnds, greaterMoveBnds);
+        if (positionType == PositionType.PositionNorthNonOverlapping ||
+            positionType == PositionType.PositionGenNorthNonOverlapping) {
+            moveScore = (moveScore > 1.0f) ? 1.0f : (moveScore * moveScore * moveScore * moveScore); // The 4th power is ad hoc?
+//            moveScore = (moveScore > 1.0f) ? 1.0f : 0.0f;
+        }
+
 		if ( positionType == PositionType.PositionGenEast || 
 				 positionType == PositionType.PositionGenWest ||
 				 positionType == PositionType.PositionGenNorth ||
-			     positionType == PositionType.PositionGenSouth )
+			     positionType == PositionType.PositionGenSouth ) {
 			/* Leniency designed specially for exponentiation */
-			moveScore = (float) Math.sqrt((double) moveScore);
+            moveScore = (float) Math.sqrt((double) moveScore);
 			/* TODO: is sqrt() function ad hoc? */
+        }
 		
 		float v = stayScore * moveScore;
-		if ( v < 0.0f ) 
-			v = 0.0f;
-		else if ( v > 1.0f )
-			v = 1.0f;
+		if ( v < 0.0f ) {
+            v = 0.0f;
+        } else if ( v > 1.0f ) {
+            v = 1.0f;
+        }
 		
 		return v;
 	}

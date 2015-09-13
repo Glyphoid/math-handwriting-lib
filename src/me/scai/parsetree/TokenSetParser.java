@@ -193,7 +193,7 @@ public class TokenSetParser implements ITokenSetParser {
                                     n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogWinner();
                                 }
 
-                            /* Writing data to outside variables */
+                                /* Writing data to outside variables */
                                 nodes[i][j] = n;
                                 maxGeomScores[i][j] = maxGeomScore[0];
                                 maxGeomScores_noFlag[i][j] = maxGeomScore[0];
@@ -222,6 +222,7 @@ public class TokenSetParser implements ITokenSetParser {
 			int[] t_idxMax2 = MathHelper.indexMax2D(maxGeomScores_noFlag);
 			float t_max2 = maxGeomScores_noFlag[t_idxMax2[0]][t_idxMax2[1]];
 
+
 			bToDrill = new boolean[maxGeomScores_noFlag.length][];
 			for (int i = 0; i < maxGeomScores_noFlag.length; ++i) {
 				bToDrill[i] = new boolean[maxGeomScores_noFlag[i].length];
@@ -240,7 +241,7 @@ public class TokenSetParser implements ITokenSetParser {
 
 		/* Second pass: Selective drill-down */
 //        Thread[] jobThreads2p = new Thread[idxValidProds.length]; /* Second-pass jobs */
-		for (int ii = 0; ii < idxValidProds.length; ++ii) {
+		for (int ii = 0; ii < idxValidProds.length; ++ii) { /* Iterate through valid productions */
             final int i = ii;
 
             final boolean[] bToDrill2p = bToDrill[i];
@@ -373,7 +374,12 @@ public class TokenSetParser implements ITokenSetParser {
                                     /************************************/
 
                                     currDrillDepth--;
+                                    if (d_maxGeomScore == 0.0f) {
+                                        break;  /* Because geometric mean will be calculated, if any of the score is zero, the result will also be zero */
+                                    }
+
                                     d_scores[k] = d_maxGeomScore;
+
                                     /* Is this right? Or should maxGeomScore be multiplied by the geometric mean of the d_maxGeomScores's? TODO */
                                 }
 
@@ -473,7 +479,9 @@ public class TokenSetParser implements ITokenSetParser {
 			/* Re-calculate the maximum */
 			idxMax2 = MathHelper.indexMax2D(maxGeomScores);
 			maxScore = maxGeomScores[idxMax2[0]][idxMax2[1]];
+
 		}
+
 
 		/* Optional: store result in hash map */
 		int idxBestProd = idxValidProds[idxMax2[0]];
@@ -607,10 +615,8 @@ public class TokenSetParser implements ITokenSetParser {
 		bParsedStack.push(false);
 		levelStack.push(0);
 
-		while (nStack.size() != 0) { /*
-									 * To possible actions in each iteration:
-									 * push or set child / pop
-									 */
+        /* Tree construction through depth-first traversal. Child nodes get build prior to parents (bottom-up). */
+		while (nStack.size() != 0) { /* Two possible actions in each iteration: push or set child / pop */
 			CWrittenTokenSetNoStroke[] rsStackTop = rsStack.getFirst();
 			Node nStackTop = nStack.getFirst();
 			boolean bParsedStackTop = bParsedStack.getFirst();
@@ -643,9 +649,43 @@ public class TokenSetParser implements ITokenSetParser {
 
 				int idxChild = n - 2;
 				Node ch = nStack.pop();
-				nStack.get(n - 2).setChild(idxChild, ch);
-				if (idxChild == 0)
-					bParsedStack.set(n - 1, true);
+
+                Node tParent = nStack.get(n - 2);
+                tParent.setChild(idxChild, ch);
+
+//                /* Check the match of row element counts between rows */
+//                if (idxChild == 0 && tParent.prodSumString.startsWith("COLUMN_CONTENT->COLUMN_CONTENT ROW_CONTENT") && tParent.ch[1] != null) {
+//                    assert(tParent.ch[1].lhs.equals("ROW_CONTENT")); // TODO: Grammar dependency removal
+//                    assert(ch.lhs.equals("COLUMN_CONTENT"));
+//
+//                    int rowElemCount = 0;
+//                    Node rowNode = tParent.ch[1];
+//                    while (rowNode.lhs.equals("ROW_CONTENT")) {
+//                        rowElemCount++;
+//                        rowNode = rowNode.ch[0];
+//                    }
+//
+//                    int newRowElemCount = 0;
+//                    if (ch.ch[0].prodSumString.startsWith("ROW_CONTENT")) {
+//                        rowNode = ch.ch[0];
+//                    } else {
+//                        rowNode = ch.ch[1];
+//                    }
+//                    while (rowNode.lhs.equals("ROW_CONTENT")) {
+//                        newRowElemCount++;
+//                        rowNode = rowNode.ch[0];
+//                    }
+//
+//                    if (rowElemCount != newRowElemCount) {
+//                        throw new RuntimeException("Mismatch between row sizes " + rowElemCount + " != " + newRowElemCount);
+//                    }
+//
+//                    int i26 = 26;
+//                }
+
+				if (idxChild == 0) {
+                    bParsedStack.set(n - 1, true);
+                }
 
 				bParsedStack.pop();
 				rsStack.pop();
@@ -665,14 +705,12 @@ public class TokenSetParser implements ITokenSetParser {
 					}
 
 					boolean bNodeIsTerminal = termSet.isTypeTerminal(nStackTop.rhsTypes[k]);
-					// if ( bNodeIsTerminal ) // DEBUG
-					// System.out.println("Stack operation: encountered termianl non-head node");
-					// // DEBUG
 
 					CWrittenTokenSetNoStroke t_remSet = remSets[k];
 					if (!bNodeIsTerminal) { /* This node is NT */						
-						if (t_remSet == null)
-							return null;
+						if (t_remSet == null) {
+                            return null;
+                        }
 
 						String tHashKey1 = t_remSet.toString() + "@" + nStackTop.rhsTypes[k];
 
@@ -694,14 +732,15 @@ public class TokenSetParser implements ITokenSetParser {
 						if (t_c_scores == null) {
 							return null;
 						}
+
 						int[] t_c_idxMax2 = MathHelper.indexMax2D(t_c_scores);
 						Node t_c_node = t_c_nodes[t_c_idxMax2[0]][t_c_idxMax2[1]];
 						CWrittenTokenSetNoStroke[] t_c_remSets = this.evalGeom2RemSetsMap.get(tHashKey2)[t_c_idxMax2[0]][t_c_idxMax2[1]];
 
 						/* Push onto stack */
-                        if (t_c_node == null) {
-                            int iii = 0; //DEBUG
-                        }
+//                        if (t_c_node == null) {
+//                            int iii = 0; //DEBUG
+//                        }
 
 						nStack.push(t_c_node);
 						rsStack.push(t_c_remSets);
