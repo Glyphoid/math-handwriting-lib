@@ -41,6 +41,7 @@ public class TokenSetParser implements ITokenSetParser {
 	private Map<String, CWrittenTokenSetNoStroke[][][]> evalGeom2RemSetsMap;
 
 	protected ParseTreeBiaser biaser;
+    protected ParseTreeMatrixProcessor matrixProcessor;
 
 	/* Methods */
 
@@ -53,6 +54,7 @@ public class TokenSetParser implements ITokenSetParser {
 		setRecursionGeomScoreRatioThresh(t_recursionGeomScoreRatioThresh);
 
 		biaser = new ParseTreeBiaser(gpSet);
+        matrixProcessor = new ParseTreeMatrixProcessor();
 	}
 
 	public void setRecursionGeomScoreRatioThresh(
@@ -102,7 +104,12 @@ public class TokenSetParser implements ITokenSetParser {
 		tokenSet.getAllTokensTerminalTypes(termSet);
 
 		Node n = parse(tokenSet, "ROOT");
+
+        /* Process bias (association) in grammar */
 		biaser.process(n);
+
+        /* Process matrix, e.g., default zeroes */
+        matrixProcessor.process(n);
 
 		return n;
 	}

@@ -383,29 +383,30 @@ public class GraphicalProduction {
 		int nRBs = TextHelper.numInstances(headLine, ")");
 		
 		if ( nLBs == 1 && nRBs == 1 ) {	/* Bias is included */
-			int iLB = headLine.indexOf("(");
-			int iRB = headLine.indexOf(")");
-			if ( iLB > iRB )
-				throw new Exception("Syntax error in line: \"" + headLine + "\": Wrong order of the left and right brackets");
-			
-			String assocStr = headLine.substring(iLB + 1, iRB).trim();
-			int [] idxColon = TextHelper.findAll(assocStr, ":");
-			if ( idxColon.length != 2 )
-				throw new Exception("Syntax error in line: \"" + headLine + "\": Number of colons is not equal to two");
-			
-			String assocHeaderStr = assocStr.substring(0, idxColon[0]).trim();
-			if ( !assocHeaderStr.equals("ASSOC") )
-				throw new Exception("Syntax error in line: \"" + headLine + "\": The string preceding the first colon is not as expected");
-			
-			String assocTypeStr = assocStr.substring(idxColon[0] + 1, idxColon[1]).trim();
-			if ( assocTypeStr.equals("ASSOC_LEFT_2A") )
-				t_assocType = AssocType.AssocLeft2A;
-			else if ( assocTypeStr.equals("ASSOC_RIGHT_2B") )
-				t_assocType = AssocType.AssocRight2B;
-			else if ( assocTypeStr.equals("ASSOC_LEFT_3B") )
-				t_assocType = AssocType.AssocLeft3B;
-			else
-				throw new Exception("Unrecognized association type: " + assocTypeStr);
+            int iLB = headLine.indexOf("(");
+            int iRB = headLine.indexOf(")");
+            if (iLB > iRB)
+                throw new Exception("Syntax error in line: \"" + headLine + "\": Wrong order of the left and right brackets");
+
+            String assocStr = headLine.substring(iLB + 1, iRB).trim();
+            int[] idxColon = TextHelper.findAll(assocStr, ":");
+            if (idxColon.length != 2)
+                throw new Exception("Syntax error in line: \"" + headLine + "\": Number of colons is not equal to two");
+
+            String assocHeaderStr = assocStr.substring(0, idxColon[0]).trim();
+            if (!assocHeaderStr.equals("ASSOC"))
+                throw new Exception("Syntax error in line: \"" + headLine + "\": The string preceding the first colon is not as expected");
+
+            String assocTypeStr = assocStr.substring(idxColon[0] + 1, idxColon[1]).trim();
+            if (assocTypeStr.equals("ASSOC_LEFT_2A")) {
+                t_assocType = AssocType.AssocLeft2A;
+            } else if (assocTypeStr.equals("ASSOC_RIGHT_2B")) {
+                t_assocType = AssocType.AssocRight2B;
+            } else if (assocTypeStr.equals("ASSOC_LEFT_3B")) {
+                t_assocType = AssocType.AssocLeft3B;
+            } else {
+                throw new Exception("Unrecognized association type: " + assocTypeStr);
+            }
 			
 			t_assocName = assocStr.substring(idxColon[1] + 1, assocStr.length()).trim();
 			if ( t_assocName.length() == 0 )
