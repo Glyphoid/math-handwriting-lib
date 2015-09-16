@@ -135,7 +135,9 @@ public class Test_TokenSetParser {
             String tokenSetFileName = entries[i].getTokenSetFileName();
             String tokenSetTrueString = entries[i].getCorrectParseRes();
             String tokenSetTrueMathTex = entries[i].getCorrectMathTex();
+            double[] tokenSetTrueEvalResRange = entries[i].getCorrectEvalResRange();
             Object tokenSetTrueEvalRes = entries[i].getCorrectEvalRes();
+
 
             /* Single out option */
             if (singleOutIdx != null && singleOutIdx.length > 0) {
@@ -208,25 +210,27 @@ public class Test_TokenSetParser {
             }
             
             /* Check eval result */
-            if (tokenSetTrueEvalRes != null) {
-                if (tokenSetTrueEvalRes.getClass().equals(Float.class)) {
-                    tokenSetTrueEvalRes = Double.valueOf((Float) tokenSetTrueEvalRes);
+            if (tokenSetTrueEvalRes != null && tokenSetTrueEvalRes.getClass().equals(String.class)) {
+
+            } else if (tokenSetTrueEvalResRange != null || tokenSetTrueEvalRes != null) {
+                /* Check type match */
+                assertTrue(evalRes.getClass().equals(Double.class) || evalRes.getClass().equals(String.class));
+
+                double evalResDbl;
+                if (evalRes.getClass().equals(String.class)) {
+                    evalResDbl = Double.parseDouble((String) evalRes);
+                }
+                else {
+                    evalResDbl = (Double) evalRes;
                 }
 
-                if (tokenSetTrueEvalRes.getClass().equals(Double.class)) {
-                    /* Check type match */
-                    assertTrue(evalRes.getClass().equals(Double.class) || evalRes.getClass().equals(String.class));
-                    
-                    double evalResDbl;
-                    if (evalRes.getClass().equals(String.class)) {
-                        evalResDbl = Double.parseDouble((String) evalRes);
-                    }
-                    else {
-                        evalResDbl = (Double) evalRes;
-                    }
-                    
-                    assertTrue(MathHelper.equalsTol(evalResDbl, (Double) tokenSetTrueEvalRes, evalResEqualityAbsTol));
+                if (tokenSetTrueEvalResRange != null) {
+                    assertTrue(evalResDbl >= tokenSetTrueEvalResRange[0]);
+                    assertTrue(evalResDbl <= tokenSetTrueEvalResRange[1]);
+                } else {
+                    MathHelper.equalsTol((Double) tokenSetTrueEvalRes, evalResDbl, evalResEqualityAbsTol);
                 }
+
             }
             
             
@@ -356,6 +360,11 @@ public class Test_TokenSetParser {
 	public void testParser_sigmaPiTermEvaluationContextClosure() {
 	    testParser("sigmaPiTermEvaluationContextClosure");
 	}
+
+    @Test
+    public void testParser_defIntegTerm() {
+        testParser("defIntegTerm");
+    }
 
     @Test
     public void testParser_performance() {

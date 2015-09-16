@@ -2,15 +2,16 @@ package me.scai.parsetree.evaluation;
 
 import java.util.List;
 
-abstract class SigmaPiTerm extends FunctionSigmaPiTerm {
+/* Parent class for sigma summation, pi product and integral terms */
+abstract class SigmaPiIntegralTerm extends FunctionSigmaPiIntegralTerm {
 	/* Member variables */
 	List<ArgumentRange> argumentRanges;
 
 	/* ~Member variables */
 
 	/* Constructor */
-	public SigmaPiTerm(String tFunctionName, FunctionArgumentList tArgList,
-			List<ArgumentRange> tArgRanges) {
+	public SigmaPiIntegralTerm(String tFunctionName, FunctionArgumentList tArgList,
+                               List<ArgumentRange> tArgRanges) {
 		super(tArgList);
 
 		if (tArgList.numArgs() != tArgRanges.size()) {
@@ -36,4 +37,8 @@ abstract class SigmaPiTerm extends FunctionSigmaPiTerm {
 
 		this.argumentRanges = tArgRanges;
 	}
+
+    public abstract Object evaluate(ParseTreeEvaluator evaluator,
+                                    List<String> tempArgNames)
+            throws ParseTreeEvaluatorException;
 }

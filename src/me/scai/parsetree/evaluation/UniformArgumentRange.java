@@ -9,12 +9,14 @@ class UniformArgumentRange implements ArgumentRange {
 	double maxVal;
 	double interval;
 
-	/* Constructor */
+	/* Constructor*/
 	public UniformArgumentRange(double tMinVal, double tInterval, double tMaxVal) {
 		this.minVal = tMinVal;
 		this.interval = tInterval;
 		this.maxVal = tMaxVal;
 	}
+
+
 
 	/* Methods */
 	@Override
@@ -41,4 +43,8 @@ class UniformArgumentRange implements ArgumentRange {
 
 		return vs;
 	}
+
+    public double getInterval() {
+        return interval;
+    }
 }

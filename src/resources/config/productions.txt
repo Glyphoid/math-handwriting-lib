@@ -199,7 +199,7 @@ _MATH_TEX_      n0
 _EVAL_			EVALUATE_USER_FUNCTION(n0)
 
 --- # 36
-VARIABLE_EXPONENTIATION
+VARIABLE_EXPONENTIATION     # TODO: Putting sigma, pi and definite integral terms under variable exponentiation is weird
 SIGMA_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
@@ -211,6 +211,13 @@ PI_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			EVALUATE_PI_TERM(n0)
+
+--- # 36
+VARIABLE_EXPONENTIATION
+DEF_INTEG_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_DEF_INTEG_TERM(n0)
 
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
@@ -487,15 +494,6 @@ _MATH_TEX_      \det
 _EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
 
 --- # 45
-MATH_FUNCTION_NAME  # Matrix function: "det"
-TERMINAL(d)
-TERMINAL(e)         : {AlignBottom(0), PositionEast(0)}
-TERMINAL(t)         : {AlignBottom(1), PositionEast(1)}
-_STRINGIZE_     n0 n1 n2
-_MATH_TEX_      \det
-_EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
-
---- # 45
 MATH_FUNCTION_NAME  # Matrix function: "rank"
 TERMINAL(r)
 TERMINAL(a)         : {AlignBottom(0), PositionEast(0)}
@@ -598,6 +596,18 @@ EXPR_LV4                : {AlignMiddle(0), PositionEast(0)}  # Body of the Pi pr
 _STRINGIZE_		Prod ( n1 _SPACE_ : _SPACE_ ( n2 ) ) ( n3 )
 _MATH_TEX_      \prod \limits_ { n1 } ^ { n2 } { n3 }
 _EVAL_			DEF_PI_TERM(n1, n2, n3)
+
+---
+DEF_INTEG_TERM  # Definite integral. The head part of the Pi product term: Pi, the assignment and lower bound (e.g., i = 1) and upper bound (e.g, 10)
+INTEG_OP
+EXPR_LV4                : {AlignCenter(0), PositionNorth(0)} # n1: Lower bound
+EXPR_LV4			    : {AlignCenter(0), PositionSouth(0)} # n2: Upper bound
+EXPR_LV4                : {AlignMiddle(0), PositionEast(0)}  # n3: Body of the integral (integrand)
+TERMINAL(d)             : {AlignMiddle(0), PositionEast(3)}  # n4: Letter "d"
+VARIABLE                : {AlignMiddle(0), PositionEast(4)}  # n5: Variable of integration
+_STRINGIZE_		Integ ( n5 = n1 _SPACE_ : _SPACE_ n2 ) ( n3 )
+_MATH_TEX_      \int_ { n1 } ^ { n2 } { n3 } d { n5 }
+_EVAL_			DEF_DEF_INTEG_TERM(n1, n2, n3, n5)  # Define definite integral term
 
 --- #
 ROW_CONTENT

@@ -10,7 +10,9 @@ class QADataEntry {
 	private String tokenSetFileName;
 	private String correctParseRes;
 	private String correctMathTex;
+
 	private Object correctEvalRes;
+    private double[] correctEvalResRange = null;
 
 	/* ~Member variables */
 
@@ -43,6 +45,23 @@ class QADataEntry {
 	    this.correctEvalRes = evalRes;
 	    return this;
 	}
+
+    public QADataEntry withEvalResRange(double[] evalResRange) {
+        if (evalResRange.length != 2) {
+            throw new IllegalArgumentException("Evaluation result range is not a length-2 array: [lowerBound, upperBound]");
+        }
+        if (evalResRange[1] < evalResRange[0]) {
+            throw new IllegalArgumentException("Evaluation result range does not have an non-descending order: [lowerBound, upperBound]");
+        }
+
+        this.correctEvalResRange = evalResRange;
+
+        return this;
+    }
+
+    public QADataEntry withEvalResRange(double lowerBound, double upperBound) {
+        return withEvalResRange(new double[] {lowerBound, upperBound});
+    }
 	
 	/* Getters */
 	public String getTokenSetFileName() {
@@ -60,7 +79,10 @@ class QADataEntry {
 	public Object getCorrectEvalRes() {
 	    return correctEvalRes;
 	}
-    
+
+    public double[] getCorrectEvalResRange() {
+        return correctEvalResRange;
+    }
 }
 
 class QADataSuite {
@@ -213,7 +235,7 @@ public class Test_QADataSet {
             new QADataEntry("42", "((7 - 8) / 10)").withMathTex("\\frac{{7}-{8}}{10}").withEvalRes(-0.1),
             new QADataEntry("43", "((3 + 1) / 4)").withMathTex("\\frac{{3}+{1}}{4}").withEvalRes(1.0),
             new QADataEntry("44", "(72 / 3)").withMathTex("\\frac{72}{3}").withEvalRes(24.0),
-            new QADataEntry("53", "(8.1 / 0.9)").withMathTex("\\frac{8.1}{0.9}").withEvalRes(9),
+            new QADataEntry("53", "(8.1 / 0.9)").withMathTex("\\frac{8.1}{0.9}").withEvalRes(9.0),
 //            new QADataEntry("54", "(-1 / -3.2)").withMathTex("\\frac{-{1}}{-{3.2}}").withEvalRes(0.3125), // TODO: Regressed after checkIllegalOverlap
             new QADataEntry("55", "(-4.2 / (7 + 3))").withMathTex("\\frac{-{4.2}}{{7}+{3}}").withEvalRes(-0.42),
             new QADataEntry("sim_2", "-(1 / 2)").withMathTex("-\\frac{1}{2}").withEvalRes(-0.5), /* Negative of high-level expressions */
@@ -229,16 +251,16 @@ public class Test_QADataSet {
             new QADataEntry("23", "(9 ^ 3)").withMathTex("{9}^{3}").withEvalRes(729.0),
             new QADataEntry("24", "(2 ^ -3)").withMathTex("{2}^{-{3}}").withEvalRes(0.125), /* Error due to geometric imprecision? */
             new QADataEntry("103", "(68 ^ 75)").withMathTex("{68}^{75}"),
-            new QADataEntry("104", "(2 ^ 34)").withMathTex("{2}^{34}").withEvalRes("17179869184.0"),
+            new QADataEntry("104", "(2 ^ 34)").withMathTex("{2}^{34}").withEvalRes(17179869184.0),
             new QADataEntry("106", "(258 ^ 76)").withMathTex("{258}^{76}"),
             new QADataEntry("107", "(256 ^ 481)").withMathTex("{256}^{481}"),
             new QADataEntry("114", "(2 ^ (3 ^ 4))").withMathTex("{2}^{{3}^{4}}"),
             new QADataEntry("115", "(0.5 ^ (2 ^ 3))").withMathTex("{0.5}^{{2}^{3}}").withEvalRes(0.00390625),
-            new QADataEntry("sim_170", "(1 + (2 ^ 3))").withMathTex("{1}+{{2}^{3}}").withEvalRes(9),
-            new QADataEntry("sim_171", "((1 + 2) + (B ^ 4))").withMathTex("{{1}+{2}}+{{B}^{4}}").withEvalRes(3),
-            new QADataEntry("sim_172", "(a*(b ^ 2))").withMathTex("{a}{{b}^{2}}").withEvalRes(0),
-            new QADataEntry("sim_173", "((2 ^ 7) / 8)").withMathTex("\\frac{{2}^{7}}{8}").withEvalRes(16),
-            new QADataEntry("sim_174", "((x ^ 2)*(y ^ 3))").withMathTex("{{x}^{2}}{{y}^{3}}").withEvalRes(0),
+            new QADataEntry("sim_170", "(1 + (2 ^ 3))").withMathTex("{1}+{{2}^{3}}").withEvalRes(9.0),
+            new QADataEntry("sim_171", "((1 + 2) + (B ^ 4))").withMathTex("{{1}+{2}}+{{B}^{4}}").withEvalRes(3.0),
+            new QADataEntry("sim_172", "(a*(b ^ 2))").withMathTex("{a}{{b}^{2}}").withEvalRes(0.0),
+            new QADataEntry("sim_173", "((2 ^ 7) / 8)").withMathTex("\\frac{{2}^{7}}{8}").withEvalRes(16.0),
+            new QADataEntry("sim_174", "((x ^ 2)*(y ^ 3))").withMathTex("{{x}^{2}}{{y}^{3}}").withEvalRes(0.0),
         };
         QADataSuites.put("exponentiation", new QADataSuite(entries_exponentiation, false));
         
@@ -445,7 +467,6 @@ public class Test_QADataSet {
         };
         QADataSuites.put("sigmaPiTerm", new QADataSuite(entries_sigmaPiTerm, true));
 
-        
         /* Sigma-pi term evaluation context closure */
         QADataEntry[] entries_sigmaPiTermEvaluationContextClosure = {
             new QADataEntry("sim_133", "(a = 2)").withMathTex("{a}={2}").withEvalRes(2.0),
@@ -456,6 +477,18 @@ public class Test_QADataSet {
             new QADataEntry("sim_134", "Sum((i = 1) : (5))((i ^ a))").withMathTex("\\sum\\limits_{{i}={1}}^{5}{{i}^{a}}").withEvalRes(55.0),
         };
         QADataSuites.put("sigmaPiTermEvaluationContextClosure", new QADataSuite(entries_sigmaPiTermEvaluationContextClosure, true));
+
+
+         /* Definite integral terms */
+        QADataEntry[] entries_defIntegTerm = {
+            new QADataEntry("sim_209", "Integ(x=0 : 1)((x ^ 2))").withMathTex("\\int_{0}^{1}{{x}^{2}}d{x}").withEvalResRange(0.3332, 0.3334),
+            new QADataEntry("sim_210", "Integ(x=0 : 1)(x)").withMathTex("\\int_{0}^{1}{x}d{x}").withEvalResRange(0.499999, 0.500001),
+            new QADataEntry("sim_211", "Integ(x=0 : gr_pi)(sin(x))").withMathTex("\\int_{0}^{\\pi}{\\sin{x}}d{x}").withEvalResRange(1.9998, 2.0002),
+            new QADataEntry("sim_212", "Integ(x=1 : 2)((1 / x))").withMathTex("\\int_{1}^{2}{\\frac{1}{x}}d{x}").withEvalResRange(0.6931, 0.6932),
+            new QADataEntry("sim_212", "Integ(x=1 : 2)((1 / x))").withMathTex("\\int_{1}^{2}{\\frac{1}{x}}d{x}").withEvalResRange(0.6931, 0.6932),
+            new QADataEntry("sim_213", "Integ(y=1 : 4)((sqrt(y)))").withMathTex("\\int_{1}^{4}{\\sqrt{y}}d{y}").withEvalResRange(4.6666, 4.6667),
+        };
+        QADataSuites.put("defIntegTerm", new QADataSuite(entries_defIntegTerm, false));
 
         /* Performance test: Relatively more complex token sets */
         QADataEntry[] entries_performance = {

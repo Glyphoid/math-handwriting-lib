@@ -3,13 +3,14 @@ package me.scai.parsetree.evaluation;
 import java.util.ArrayList;
 import java.util.List;
 
-class SigmaTerm extends SigmaPiTerm {
+class SigmaTerm extends SigmaPiIntegralTerm {
 	public SigmaTerm(String tFunctionName, FunctionArgumentList tArgList,
 			List<ArgumentRange> tArgRanges) {
 		super(tFunctionName, tArgList, tArgRanges);
 	}
 
 	/* Implementation of abstract methods */
+    @Override
 	public Object evaluate(ParseTreeEvaluator evaluator, 
 	                       List<String> tempArgNames)
 			throws ParseTreeEvaluatorException {

@@ -4,7 +4,8 @@ import java.util.List;
 
 import me.scai.parsetree.Node;
 
-public abstract class FunctionSigmaPiTerm { /* For the lack of a better name ... */
+/* Parent class for functions, sigma summation, pi production and integral terms */
+public abstract class FunctionSigmaPiIntegralTerm { /* For the lack of a better name ... */
 	/* Member variables */
 	protected FunctionArgumentList argList;
 	protected List<String> argNames;
@@ -14,7 +15,7 @@ public abstract class FunctionSigmaPiTerm { /* For the lack of a better name ...
 	/* ~Member variables */
 
 	/* Constructor */
-	public FunctionSigmaPiTerm(FunctionArgumentList tArgList) {
+	public FunctionSigmaPiIntegralTerm(FunctionArgumentList tArgList) {
 		argList = tArgList; /* TODO: Check to see if allSymbols() is true */
 
 		if (argList.allSymbols()) {

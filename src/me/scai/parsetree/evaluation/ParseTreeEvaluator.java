@@ -204,11 +204,14 @@ public class ParseTreeEvaluator {
 			for (int j = 0; j < nArgs; ++j) {
 				int chIdx = argIndices[j];
 
+                // TODO: Get rid of grammar dependency
 				if (lhsStackTop().equals("USER_FUNCTION_DEF") && j == 1 || 
 				        lhsStackTop().equals("SIGMA_TERM") && j == 0 ||
 				        lhsStackTop().equals("SIGMA_TERM") && j == 2 || // Body of the Sigma term. Pass as is. Do not evaluate.
                         lhsStackTop().equals("PI_TERM") && j == 0 ||
-                        lhsStackTop().equals("PI_TERM") && j == 2) { // Body of the Pi term. Pass as is. Do not evaluate.
+                        lhsStackTop().equals("PI_TERM") && j == 2 ||
+                        lhsStackTop().equals("DEF_INTEG_TERM") && j == 2 ||
+                        lhsStackTop().equals("DEF_INTEG_TERM") && j == 3) { // Body of the Pi term. Pass as is. Do not evaluate.
 					/* Special case for function body definition */
 					/* TODO: Do not hard code this */
 					args[j] = n.ch[chIdx];
@@ -881,10 +884,33 @@ public class ParseTreeEvaluator {
 
         PiTerm piTerm = new PiTerm("_pi_term_", argList, argRanges); /* TODO: name that makes more sense */
 
-	    /* Define the body */
+        /* Define the body */
         piTerm.defineBody((Node) bodyObj);
 
         return piTerm;
+    }
+
+    public Object def_def_integ_term(Object lowerLimitObj, Object upperLimitObj, Object bodyObj, Object varObject) {
+        final int DEF_INTEG_NUM_INTERVALS = 100;        // TODO: Remove magic number
+
+        double lowerLimit = getDouble(lowerLimitObj);
+        double upperLimit = getDouble(upperLimitObj);
+
+        Node varNode = (Node) varObject;
+        Node argNameNode = varNode.ch[0]; /* TODO: Get rid of grammar dependency */
+        FunctionArgumentList argList = new FunctionArgumentList(argNameNode.termName);
+
+        ArgumentRange argRange = new UniformIntegralArgumentRange(lowerLimit, upperLimit, DEF_INTEG_NUM_INTERVALS);
+
+        List<ArgumentRange> argRanges = new ArrayList<>();  //TODO: Multiple integrals
+        argRanges.add(argRange);
+
+        DefiniteIntegralTerm defIntegTerm = new DefiniteIntegralTerm("_def_integ_term_", argList, argRanges);
+
+        /* Define the body */
+        defIntegTerm.defineBody((Node) bodyObj);
+
+        return defIntegTerm;
     }
 	
 	public Object evaluate_sigma_term(Object sigmaTermObj)
@@ -924,6 +950,24 @@ public class ParseTreeEvaluator {
         funcNameStack.add("PiTerm_" + piTerm.hashCode()); /* TODO: Better naming */
 
         Object retVal = piTerm.evaluate(this, funcArgNames);
+
+        /* Pop from call stack */
+        funcNameStack.pop();
+
+        return retVal;
+    }
+
+    public Object evaluate_def_integ_term(Object defIntegTermObj)
+            throws ParseTreeEvaluatorException {
+        DefiniteIntegralTerm defIntegTerm = (DefiniteIntegralTerm) defIntegTermObj;
+
+        int funcStackPos = funcNameStack.size();
+        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, defIntegTerm.argList.numArgs()));
+
+        /* Push function name to call stack */
+        funcNameStack.add("DefIntegTerm_" + defIntegTerm.hashCode()); /* TODO: Better naming */
+
+        Object retVal = defIntegTerm.evaluate(this, funcArgNames);
 
         /* Pop from call stack */
         funcNameStack.pop();

@@ -2,7 +2,7 @@ package me.scai.parsetree.evaluation;
 
 import java.util.List;
 
-public class FunctionTerm extends FunctionSigmaPiTerm {
+public class FunctionTerm extends FunctionSigmaPiIntegralTerm {
 	/* Member variables */
 	protected String functionName;
 
