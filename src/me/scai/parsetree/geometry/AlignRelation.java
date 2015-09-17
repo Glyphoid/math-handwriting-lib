@@ -30,8 +30,8 @@ public class AlignRelation extends GeometricRelation {
 	static final float pastMiddleDisplacementUB = 0.75f;	/* Apply to relations such as AlignBottomNorthPastMiddle */
 	static final float pastEdgeDisplacementLB = -0.25f;
 	static final float pastEdgeDisplacementUB = 0.00f;		/* Apply to relations such as AlignTopNorthPastTop */
-	
-	AlignType alignType;
+
+    public AlignType alignType;
 	
 	/* Constructor */
 	private AlignRelation() {}

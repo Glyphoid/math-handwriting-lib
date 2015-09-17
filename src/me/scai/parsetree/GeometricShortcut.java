@@ -1,7 +1,11 @@
 package me.scai.parsetree;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
+import me.scai.handwriting.CWrittenToken;
+import me.scai.handwriting.CWrittenTokenSetNoStroke;
 import me.scai.handwriting.Rectangle;
+import me.scai.parsetree.geometry.AlignRelation;
+import me.scai.parsetree.geometry.GeometricRelation;
 import me.scai.parsetree.geometry.GeometryHelper;
 import me.scai.parsetree.geometry.PositionRelation;
 
@@ -20,6 +24,8 @@ class GeometricShortcut {
         verticalTerminalDivideEW,       /* East to west */
         verticalNT1T2DivideWE,		    /* 3-part shortcut types, with the head being NT and the remaining two items being both T. Hence the "NT1T2". Example: (Addition, Bracket_L, Bracket_R) */
         westEast, 				        /* 2-part shortcut type: head is at west and the (only) non-head is at the east */
+        defIntegStyle              /* Definite integral style: 6 rhs parts */
+        // TODO: southNorth
     }
 
     /* Constants */
@@ -35,7 +41,7 @@ class GeometricShortcut {
                              TerminalSet termSet) {
         int nrhs = gp.geomRels.length; 	/* Number of rhs items */
 
-        if ( !(nrhs == 2 || nrhs == 3) ) {
+        if ( !(nrhs == 2 || nrhs == 3 || nrhs == 6) ) {
 			/* Currently, we deal with only bipartite or tripartite shortcuts, such as linear divides.
 			 * This may change in the future.
 			 */
@@ -119,6 +125,36 @@ class GeometricShortcut {
                     }
                 }
             }
+        } else if (nrhs == 6) {
+            PositionRelation.PositionType [] posType = new PositionRelation.PositionType[2];
+
+            try {
+                GeometricRelation[][] geomRels = gp.geomRels;
+
+                // TODO: Remove grammar dependency
+                if ( geomRels[1].length == 2 &&
+                     ((AlignRelation) geomRels[1][0]).alignType == AlignRelation.AlignType.AlignCenter &&
+                     ((PositionRelation) geomRels[1][1]).positionType == PositionRelation.PositionType.PositionNorth &&
+                     geomRels[2].length == 2 &&
+                     ((AlignRelation) geomRels[2][0]).alignType == AlignRelation.AlignType.AlignCenter &&
+                     ((PositionRelation) geomRels[2][1]).positionType == PositionRelation.PositionType.PositionSouth &&
+                     geomRels[3].length == 2 &&
+                     ((AlignRelation) geomRels[3][0]).alignType == AlignRelation.AlignType.AlignMiddle &&
+                     ((PositionRelation) geomRels[3][1]).positionType == PositionRelation.PositionType.PositionEast &&
+                     geomRels[4].length == 2 &&
+                     ((AlignRelation) geomRels[4][0]).alignType == AlignRelation.AlignType.AlignMiddle &&
+                     ((PositionRelation) geomRels[4][1]).positionType == PositionRelation.PositionType.PositionEast &&
+                     geomRels[5].length == 2 &&
+                     ((AlignRelation) geomRels[5][0]).alignType == AlignRelation.AlignType.AlignMiddle &&
+                     ((PositionRelation) geomRels[5][1]).positionType == PositionRelation.PositionType.PositionEast ) {
+
+                    shortcutType = ShortcutType.defIntegStyle;
+                }
+            } catch (Throwable thr) {}
+
+            if (shortcutType == ShortcutType.noShortcut) {
+                System.err.println("A six-part grammar production does not fix definite integral shortcut type. Check the grammar!");
+            }
         } else {
             throw new IllegalStateException("Unexpected number of rhs items: " + nrhs);
         }
@@ -126,8 +162,9 @@ class GeometricShortcut {
 
     public boolean existsTripartiteTerminal() {
         return (shortcutType != ShortcutType.noShortcut)
-                && ( !existsTripartiteNT1T2() )
-                &&  ( !existsBipartite() );
+                && !existsTripartiteNT1T2()
+                && !existsBipartite()
+                && !existsDefIntegStyle();
     }
 
     public boolean existsTripartiteNT1T2() {
@@ -136,6 +173,10 @@ class GeometricShortcut {
 
     public boolean existsBipartite() {
         return (shortcutType == ShortcutType.westEast);
+    }
+
+    public boolean existsDefIntegStyle() {
+        return (shortcutType == ShortcutType.defIntegStyle);
     }
 
 
@@ -149,10 +190,6 @@ class GeometricShortcut {
 
         if ( nt == 0 ) {
             throw new RuntimeException("Attempting to apply bipartite shortcut on one or fewer tokens");
-        }
-
-        if (wts.getNumTokens() == 6) {
-            int iiii = 0; //DEBUG
         }
 
         if ( nt == 1 ) {
@@ -327,6 +364,120 @@ class GeometricShortcut {
         /* TODO: Discard partitions in which non-head tokens have too much overlap with the head token */
 
         return labels;
+    }
+
+    public int[][] getDefIntegStyle(CAbstractWrittenTokenSet wts0, int [] iHead) {
+        /* Hard-coded info: TODO: Get rid of these */
+        final String integTokenName = "integ";
+        final String dTokenName     = "d";
+
+        /* Find the integ token */
+        int idxInteg = -1;
+        int idxD = -1;
+
+        /* Coordinates we need for dividing the plane */
+        float integTopY = 0.0f;
+        float integBottomY = 0.0f;
+        float integRightX = 0.0f;
+        float integCtrX = 0.0f;
+        float integCtrY = 0.0f;
+
+        float dLeftX = 0.0f;
+        float dRightX = 0.0f;
+        float dCtrX = 0.0f;
+
+        CWrittenTokenSetNoStroke wts = (CWrittenTokenSetNoStroke) wts0;
+        int nTokens = wts.getNumTokens();
+
+        for (int i = 0; i < nTokens; ++i) {
+            CWrittenToken wt = wts.tokens.get(i);
+            if (wt.getRecogWinner().equals(integTokenName)) {
+                if (idxInteg == -1) {
+                    idxInteg = i;
+
+                    float[] bounds = wt.getBounds();
+                    integTopY    = bounds[1];
+                    integBottomY = bounds[3];
+                    integRightX  = bounds[2];
+                    integCtrX    = wt.getCentralX();
+                    integCtrY    = wt.getCentralY();
+                } else {
+                    // There shouldn't be more than one integ tokens:
+                    // TODO: This bars any nesting of def integ! Fix this. One easy way to fix it is to find all the
+                    //       integ tokens and take the left-most one.
+                    return null;
+                }
+            } else if (wt.getRecogWinner().equals(dTokenName)) {
+                if (idxD == -1) {
+                    idxD = i;
+
+
+                    float[] bounds = wt.getBounds();
+                    dLeftX  = bounds[0];
+                    dRightX = bounds[2];
+                    dCtrX   = wt.getCentralX();
+                } else {
+                    // There shouldn't be more than one d tokens:
+                    // TODO: This bars any nesting of def integ! Fix this. One easy way to fix it is to find all the
+                    //       d tokens and take the right-most one.
+                    return null;
+                }
+            }
+        }
+
+        /* Make sure that the integ and d tokens are located */
+        if (idxInteg == -1 || idxD == -1) {
+            return null;
+        }
+
+        /* Check the match between iHead and detected integ token */
+        if (iHead.length != 1 || iHead[0] != idxInteg) {
+            return null;
+        }
+
+        if (integCtrX >= dCtrX) {
+            return null;
+        }
+
+        /* Find out top, bottom, left, right and center of all the tokens */
+        // divh contains the head token, which will be removed when we generate the final return array.
+        int[] divh = new int[nTokens];
+
+        for (int i = 0; i < nTokens; ++i) {
+            if (i == idxInteg) {        // TODO: Grammar dependency warning!
+                divh[i] = 0;     // Integ token does not need to be labeled, it is already
+            } else if (i == idxD) {
+                divh[i] = 4;     // d token
+            } else {
+                CWrittenToken wt = wts.tokens.get(i);
+
+                float ctrX = wt.getCentralX();
+                float ctrY = wt.getCentralY();
+
+                if (ctrX > dCtrX) {
+                    divh[i] = 5; // Variable of integration
+                } else if (ctrX > integRightX && ctrX < dCtrX) {
+                    divh[i] = 3; // Integrand
+                } else if (ctrY < integCtrY) {
+                    divh[i] = 2; // Upper bound
+                } else {
+                    divh[i] = 1; // Lower bound
+                }
+            }
+        }
+
+        /* Discard the head token and head grammar row from the index */
+        int[] div = new int[nTokens - 1];
+        for (int i = 0; i < nTokens - 1; ++i) {
+            if (i < idxInteg) {
+                div[i] = divh[i] - 1;       // The "- 1" here is because we don't count the index of the head terminal in the grammar
+            } else if (i > idxInteg) {
+                div[i] = divh[i + 1] - 1;    // Skip the integ token, which is alrady in the head
+            }
+        }
+
+
+        return new int[][] {div};
     }
 
 

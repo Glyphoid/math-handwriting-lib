@@ -191,8 +191,9 @@ public class GraphicalProduction {
 		if ( geomShortcut.existsTripartiteTerminal() && bUseShortcut ) {
 			/* Use this smarter approach when a geometric shortcut exists */
 			labels = geomShortcut.getPartitionTripartiteTerminal(tokenSet, iHead);
-		}
-		else {
+		} else if ( geomShortcut.existsDefIntegStyle() && bUseShortcut) {
+            labels = geomShortcut.getDefIntegStyle(tokenSet, iHead);
+        } else {
 			/* Get all possible partitions: in "labels" */
 			/* This is the brute-force approach. */
 			labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
@@ -201,8 +202,6 @@ public class GraphicalProduction {
         if (labels == null || labels.length == 0) {
             return null;
         }
-		
-		/* TODO: Use shortcuts based on the production */
 
 	    /* Get index to all non-head token */
 	    ArrayList<Integer> inht = new ArrayList<Integer>();
