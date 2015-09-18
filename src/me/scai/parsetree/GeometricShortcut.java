@@ -24,7 +24,8 @@ class GeometricShortcut {
         verticalTerminalDivideEW,       /* East to west */
         verticalNT1T2DivideWE,		    /* 3-part shortcut types, with the head being NT and the remaining two items being both T. Hence the "NT1T2". Example: (Addition, Bracket_L, Bracket_R) */
         westEast, 				        /* 2-part shortcut type: head is at west and the (only) non-head is at the east */
-        defIntegStyle              /* Definite integral style: 6 rhs parts */
+        sigmaPiStyle,                   /* Sigma summation and Pi product: 4 rhs parts */
+        defIntegStyle                   /* Definite integral style: 6 rhs parts */
         // TODO: southNorth
     }
 
@@ -41,7 +42,7 @@ class GeometricShortcut {
                              TerminalSet termSet) {
         int nrhs = gp.geomRels.length; 	/* Number of rhs items */
 
-        if ( !(nrhs == 2 || nrhs == 3 || nrhs == 6) ) {
+        if ( !(nrhs == 2 || nrhs == 3 || nrhs == 4 || nrhs == 6) ) {
 			/* Currently, we deal with only bipartite or tripartite shortcuts, such as linear divides.
 			 * This may change in the future.
 			 */
@@ -125,9 +126,24 @@ class GeometricShortcut {
                     }
                 }
             }
-        } else if (nrhs == 6) {
-            PositionRelation.PositionType [] posType = new PositionRelation.PositionType[2];
+        } else if (nrhs == 4) {
+            try {
+                GeometricRelation[][] geomRels = gp.geomRels;
 
+                // TODO: Remove grammar dependency
+                if (
+                     ((AlignRelation) geomRels[1][0]).alignType == AlignRelation.AlignType.AlignCenter &&
+                     ((PositionRelation) geomRels[1][geomRels[1].length - 1]).positionType == PositionRelation.PositionType.PositionNorth &&
+                     ((AlignRelation) geomRels[2][0]).alignType == AlignRelation.AlignType.AlignCenter &&
+                     ((PositionRelation) geomRels[2][geomRels[2].length - 1]).positionType == PositionRelation.PositionType.PositionSouth &&
+                     ((AlignRelation) geomRels[3][0]).alignType == AlignRelation.AlignType.AlignMiddle &&
+                     ((PositionRelation) geomRels[3][1]).positionType == PositionRelation.PositionType.PositionEast ) {
+
+                    shortcutType = ShortcutType.sigmaPiStyle;
+                }
+            } catch (Throwable thr) {}
+
+        } else if (nrhs == 6) {
             try {
                 GeometricRelation[][] geomRels = gp.geomRels;
 
@@ -153,7 +169,7 @@ class GeometricShortcut {
             } catch (Throwable thr) {}
 
             if (shortcutType == ShortcutType.noShortcut) {
-                System.err.println("A six-part grammar production does not fix definite integral shortcut type. Check the grammar!");
+                System.err.println("A six-part grammar production does not fit definite integral shortcut type. Check the grammar!");
             }
         } else {
             throw new IllegalStateException("Unexpected number of rhs items: " + nrhs);
@@ -164,19 +180,24 @@ class GeometricShortcut {
         return (shortcutType != ShortcutType.noShortcut)
                 && !existsTripartiteNT1T2()
                 && !existsBipartite()
-                && !existsDefIntegStyle();
+                && !existsDefIntegStyle()
+                && !existsSigmaPiStyle();
     }
 
     public boolean existsTripartiteNT1T2() {
-        return (shortcutType == ShortcutType.verticalNT1T2DivideWE);
+        return shortcutType == ShortcutType.verticalNT1T2DivideWE;
     }
 
     public boolean existsBipartite() {
-        return (shortcutType == ShortcutType.westEast);
+        return shortcutType == ShortcutType.westEast;
     }
 
     public boolean existsDefIntegStyle() {
-        return (shortcutType == ShortcutType.defIntegStyle);
+        return shortcutType == ShortcutType.defIntegStyle;
+    }
+
+    public boolean existsSigmaPiStyle() {
+        return shortcutType == ShortcutType.sigmaPiStyle;
     }
 
 
@@ -472,6 +493,111 @@ class GeometricShortcut {
             if (i < idxInteg) {
                 div[i] = divh[i] - 1;       // The "- 1" here is because we don't count the index of the head terminal in the grammar
             } else if (i > idxInteg) {
+                div[i] = divh[i + 1] - 1;    // Skip the integ token, which is alrady in the head
+            }
+        }
+
+
+        return new int[][] {div};
+    }
+
+    public int[][] getSigmaPiStyle(CAbstractWrittenTokenSet wts0, int [] iHead) {
+        /* Hard-coded info: TODO: Get rid of these */
+        final String sigmaTokenName = "gr_Si";
+        final String piTokenName = "gr_Pi";
+
+        /* Find the integ token */
+        int idxSigmaPi = -1;        // Index to the Sigma or Pi token
+
+        /* Coordinates we need for dividing the plane */
+        float sigmaPiRightX = 0.0f;
+        float sigmaPiTopY = 0.0f;
+        float sigmaPiBottomY = 0.0f;
+        float sigmaPiCtrX = 0.0f;
+        float sigmaPiCtrY = 0.0f;
+        float sigmaPiWidth = 0.0f;
+
+        CWrittenTokenSetNoStroke wts = (CWrittenTokenSetNoStroke) wts0;
+
+        int nTokens = wts.getNumTokens();
+
+        for (int i = 0; i < nTokens; ++i) {
+            CWrittenToken wt = wts.tokens.get(i);
+            if (wt.getRecogWinner().equals(sigmaTokenName) ||
+                wt.getRecogWinner().equals(piTokenName)) {
+                if (idxSigmaPi == -1 || wt.getCentralX() < sigmaPiCtrX) { // Identify the left-most sigma/pi token
+                    idxSigmaPi = i;
+
+                    float[] bounds = wt.getBounds();
+
+                    sigmaPiRightX  = bounds[2];
+                    sigmaPiTopY    = bounds[1];
+                    sigmaPiBottomY = bounds[3];
+                    sigmaPiCtrX    = wt.getCentralX();
+                    sigmaPiCtrY    = wt.getCentralY();
+                    sigmaPiWidth   = bounds[2] - bounds[0];
+                }
+            }
+        }
+
+        /* Make sure that the integ and d tokens are located */
+        if (idxSigmaPi == -1) {
+            return null;
+        }
+
+        /* Check the match between iHead and detected integ token */
+        if (iHead.length != 1 || iHead[0] != idxSigmaPi) {
+            return null;
+        }
+
+        /* Find out top, bottom, left, right and center of all the tokens */
+        // divh contains the head token, which will be removed when we generate the final return array.
+        int[] divh = new int[nTokens];
+
+        for (int i = 0; i < nTokens; ++i) {
+            if (i == idxSigmaPi) {        // TODO: Grammar dependency warning!
+                divh[i] = 0;     // Integ token does not need to be labeled, it is already
+            } else {
+                CWrittenToken wt = wts.tokens.get(i);
+
+                float[] bounds = wt.getBounds();
+                float tokenWidth = bounds[2] - bounds[0];
+                float ctrX = wt.getCentralX();
+                float ctrY = wt.getCentralY();
+
+                if (ctrX > sigmaPiRightX) {
+                    if (bounds[0] - sigmaPiRightX > tokenWidth * 1.0f) { // WARNING: Magic number!
+                        // It is sufficiently far from the sigma/pi term. It must NOT be the LB or UB no matter what
+                        divh[i] = 3; // The term being summed or multiplied
+                    } else if (ctrY < sigmaPiTopY) {
+                        divh[i] = 2; // Upper bound
+                    } else if (ctrY > sigmaPiBottomY) {
+                        divh[i] = 1; // Lower bound
+                    } else {
+                        divh[i] = 3; // The term being summed or multiplied
+                    }
+                } else {
+                    if (tokenWidth > 2.0f * sigmaPiWidth) { // TODO: This is too ad hoc!! (But works to a certain extent?)
+                        // If any token of the tokens that are not a part of the summed term is too big, it probably
+                        // doesn't belong to this Sigma/Pi term
+                        return null;
+                    }
+
+                    if (ctrY < sigmaPiCtrY) {
+                        divh[i] = 2; // Upper bound
+                    } else {
+                        divh[i] = 1; // Lower bound
+                    }
+                }
+            }
+        }
+
+        /* Discard the head token and head grammar row from the index */
+        int[] div = new int[nTokens - 1];
+        for (int i = 0; i < nTokens - 1; ++i) {
+            if (i < idxSigmaPi) {
+                div[i] = divh[i] - 1;       // The "- 1" here is because we don't count the index of the head terminal in the grammar
+            } else if (i > idxSigmaPi) {
                 div[i] = divh[i + 1] - 1;    // Skip the integ token, which is alrady in the head
             }
         }

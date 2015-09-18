@@ -193,6 +193,8 @@ public class GraphicalProduction {
 			labels = geomShortcut.getPartitionTripartiteTerminal(tokenSet, iHead);
 		} else if ( geomShortcut.existsDefIntegStyle() && bUseShortcut) {
             labels = geomShortcut.getDefIntegStyle(tokenSet, iHead);
+        } else if ( geomShortcut.existsSigmaPiStyle() && bUseShortcut) {
+            labels = geomShortcut.getSigmaPiStyle(tokenSet, iHead);
         } else {
 			/* Get all possible partitions: in "labels" */
 			/* This is the brute-force approach. */

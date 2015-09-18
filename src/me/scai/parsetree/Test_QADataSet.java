@@ -458,9 +458,9 @@ public class Test_QADataSet {
             new QADataEntry("sim_125", "Sum((n = -2) : ((sqrt(4))))((n ^ 2))").withMathTex("\\sum\\limits_{{n}={-{2}}}^{\\sqrt{4}}{{n}^{2}}").withEvalRes(10.0),     // Sigma sum term
             new QADataEntry("sim_180", "(3*Sum((a = 1) : (2))(a))").withMathTex("{3}{\\sum\\limits_{{a}={1}}^{2}{a}}").withEvalRes(9.0),
             new QADataEntry("sim_181", "(1 + Sum((a = 2) : (3))(a))").withMathTex("{1}+{\\sum\\limits_{{a}={2}}^{3}{a}}").withEvalRes(6.0),
-            new QADataEntry("sim_187", "Sum((a = 1) : (2))(Sum((b = 1) : (3))((a*b)))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{a}{b}}}"), // TODO .withEvalRes(18.0), not 28.0
-//            new QADataEntry("sim_188", "Sum((a = 1) : (2))(Sum((b = 1) : (3))((a*b)))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{a}{b}}}"), // TODO
-//            new QADataEntry("sim_189", "Sum((a = 1) : (2))(Sum((b = 1) : (3))((a*b)))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{a}{b}}}"), // TODO
+            new QADataEntry("sim_187", "Sum((a = 1) : (2))(Sum((b = 1) : (3))((a*b)))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{a}{b}}}"), // TODO: Parsing of nested doesn't work with the sigma/pi-style shortcut. Eval of nested has problems. .withEvalRes(18.0), not 28.0
+            new QADataEntry("sim_188", "(1 / Sum((x = 6) : (7))(x))").withMathTex("\\frac{1}{\\sum\\limits_{{x}={6}}^{7}{x}}").withEvalRes(1.0 / 13.0),
+            new QADataEntry("sim_189", "(1 / Sum((x = 2) : (3))((x ^ 2)))").withMathTex("\\frac{1}{\\sum\\limits_{{x}={2}}^{3}{{x}^{2}}}").withEvalRes(1.0 / 13.0),
 
             /* Pi product term */
             new QADataEntry("sim_186", "Prod((a = 1) : (3))(a)").withMathTex("\\prod\\limits_{{a}={1}}^{3}{a}").withEvalRes(6.0)
