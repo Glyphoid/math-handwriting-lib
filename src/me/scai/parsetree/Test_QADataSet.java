@@ -401,18 +401,23 @@ public class Test_QADataSet {
         QADataEntry[] entries_basicMatrixStateful = {
             new QADataEntry("sim_95", "(A = [1, 2; 3, 4])").withMathTex("{A}={\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}}"),  // Assignment of matrix value
             new QADataEntry("sim_96", "(B = 2)").withMathTex("{B}={2}"), // Assignment of double value
-            new QADataEntry("sim_97", "A").withMathTex("A"),    // STATEFUL EVAL
-            new QADataEntry("sim_98", "(B + A)").withMathTex("{B}+{A}"),   // STATEFUL EVAL
-            new QADataEntry("sim_99", "(A + B)").withMathTex("{A}+{B}"),   // STATEFUL EVAL
-            new QADataEntry("sim_100", "((A + B) + A)").withMathTex("{{A}+{B}}+{A}"),   // STATEFUL EVAL
-            new QADataEntry("sim_101", "(3*A)").withMathTex("{3}{A}"),    // STATEFUL EVAL
-            new QADataEntry("sim_102", "(A - B)").withMathTex("{A}-{B}"),  // STATEFUL EVAL
-            new QADataEntry("sim_103", "(B - A)").withMathTex("{B}-{A}"),  // STATEFUL EVAL
-            new QADataEntry("sim_104", "(A*B)").withMathTex("{A}{B}"),    // STATEFUL EVAL
-            new QADataEntry("sim_105", "det(A)").withMathTex("\\det{A}"),   // STATEFUL EVAL
-            new QADataEntry("sim_106", "det(A)").withMathTex("\\det{\\left(A\\right)}"),   // STATEFUL EVAL
-            new QADataEntry("sim_107", "det(((A + B)))").withMathTex("\\det{\\left({A}+{B}\\right)}"),   // STATEFUL EVAL
-            new QADataEntry("sim_108", "rank(A)").withMathTex("\\rank{A}"),   // STATEFUL EVAL
+            new QADataEntry("sim_97", "A").withMathTex("A"),
+            new QADataEntry("sim_98", "(B + A)").withMathTex("{B}+{A}"),
+            new QADataEntry("sim_99", "(A + B)").withMathTex("{A}+{B}"),
+            new QADataEntry("sim_100", "((A + B) + A)").withMathTex("{{A}+{B}}+{A}"),
+            new QADataEntry("sim_101", "(3*A)").withMathTex("{3}{A}"),
+            new QADataEntry("sim_102", "(A - B)").withMathTex("{A}-{B}"),
+            new QADataEntry("sim_103", "(B - A)").withMathTex("{B}-{A}"),
+            new QADataEntry("sim_104", "(A*B)").withMathTex("{A}{B}"),
+            new QADataEntry("sim_105", "det(A)").withMathTex("\\det{A}"),
+            new QADataEntry("sim_106", "det(A)").withMathTex("\\det{\\left(A\\right)}"),
+            new QADataEntry("sim_107", "det(((A + B)))").withMathTex("\\det{\\left({A}+{B}\\right)}"),
+            new QADataEntry("sim_108", "rank(A)").withMathTex("\\rank{A}"),
+            new QADataEntry("sim_215", "(A ^ -1)").withMathTex("{A}^{-{1}}"),    // Matrix inverse
+            new QADataEntry("sim_217", "(A ^ T)").withMathTex("{A}^{T}"),    // Matrix transpose
+            new QADataEntry("sim_219", "(A*(A ^ T))").withMathTex("{A}{{A}^{T}}"),    // Matrix transpose and multiplication
+//            new QADataEntry("sim_218", "((A ^ T)*A)").withMathTex("{A}^{T}"),    // Matrix transpose // TODO
+//            new QADataEntry("sim_216", "((A ^ -1)*A)").withMathTex("{A}^{-{1}}"),    // Matrix inverse // TODO
         };
         QADataSuites.put("basicMatrixStateful", new QADataSuite(entries_basicMatrixStateful, true));
         

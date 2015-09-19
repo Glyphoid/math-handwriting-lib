@@ -493,7 +493,7 @@ _STRINGIZE_     n0 n1 n2
 _MATH_TEX_      \cos
 _EVAL_          GET_MATH_FUNCTION_3CHAR_1ARG(n0, n1, n2)   # TODO: Get rid of dependency on the number of arguments; Remove the ugliness
 
---- # 45
+---
 MATH_FUNCTION_NAME  # Matrix function: "det"
 TERMINAL(d)
 TERMINAL(e)         : {AlignBottom(0), PositionEast(0)}

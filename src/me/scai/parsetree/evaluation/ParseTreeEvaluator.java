@@ -211,13 +211,21 @@ public class ParseTreeEvaluator {
                         lhsStackTop().equals("PI_TERM") && j == 0 ||
                         lhsStackTop().equals("PI_TERM") && j == 2 ||
                         lhsStackTop().equals("DEF_INTEG_TERM") && j == 2 ||
-                        lhsStackTop().equals("DEF_INTEG_TERM") && j == 3) { // Body of the Pi term. Pass as is. Do not evaluate.
+                        lhsStackTop().equals("DEF_INTEG_TERM") && j == 3  // Body of the Pi term. Pass as is. Do not evaluate.
+                        ) {
 					/* Special case for function body definition */
 					/* TODO: Do not hard code this */
 					args[j] = n.ch[chIdx];
-				} 
-				
-				else {
+				} else if (lhsStackTop().equals("VARIABLE_EXPONENTIATION") && j == 1) {
+                    // TODO: This is too hacky and ad hoc.
+                    String firstTermName = EvaluatorHelper.getFirstTermName(n.ch[chIdx]);
+
+                    if (firstTermName != null && firstTermName.equals("T")) {
+                        args[j] = firstTermName;
+                    } else {
+                        args[j] = eval(n.ch[chIdx]);
+                    }
+                } else {
 					if (n.ch[argIndices[j]].isTerminal()) {
 						args[j] = n.ch[chIdx].termName;
 					} 
@@ -437,15 +445,32 @@ public class ParseTreeEvaluator {
         return d_numer / d_denom;
 	}
 
-	public double exponentiation(Object base, Object exp)
-			throws ZeroToZerothPowerException {
-		double d_base = getDouble(base);
-		double d_exp = getDouble(exp);
+    public Object exponentiation(Object base, Object exp)
+			throws ZeroToZerothPowerException, UnsupportedMatrixExponentException {
+        if (base.getClass() == ValueUnion.class &&
+                ((ValueUnion) base).getValueType() == ValueUnion.ValueType.Matrix ) {
+            Matrix baseMat = ((ValueUnion) base).getMatrix();
 
-		if (d_base == 0.0 && d_exp == 0.0)
-			throw new ZeroToZerothPowerException();
+            if (exp.getClass() == Double.class && getDouble(exp) == -1.0) {
+                // "exponent" is "-1": Matrix inverse
+                return baseMat.inverse();
+            } else if (exp.getClass() == String.class && ((String) exp).equals("T")) {
+                // "exponent" is "-1": Matrix inverse
+                return baseMat.transpose();
+            } else {
+                throw new UnsupportedMatrixExponentException();
+            }
 
-		return Math.pow(d_base, d_exp);
+        } else {
+            double d_base = getDouble(base);
+            double d_exp = getDouble(exp);
+
+            if (d_base == 0.0 && d_exp == 0.0) {
+                throw new ZeroToZerothPowerException();
+            }
+
+            return Math.pow(d_base, d_exp);
+        }
 	}
 
 	public double sqrt(Object x) throws SquareRootOfNegativeException {

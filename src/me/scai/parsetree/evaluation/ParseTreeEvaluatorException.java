@@ -29,12 +29,18 @@ class DivisionByZeroException extends ParseTreeMathException {
 	private static final long serialVersionUID = 1L;
 	
 	public DivisionByZeroException() { super("Division by zero"); }
-};
+}
 
 class ZeroToZerothPowerException extends ParseTreeMathException {
 	private static final long serialVersionUID = 1L;
 	
 	public ZeroToZerothPowerException() { super("Attempt to calculate zero to the zeroth power"); }
+}
+
+class UnsupportedMatrixExponentException extends ParseTreeMathException {
+    private static final long serialVersionUID = 1L;
+
+    public UnsupportedMatrixExponentException() { super("Unsupported exponent on matrix base"); }
 }
 
 class SquareRootOfNegativeException extends ParseTreeMathException {

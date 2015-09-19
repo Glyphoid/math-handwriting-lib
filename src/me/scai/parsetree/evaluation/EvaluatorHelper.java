@@ -1,5 +1,6 @@
 package me.scai.parsetree.evaluation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -22,6 +23,23 @@ public class EvaluatorHelper {
         } else {
             return String.format("__stack%d__funcArg%d__", stackPos, argIdx);
         }
+    }
+
+    /**
+     * Get first encountered terminal name
+     * @param n
+     * @return
+     */
+    public static String getFirstTermName(Node n) {
+        if (n.isTerminal()) {
+            return n.termName;
+        } else {
+            for (int i = 0; i < n.ch.length; ++i) {
+                return getFirstTermName(n.ch[i]);
+            }
+        }
+
+        return null;
     }
     
 //    public static String [] genFuncArgNames(int stackPos, int numArgs) {
