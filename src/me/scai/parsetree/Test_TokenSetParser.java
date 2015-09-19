@@ -228,7 +228,7 @@ public class Test_TokenSetParser {
                     assertTrue(evalResDbl >= tokenSetTrueEvalResRange[0]);
                     assertTrue(evalResDbl <= tokenSetTrueEvalResRange[1]);
                 } else {
-                    MathHelper.equalsTol((Double) tokenSetTrueEvalRes, evalResDbl, evalResEqualityAbsTol);
+                    assertTrue(MathHelper.equalsTol((Double) tokenSetTrueEvalRes, evalResDbl, evalResEqualityAbsTol));
                 }
 
             }

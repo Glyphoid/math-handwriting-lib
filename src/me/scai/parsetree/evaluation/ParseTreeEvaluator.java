@@ -473,6 +473,10 @@ public class ParseTreeEvaluator {
 		return y;
 	}
 
+    public double log(Object x) throws LogarithmOfNonPositiveException {
+        return ln(x);
+    }
+
 	public double sin(Object x) {
 		double d_x = getDouble(x);
 		double y = Math.sin(d_x);
