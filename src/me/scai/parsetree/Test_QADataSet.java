@@ -379,21 +379,22 @@ public class Test_QADataSet {
         /* Matrix with holes */
         QADataEntry[] entries_matrixWithHoles = {
             new QADataEntry("sim_76", "[0, 4, 0; 3, 0, 5]").withMathTex("\\begin{bmatrix}0&4&0\\\\3&0&5\\end{bmatrix}"),
-            new QADataEntry("sim_194", "[2, 0; 0, 3]").withMathTex("\\begin{bmatrix}2&0\\\\0&3\\end{bmatrix}"),
-            new QADataEntry("sim_196", "[1, 0, 0; 2, 3, 4]").withMathTex("\\begin{bmatrix}1&0&0\\\\2&3&4\\end{bmatrix}"),
-            new QADataEntry("sim_197", "[0, 0, 1; 2, 3, 4]").withMathTex("\\begin{bmatrix}0&0&1\\\\2&3&4\\end{bmatrix}"),
-            new QADataEntry("sim_198", "[1, 2, 3; 4, 0, 0]").withMathTex("\\begin{bmatrix}1&2&3\\\\4&0&0\\end{bmatrix}"),
-            new QADataEntry("sim_199", "[1, 2, 3; 0, 4, 0]").withMathTex("\\begin{bmatrix}1&2&3\\\\0&4&0\\end{bmatrix}"),
-            new QADataEntry("sim_200", "[1, 2, 3; 0, 0, 4]").withMathTex("\\begin{bmatrix}1&2&3\\\\0&0&4\\end{bmatrix}"),
-            new QADataEntry("sim_201", "[1, 0, 0, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}1&0&0&0\\\\2&3&4&5\\end{bmatrix}"),
-            new QADataEntry("sim_202", "[0, 1, 0, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&1&0&0\\\\2&3&4&5\\end{bmatrix}"),
-            new QADataEntry("sim_203", "[0, 0, 1, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&0&1&0\\\\2&3&4&5\\end{bmatrix}"),
-            new QADataEntry("sim_204", "[0, 0, 0, 1; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&0&0&1\\\\2&3&4&5\\end{bmatrix}"),
-            new QADataEntry("sim_205", "[0, 1, 2; 3, 4, 5; 6, 7, 8]").withMathTex("\\begin{bmatrix}0&1&2\\\\3&4&5\\\\6&7&8\\end{bmatrix}"),
-            new QADataEntry("sim_206", "[0, 1, 0; 2, 0, 3; 0, 4, 0]").withMathTex("\\begin{bmatrix}0&1&0\\\\2&0&3\\\\0&4&0\\end{bmatrix}"),
-            new QADataEntry("sim_207", "[1, 2; 0, 3; 0, 4; 0, 5]").withMathTex("\\begin{bmatrix}1&2\\\\0&3\\\\0&4\\\\0&5\\end{bmatrix}"),
-            new QADataEntry("sim_208", "[11, 2; 3, 0; 4, 0; 5, 0]").withMathTex("\\begin{bmatrix}11&2\\\\3&0\\\\4&0\\\\5&0\\end{bmatrix}"),
-//                new QADataEntry("sim_195", "[0, 0; 0, 2; 4, 0]")                                           //TODO: With empty (zero) elments // Row vector with exponentiation
+//            new QADataEntry("sim_194", "[2, 0; 0, 3]").withMathTex("\\begin{bmatrix}2&0\\\\0&3\\end{bmatrix}"),
+//            new QADataEntry("sim_196", "[1, 0, 0; 2, 3, 4]").withMathTex("\\begin{bmatrix}1&0&0\\\\2&3&4\\end{bmatrix}"),
+//            new QADataEntry("sim_197", "[0, 0, 1; 2, 3, 4]").withMathTex("\\begin{bmatrix}0&0&1\\\\2&3&4\\end{bmatrix}"),
+//            new QADataEntry("sim_198", "[1, 2, 3; 4, 0, 0]").withMathTex("\\begin{bmatrix}1&2&3\\\\4&0&0\\end{bmatrix}"),
+//            new QADataEntry("sim_199", "[1, 2, 3; 0, 4, 0]").withMathTex("\\begin{bmatrix}1&2&3\\\\0&4&0\\end{bmatrix}"),
+//            new QADataEntry("sim_200", "[1, 2, 3; 0, 0, 4]").withMathTex("\\begin{bmatrix}1&2&3\\\\0&0&4\\end{bmatrix}"),
+//            new QADataEntry("sim_201", "[1, 0, 0, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}1&0&0&0\\\\2&3&4&5\\end{bmatrix}"),
+//            new QADataEntry("sim_202", "[0, 1, 0, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&1&0&0\\\\2&3&4&5\\end{bmatrix}"),
+//            new QADataEntry("sim_203", "[0, 0, 1, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&0&1&0\\\\2&3&4&5\\end{bmatrix}"),
+//            new QADataEntry("sim_204", "[0, 0, 0, 1; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&0&0&1\\\\2&3&4&5\\end{bmatrix}"),
+//            new QADataEntry("sim_205", "[0, 1, 2; 3, 4, 5; 6, 7, 8]").withMathTex("\\begin{bmatrix}0&1&2\\\\3&4&5\\\\6&7&8\\end{bmatrix}"),
+//            new QADataEntry("sim_206", "[0, 1, 0; 2, 0, 3; 0, 4, 0]").withMathTex("\\begin{bmatrix}0&1&0\\\\2&0&3\\\\0&4&0\\end{bmatrix}"),
+//            new QADataEntry("sim_207", "[1, 2; 0, 3; 0, 4; 0, 5]").withMathTex("\\begin{bmatrix}1&2\\\\0&3\\\\0&4\\\\0&5\\end{bmatrix}"),
+//            new QADataEntry("sim_208", "[11, 2; 3, 0; 4, 0; 5, 0]").withMathTex("\\begin{bmatrix}11&2\\\\3&0\\\\4&0\\\\5&0\\end{bmatrix}"),
+//            new QADataEntry("sim_222", "[11, 2; 3, 0; 4, 0; 5, 0]").withMathTex("\\begin{bmatrix}11&2\\\\3&0\\\\4&0\\\\5&0\\end{bmatrix}"), //TODO
+//            new QADataEntry("sim_195", "[0, 0; 0, 2; 4, 0]")                                           //TODO: With empty (zero) elments // Row vector with exponentiation
         };
         QADataSuites.put("matrixWithHoles", new QADataSuite(entries_matrixWithHoles, false));
 
@@ -467,6 +468,8 @@ public class Test_QADataSet {
             new QADataEntry("sim_187", "Sum((a = 1) : (2))(Sum((b = 1) : (3))((a*b)))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{a}{b}}}").withEvalRes(18.0),
             new QADataEntry("sim_188", "(1 / Sum((x = 6) : (7))(x))").withMathTex("\\frac{1}{\\sum\\limits_{{x}={6}}^{7}{x}}").withEvalRes(1.0 / 13.0),
             new QADataEntry("sim_189", "(1 / Sum((x = 2) : (3))((x ^ 2)))").withMathTex("\\frac{1}{\\sum\\limits_{{x}={2}}^{3}{{x}^{2}}}").withEvalRes(1.0 / 13.0),
+            new QADataEntry("sim_220", "Sum((a = 1) : (4))(Sum((b = 1) : (a))(b))").withMathTex("\\sum\\limits_{{a}={1}}^{4}{\\sum\\limits_{{b}={1}}^{a}{b}}").withEvalRes(20.0),
+            new QADataEntry("sim_221", "Sum((a = 1) : (2))(Sum((b = 1) : (3))(((a ^ 2) + (b ^ 2))))").withMathTex("\\sum\\limits_{{a}={1}}^{2}{\\sum\\limits_{{b}={1}}^{3}{{{a}^{2}}+{{b}^{2}}}}").withEvalRes(43.0),
 
             /* Pi product term */
             new QADataEntry("sim_186", "Prod((a = 1) : (3))(a)").withMathTex("\\prod\\limits_{{a}={1}}^{3}{a}").withEvalRes(6.0)
