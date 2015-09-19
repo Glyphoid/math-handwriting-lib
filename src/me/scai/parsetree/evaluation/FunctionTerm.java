@@ -50,7 +50,8 @@ public class FunctionTerm extends FunctionSigmaPiIntegralTerm {
 		}
 		
 		/* "Functionize" the body */
-		EvaluatorHelper.functionizeBody(this.evalBody, this.getArgNames());
+        int funcStackHeight = evaluator.getFuncStackHeight();
+		EvaluatorHelper.functionizeBody(this.evalBody, funcStackHeight, this.getArgNames());
 		
 		int numArgs = argList.numArgs();
 //		List<String> argSymbols = argList.getSymbolNames();

@@ -38,7 +38,8 @@ class PiTerm extends SigmaPiIntegralTerm {
 		/* "Functionize" the body, i.e., replace the argument symbols with
 		 * special ones like "__stack0_funcArg1__"
 		 */
-        EvaluatorHelper.functionizeBody(this.evalBody, argSymbols);
+        int funcStackHeight = evaluator.getFuncStackHeight();
+        EvaluatorHelper.functionizeBody(this.evalBody, funcStackHeight, argSymbols);
 
         int numVals = allArgVals.get(0).size();
         for (int i = 0; i < numVals; ++i) {

@@ -682,21 +682,19 @@ public class ParseTreeEvaluator {
 		}
 		String varName = (String) v;
 
-		if (hasDirectAncestor("USER_FUNCTION_ARGS") && /*
-														 * Special case for
-														 * customer function
-														 * definition
-														 */
-		hasDirectAncestor("USER_FUNCTION_DEF")) {
+		if (hasDirectAncestor("USER_FUNCTION_ARGS") && /* Special case for customer function definition */
+		    hasDirectAncestor("USER_FUNCTION_DEF")) {
 			return varName;
 		}
 		
-		int argIdx = EvaluatorHelper.getArgIdx(varName);
-		if (argIdx != -1) {
-		    String tempVarName = EvaluatorHelper.genFuncArgName(this.funcNameStack.size() - 1, argIdx);
-//		    ValueUnion vu = varMap.get(tempVarName);
-		    return varMap.getVarValue(tempVarName);
-		} else if (varMap.containsVarName(varName)) {
+//		int argIdx = EvaluatorHelper.getArgIdx(varName);
+//		if (argIdx != -1) {
+//		    String tempVarName = EvaluatorHelper.genFuncArgName(this.funcNameStack.size() - 1, argIdx, "whatever"); //TODO!
+//		    return varMap.getVarValue(tempVarName); //DEBUG
+//            return varMap.getVarValue(varName);
+//		} else
+
+        if (varMap.containsVarName(varName)) {
 			return varMap.getVarValue(varName);
 		} else {
 			return new ValueUnion(0.0); /* TODO: Throw an error? */
@@ -831,7 +829,7 @@ public class ParseTreeEvaluator {
 		
 		/* Determine the temporary argument names based on function call stack status */
 		int funcStackPos = funcNameStack.size(); 
-		List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, funcTermInput.argList.numArgs()));
+		List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, funcTermInput.argList));
 		
 		/* Push function name to call stack */
 		funcNameStack.add(funcTermInput.functionName);
@@ -843,7 +841,7 @@ public class ParseTreeEvaluator {
 		
 		return retVal;
 	}
-	
+
 	public Object def_sigma_term(Object assignStatementObj, Object upperLimitObj, Object bodyObj) 
 	    throws ParseTreeEvaluatorException {
 	    Node assignStatement = (Node) assignStatementObj;
@@ -922,7 +920,7 @@ public class ParseTreeEvaluator {
 //        ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
     
         int funcStackPos = funcNameStack.size(); 
-        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, sigmaTerm.argList.numArgs()));
+        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, sigmaTerm.argList));
         
         /* Push function name to call stack */
         funcNameStack.add("SigmaTerm_" + sigmaTerm.hashCode()); /* TODO: Better naming */
@@ -944,7 +942,7 @@ public class ParseTreeEvaluator {
 //        ParseTreeEvaluator evaluator = new ParseTreeEvaluator(prodSet);
 
         int funcStackPos = funcNameStack.size();
-        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, piTerm.argList.numArgs()));
+        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, piTerm.argList));
 
         /* Push function name to call stack */
         funcNameStack.add("PiTerm_" + piTerm.hashCode()); /* TODO: Better naming */
@@ -962,7 +960,7 @@ public class ParseTreeEvaluator {
         DefiniteIntegralTerm defIntegTerm = (DefiniteIntegralTerm) defIntegTermObj;
 
         int funcStackPos = funcNameStack.size();
-        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, defIntegTerm.argList.numArgs()));
+        List<String> funcArgNames = Arrays.asList(EvaluatorHelper.genFuncArgNames(funcStackPos, defIntegTerm.argList));
 
         /* Push function name to call stack */
         funcNameStack.add("DefIntegTerm_" + defIntegTerm.hashCode()); /* TODO: Better naming */
@@ -986,6 +984,10 @@ public class ParseTreeEvaluator {
 
     public ValueUnion getFromVarMap(final String varName) {
         return varMap.getVarValue(varName);
+    }
+
+    public int getFuncStackHeight() {
+        return funcNameStack.size();
     }
 
 	/* ~Methods */

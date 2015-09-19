@@ -418,9 +418,9 @@ public class Test_QADataSet {
         /* Defined functions: Stateful */
         QADataEntry[] entries_definedFunctions = {
             new QADataEntry("sim_109", "(f(x) = (2*x))").withMathTex("{f{\\left(x\\right)}}={{2}{x}}"), // Function definition
+            new QADataEntry("sim_112", "f(3)").withMathTex("f{\\left(3\\right)}").withEvalRes(6.0),             // Evaluation of custom function
             new QADataEntry("sim_110", "(g(y) = 1)").withMathTex("{g{\\left(y\\right)}}={1}"),     // Function definition
             new QADataEntry("sim_111", "(h(x, y) = (x*y))").withMathTex("{h{\\left(x,y\\right)}}={{x}{y}}"), // Function definition
-            new QADataEntry("sim_112", "f(3)").withMathTex("f{\\left(3\\right)}"),             // Evaluation of custom function
             new QADataEntry("sim_115", "f(27)").withMathTex("f{\\left(27\\right)}"),             // Evaluation of custom function
             new QADataEntry("sim_113", "f((3 + 2))").withMathTex("f{\\left({3}+{2}\\right)}"), // Evaluation of custom function
             new QADataEntry("sim_114", "f(-0.5)").withMathTex("f{\\left(-{0.5}\\right)}"),      // Evaluation of custom function

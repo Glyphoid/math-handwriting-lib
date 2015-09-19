@@ -43,7 +43,8 @@ public class DefiniteIntegralTerm extends SigmaPiIntegralTerm {
 		/* "Functionize" the body, i.e., replace the argument symbols with
 		 * special ones like "__stack0_funcArg1__"
 		 */
-        EvaluatorHelper.functionizeBody(this.evalBody, argSymbols);
+        int funcStackHeight = evaluator.getFuncStackHeight();
+        EvaluatorHelper.functionizeBody(this.evalBody, funcStackHeight, argSymbols);
 
         double sum = 0.0;
         int numVals = allArgVals.get(0).size();

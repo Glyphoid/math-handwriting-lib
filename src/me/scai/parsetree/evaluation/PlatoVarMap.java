@@ -42,15 +42,48 @@ public class PlatoVarMap {
     }
 
     public boolean containsVarName(String varName) {
-        return varMap.containsKey(varName);
+        if (varMap.containsKey(varName)) {
+            return true;
+        } else {
+            if ( varName.indexOf("funcArg") != -1 &&
+                 varName.substring(varName.indexOf("funcArg")).indexOf("__") !=
+                 varName.substring(varName.indexOf("funcArg")).lastIndexOf("__") ) {
+                String[] parts = varName.split("__");
+                String varName1 = String.format("__%s__%s__", parts[1], parts[2]);
+
+                return varMap.containsKey(varName1);
+            } else {
+                return false;
+            }
+
+        }
     }
 
     public ValueUnion getVarValue(String varName) {
         if (varMap.containsKey(varName)) {
             return varMap.get(varName);
         } else {
-            return null;
+            if ( varName.substring(varName.indexOf("funcArg")).indexOf("__") !=
+                    varName.substring(varName.indexOf("funcArg")).lastIndexOf("__") ) {
+                String[] parts = varName.split("__");
+                String varName1 = String.format("__%s__%s__", parts[1], parts[2]);
+
+                if (varMap.containsKey(varName1)) {
+                    return varMap.get(varName1);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+
         }
+
+//        if (varMap.containsKey(varName)) {
+//
+//        } else {
+//            return null;
+//        }
     }
 
     public void removeVar(String varName) {
