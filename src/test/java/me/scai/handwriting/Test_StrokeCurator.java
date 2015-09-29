@@ -19,6 +19,7 @@ import static org.junit.Assert.assertArrayEquals;
 public class Test_StrokeCurator {
     private static final String configFilePath  = "C:\\Users\\scai\\Dropbox\\Plato\\test-data\\stroke_curator_config_testCase_1.json";
 
+    private static final String TEST_ROOT_DIR = "test";
     private static final String RESOURCES_DIR = "resources";
     private static final String RESOURCES_CONFIG_DIR = "config";
     private static final String STROKE_CURATOR_CONFIG_FILE = "stroke_curator_config.json";
@@ -33,11 +34,13 @@ public class Test_StrokeCurator {
 
     @Before
     public void setup() {
-        URL strokeCuratorConfigUrl = this.getClass().getClassLoader().getResource(File.separator + RESOURCES_DIR +
+        URL strokeCuratorConfigUrl = this.getClass().getClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+                File.separator + RESOURCES_DIR +
                 File.separator + RESOURCES_CONFIG_DIR +
                 File.separator + STROKE_CURATOR_CONFIG_FILE);
 
-        URL tokenEngineFileUrl = this.getClass().getClassLoader().getResource(File.separator + RESOURCES_DIR +
+        URL tokenEngineFileUrl = this.getClass().getClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+                File.separator + RESOURCES_DIR +
                 File.separator + RESOURCES_TOKEN_ENGINE_DIR +
                 File.separator + TOKEN_ENGINE_FILE_NAME);
 

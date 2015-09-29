@@ -379,21 +379,21 @@ public class Test_QADataSet {
         /* Matrix with holes */
         QADataEntry[] entries_matrixWithHoles = {
             new QADataEntry("sim_76", "[0, 4, 0; 3, 0, 5]").withMathTex("\\begin{bmatrix}0&4&0\\\\3&0&5\\end{bmatrix}"),
-//            new QADataEntry("sim_194", "[2, 0; 0, 3]").withMathTex("\\begin{bmatrix}2&0\\\\0&3\\end{bmatrix}"),
-//            new QADataEntry("sim_196", "[1, 0, 0; 2, 3, 4]").withMathTex("\\begin{bmatrix}1&0&0\\\\2&3&4\\end{bmatrix}"),
-//            new QADataEntry("sim_197", "[0, 0, 1; 2, 3, 4]").withMathTex("\\begin{bmatrix}0&0&1\\\\2&3&4\\end{bmatrix}"),
-//            new QADataEntry("sim_198", "[1, 2, 3; 4, 0, 0]").withMathTex("\\begin{bmatrix}1&2&3\\\\4&0&0\\end{bmatrix}"),
-//            new QADataEntry("sim_199", "[1, 2, 3; 0, 4, 0]").withMathTex("\\begin{bmatrix}1&2&3\\\\0&4&0\\end{bmatrix}"),
-//            new QADataEntry("sim_200", "[1, 2, 3; 0, 0, 4]").withMathTex("\\begin{bmatrix}1&2&3\\\\0&0&4\\end{bmatrix}"),
-//            new QADataEntry("sim_201", "[1, 0, 0, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}1&0&0&0\\\\2&3&4&5\\end{bmatrix}"),
-//            new QADataEntry("sim_202", "[0, 1, 0, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&1&0&0\\\\2&3&4&5\\end{bmatrix}"),
-//            new QADataEntry("sim_203", "[0, 0, 1, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&0&1&0\\\\2&3&4&5\\end{bmatrix}"),
-//            new QADataEntry("sim_204", "[0, 0, 0, 1; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&0&0&1\\\\2&3&4&5\\end{bmatrix}"),
-//            new QADataEntry("sim_205", "[0, 1, 2; 3, 4, 5; 6, 7, 8]").withMathTex("\\begin{bmatrix}0&1&2\\\\3&4&5\\\\6&7&8\\end{bmatrix}"),
-//            new QADataEntry("sim_206", "[0, 1, 0; 2, 0, 3; 0, 4, 0]").withMathTex("\\begin{bmatrix}0&1&0\\\\2&0&3\\\\0&4&0\\end{bmatrix}"),
-//            new QADataEntry("sim_207", "[1, 2; 0, 3; 0, 4; 0, 5]").withMathTex("\\begin{bmatrix}1&2\\\\0&3\\\\0&4\\\\0&5\\end{bmatrix}"),
-//            new QADataEntry("sim_208", "[11, 2; 3, 0; 4, 0; 5, 0]").withMathTex("\\begin{bmatrix}11&2\\\\3&0\\\\4&0\\\\5&0\\end{bmatrix}"),
-//            new QADataEntry("sim_222", "[11, 2; 3, 0; 4, 0; 5, 0]").withMathTex("\\begin{bmatrix}11&2\\\\3&0\\\\4&0\\\\5&0\\end{bmatrix}"), //TODO
+            new QADataEntry("sim_194", "[2, 0; 0, 3]").withMathTex("\\begin{bmatrix}2&0\\\\0&3\\end{bmatrix}"),
+            new QADataEntry("sim_196", "[1, 0, 0; 2, 3, 4]").withMathTex("\\begin{bmatrix}1&0&0\\\\2&3&4\\end{bmatrix}"),
+            new QADataEntry("sim_197", "[0, 0, 1; 2, 3, 4]").withMathTex("\\begin{bmatrix}0&0&1\\\\2&3&4\\end{bmatrix}"),
+            new QADataEntry("sim_198", "[1, 2, 3; 4, 0, 0]").withMathTex("\\begin{bmatrix}1&2&3\\\\4&0&0\\end{bmatrix}"),
+            new QADataEntry("sim_199", "[1, 2, 3; 0, 4, 0]").withMathTex("\\begin{bmatrix}1&2&3\\\\0&4&0\\end{bmatrix}"),
+            new QADataEntry("sim_200", "[1, 2, 3; 0, 0, 4]").withMathTex("\\begin{bmatrix}1&2&3\\\\0&0&4\\end{bmatrix}"),
+            new QADataEntry("sim_201", "[1, 0, 0, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}1&0&0&0\\\\2&3&4&5\\end{bmatrix}"),
+            new QADataEntry("sim_202", "[0, 1, 0, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&1&0&0\\\\2&3&4&5\\end{bmatrix}"),
+            new QADataEntry("sim_203", "[0, 0, 1, 0; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&0&1&0\\\\2&3&4&5\\end{bmatrix}"),
+            new QADataEntry("sim_204", "[0, 0, 0, 1; 2, 3, 4, 5]").withMathTex("\\begin{bmatrix}0&0&0&1\\\\2&3&4&5\\end{bmatrix}"),
+            new QADataEntry("sim_205", "[0, 1, 2; 3, 4, 5; 6, 7, 8]").withMathTex("\\begin{bmatrix}0&1&2\\\\3&4&5\\\\6&7&8\\end{bmatrix}"),
+            new QADataEntry("sim_206", "[0, 1, 0; 2, 0, 3; 0, 4, 0]").withMathTex("\\begin{bmatrix}0&1&0\\\\2&0&3\\\\0&4&0\\end{bmatrix}"),
+            new QADataEntry("sim_207", "[1, 2; 0, 3; 0, 4; 0, 5]").withMathTex("\\begin{bmatrix}1&2\\\\0&3\\\\0&4\\\\0&5\\end{bmatrix}"),
+            new QADataEntry("sim_208", "[11, 2; 3, 0; 4, 0; 5, 0]").withMathTex("\\begin{bmatrix}11&2\\\\3&0\\\\4&0\\\\5&0\\end{bmatrix}"),
+//            new QADataEntry("sim_222", "[1 + 2 ^ 3; 0; 0, 4 + 5 ^ 6]").withMathTex("\\begin{bmatrix}11&2\\\\3&0\\\\4&0\\\\5&0\\end{bmatrix}"), //TODO
 //            new QADataEntry("sim_195", "[0, 0; 0, 2; 4, 0]")                                           //TODO: With empty (zero) elments // Row vector with exponentiation
         };
         QADataSuites.put("matrixWithHoles", new QADataSuite(entries_matrixWithHoles, false));
@@ -496,6 +496,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_212", "Integ(x=1 : 2)((1 / x))").withMathTex("\\int_{1}^{2}{\\frac{1}{x}}d{x}").withEvalResRange(0.6931, 0.6932),
             new QADataEntry("sim_212", "Integ(x=1 : 2)((1 / x))").withMathTex("\\int_{1}^{2}{\\frac{1}{x}}d{x}").withEvalResRange(0.6931, 0.6932),
             new QADataEntry("sim_213", "Integ(y=1 : 4)((sqrt(y)))").withMathTex("\\int_{1}^{4}{\\sqrt{y}}d{y}").withEvalResRange(4.6666, 4.6667),
+            new QADataEntry("sim_223", "Integ(x=0 : 1)(Integ(y=0 : 2)((x*y)))").withMathTex("\\int_{0}^{1}{\\int_{0}^{2}{{x}{y}}d{y}}d{x}").withEvalResRange(0.9999, 1.0001),
         };
         QADataSuites.put("defIntegTerm", new QADataSuite(entries_defIntegTerm, false));
 

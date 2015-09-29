@@ -297,10 +297,6 @@ public class GraphicalProductionSet {
 				/* There are rhs items other than the head NT. */
 				int [][] combs = null;
 
-                if (t_prod.lhs.equals("COLUMN_CONTENT")) { //DEBUG
-                    int jjj = 111;
-                }
-
 				if ( t_prod.geomShortcut.existsBipartite() ) {
 					combs = t_prod.geomShortcut.getPartitionBipartite(wts, true);
 				}

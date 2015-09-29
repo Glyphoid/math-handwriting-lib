@@ -24,12 +24,13 @@ import org.junit.Test;
 public class Test_TokenSetParser {   
 	public static final String errStr = ParseTreeStringizer.STRINGIZATION_FAILED_STRING;
 	public static final double evalResEqualityAbsTol = 1e-9;
-	
-	private static final String RESOURCES_DIR = "resources";
-	private static final String TERMINALS_FILE_NAME = "terminals.json";
+
+    private static final String TEST_ROOT_DIR         = "test";
+	private static final String RESOURCES_DIR         = "resources";
+	private static final String TERMINALS_FILE_NAME   = "terminals.json";
 	private static final String PRODUCTIONS_FILE_NAME = "productions.txt";
-	private static final String RESOURCES_CONFIG_DIR = "config";
-	
+	private static final String RESOURCES_CONFIG_DIR  = "config";
+
 	String[] singleOutIdx = {};
 	Test_QADataSet qaDataSet = new Test_QADataSet();
 	
@@ -63,10 +64,12 @@ public class Test_TokenSetParser {
 			System.err.println("Cannot determine host name");
 		}
 		
-		prodSetFN = Thread.currentThread().getContextClassLoader().getResource(File.separator + RESOURCES_DIR + 
+		prodSetFN = Thread.currentThread().getContextClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+                                                File.separator + RESOURCES_DIR +
 						                        File.separator + RESOURCES_CONFIG_DIR + 
 						                        File.separator + PRODUCTIONS_FILE_NAME);
-		termSetFN = Thread.currentThread().getContextClassLoader().getResource(File.separator + RESOURCES_DIR + 
+		termSetFN = Thread.currentThread().getContextClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+                                                File.separator + RESOURCES_DIR +
 								                File.separator + RESOURCES_CONFIG_DIR + 
 								                File.separator + TERMINALS_FILE_NAME);
 		

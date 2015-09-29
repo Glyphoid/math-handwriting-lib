@@ -13,9 +13,10 @@ import java.io.IOException;
 import java.net.URL;
 
 public class Test_TerminalSet {
-	private static final String RESOURCES_DIR = "resources";
+    private static final String TEST_ROOT_DIR        = "test";
+	private static final String RESOURCES_DIR        = "resources";
 	private static final String RESOURCES_CONFIG_DIR = "config";
-	private static final String TERMINALS_JSON_FILE = "terminals.json";	
+	private static final String TERMINALS_JSON_FILE  = "terminals.json";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -36,8 +37,9 @@ public class Test_TerminalSet {
 	@Test
 	public void test() {
 		TerminalSet ts = new TerminalSet();
-		
+
 		final URL tsJsonFileUrl = Test_TerminalSet.class.getClassLoader().getResource(
+                File.separator + TEST_ROOT_DIR +
 				File.separator + RESOURCES_DIR +
 				File.separator + RESOURCES_CONFIG_DIR + 
 				File.separator + TERMINALS_JSON_FILE);
@@ -56,6 +58,7 @@ public class Test_TerminalSet {
 	@Test
 	public void testFactoryMethod() {
 		final URL tsJsonFileUrl = Test_TerminalSet.class.getClassLoader().getResource(
+                File.separator + TEST_ROOT_DIR +
 				File.separator + RESOURCES_DIR +
 				File.separator + RESOURCES_CONFIG_DIR + 
 				File.separator + TERMINALS_JSON_FILE);

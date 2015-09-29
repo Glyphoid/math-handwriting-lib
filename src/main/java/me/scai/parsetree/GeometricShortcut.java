@@ -24,6 +24,7 @@ class GeometricShortcut {
         verticalTerminalDivideEW,       /* East to west */
         verticalNT1T2DivideWE,		    /* 3-part shortcut types, with the head being NT and the remaining two items being both T. Hence the "NT1T2". Example: (Addition, Bracket_L, Bracket_R) */
         westEast, 				        /* 2-part shortcut type: head is at west and the (only) non-head is at the east */
+//        southNorth,                     /* 2-part shortcut type */
         sigmaPiStyle,                   /* Sigma summation and Pi product: 4 rhs parts */
         defIntegStyle                   /* Definite integral style: 6 rhs parts */
         // TODO: southNorth
@@ -68,8 +69,9 @@ class GeometricShortcut {
 
                 if ( nPosRels == 1 ) {
                     if ( posType == PositionRelation.PositionType.PositionEast ||
-                         posType == PositionRelation.PositionType.PositionGenEast )
+                         posType == PositionRelation.PositionType.PositionGenEast ) {
                         shortcutType = ShortcutType.westEast;
+                    }
                 }
             }
         } else if ( nrhs == 3 ){
@@ -395,6 +397,8 @@ class GeometricShortcut {
         /* Find the integ token */
         int idxInteg = -1;
         int idxD = -1;
+        int integCount = 0;
+        int dCount = 0;
 
         /* Coordinates we need for dividing the plane */
         float integTopY = 0.0f;
@@ -403,17 +407,23 @@ class GeometricShortcut {
         float integCtrX = 0.0f;
         float integCtrY = 0.0f;
 
-        float dLeftX = 0.0f;
-        float dRightX = 0.0f;
         float dCtrX = 0.0f;
 
         CWrittenTokenSetNoStroke wts = (CWrittenTokenSetNoStroke) wts0;
         int nTokens = wts.getNumTokens();
 
+        if (wts.getNumTokens() == 12) { // DEBUG
+            int jjj = 111;
+        }
+
         for (int i = 0; i < nTokens; ++i) {
             CWrittenToken wt = wts.tokens.get(i);
             if (wt.getRecogWinner().equals(integTokenName)) {
-                if (idxInteg == -1) {
+                integCount++;
+
+                if (idxInteg == -1 || wt.getCentralX() < integCtrX) {
+                    // If there are more than one integ tokens, take the leftmost one. This is amenable to
+                    // nested definite integrals.
                     idxInteg = i;
 
                     float[] bounds = wt.getBounds();
@@ -422,32 +432,26 @@ class GeometricShortcut {
                     integRightX  = bounds[2];
                     integCtrX    = wt.getCentralX();
                     integCtrY    = wt.getCentralY();
-                } else {
-                    // There shouldn't be more than one integ tokens:
-                    // TODO: This bars any nesting of def integ! Fix this. One easy way to fix it is to find all the
-                    //       integ tokens and take the left-most one.
-                    return null;
                 }
             } else if (wt.getRecogWinner().equals(dTokenName)) {
-                if (idxD == -1) {
+                dCount++;
+
+                if (idxD == -1 || wt.getCentralX() > dCtrX) {
+                    // If there are more than one d tokens, take the rightmost one, for nested definite integrals.
                     idxD = i;
 
-
                     float[] bounds = wt.getBounds();
-                    dLeftX  = bounds[0];
-                    dRightX = bounds[2];
                     dCtrX   = wt.getCentralX();
-                } else {
-                    // There shouldn't be more than one d tokens:
-                    // TODO: This bars any nesting of def integ! Fix this. One easy way to fix it is to find all the
-                    //       d tokens and take the right-most one.
-                    return null;
                 }
             }
         }
 
         /* Make sure that the integ and d tokens are located */
         if (idxInteg == -1 || idxD == -1) {
+            return null;
+        }
+
+        if (integCount != dCount) {
             return null;
         }
 
