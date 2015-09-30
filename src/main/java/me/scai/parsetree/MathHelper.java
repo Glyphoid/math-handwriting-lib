@@ -274,10 +274,12 @@ public class MathHelper {
 	/* Differentiation of a float array: 
 	 * Emulating "diff" command in MATLAB */
 	public static float [] diff(final float [] x) {
-		if ( x == null )
-			throw new RuntimeException("diff function encountered null input");
-		if ( x.length == 0 )
-			throw new RuntimeException("diff function encountered empty array");
+		if ( x == null ) {
+            throw new IllegalArgumentException("diff function encountered null input");
+        }
+		if ( x.length == 0 ) {
+            throw new IllegalArgumentException("diff function encountered empty array");
+        }
 		
 		float [] dx = new float[x.length - 1];
 		for (int i = 0; i < x.length - 1; ++i)
@@ -290,10 +292,12 @@ public class MathHelper {
 	 * Emulating "cumsum" function in MATLAB
 	 */
 	 public static float [] cumsum(final float [] x, final boolean bInitialZero) {
-		 if ( x == null )
-			 throw new RuntimeException("diff function encountered null input");
-		 if ( x.length == 0 )
-			 throw new RuntimeException("diff function encountered empty array");
+		 if ( x == null ) {
+             throw new IllegalArgumentException("diff function encountered null input");
+         }
+		 if ( x.length == 0 ) {
+             throw new IllegalArgumentException("diff function encountered empty array");
+         }
 		 
 		 float [] cx = null;
 		 if ( !bInitialZero ) {
@@ -319,8 +323,9 @@ public class MathHelper {
 	  * Emulating "sum" function in MATLAB
 	  */
 	 public static float sum(final float [] x) {
-		 if ( x == null )
-			 throw new RuntimeException("diff function encountered null input");
+		 if ( x == null ) {
+             throw new RuntimeException("diff function encountered null input");
+         }
 
 		 float s = 0f;
 		 for (int i = 0; i < x.length; ++i)
@@ -377,8 +382,6 @@ public class MathHelper {
              return Math.abs(x - y) / avgMag < absTol;
          }
 	 }
-
-
 
 
     /* Return the indices of the n biggest elements */
