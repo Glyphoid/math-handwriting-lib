@@ -5,6 +5,7 @@ import me.scai.plato.helpers.CStrokeJsonHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.*;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -280,6 +281,229 @@ public class Test_StrokeCurator {
         for (int i = 0; i < constStrokeIndices.size(); ++i) {
             assertArrayEquals(constStrokeIndices.get(i), primeConstStrokeIndices.get(i));
         }
+
+    }
+
+    /* Test undo / redo stack */
+    @Test
+    public void testUndoRedo() {
+        CStroke[] strokesToAdd = new CStroke[4];
+
+        /* stroke0 and stroke1 constitute "=" */
+        CStroke stroke0 = new CStroke();
+        stroke0.addPoint(0.0f, 0.0f);
+        stroke0.addPoint(10.0f, 0.1f);
+        stroke0.addPoint(20.0f, 0.0f);
+        stroke0.addPoint(30.0f, 0.05f);
+
+        CStroke stroke1 = new CStroke();
+        stroke1.addPoint(0.0f, 10.0f);
+        stroke1.addPoint(10.0f, 10.95f);
+        stroke1.addPoint(20.0f, 10.0f);
+        stroke1.addPoint(30.0f, 10.02f);
+
+        /* stroke2 and stroke3 constitute "T". But they need to be merged manually.
+         * But eventually it'll be force-recognized as "+" instead */
+        CStroke stroke2 = new CStroke();
+        stroke2.addPoint(40.0f, -10.0f);
+        stroke2.addPoint(50.0f, -10.1f);
+        stroke2.addPoint(60.0f, -10.2f);
+        stroke2.addPoint(70.0f, -10.1f);
+
+        CStroke stroke3 = new CStroke();
+        stroke3.addPoint(55.0f, -10.0f);
+        stroke3.addPoint(55.1f, 0.0f);
+        stroke3.addPoint(55.0f, 10.0f);
+        stroke3.addPoint(55.1f, 20.1f);
+
+        strokesToAdd[0] = stroke0;
+        strokesToAdd[1] = stroke1;
+        strokesToAdd[2] = stroke2;
+        strokesToAdd[3] = stroke3;
+
+        // Initially the state stack should be empty. An exception should be thrown if you attempt to undo or redo.
+        IllegalStateException caughtException = null;
+
+        try {
+            curator.undoUserAction();
+        } catch (IllegalStateException e) {
+            caughtException = e;
+        }
+        assertNotNull(caughtException);
+
+        caughtException = null;
+
+        try {
+            curator.redoUserAction();
+        } catch (IllegalStateException e) {
+            caughtException = e;
+        }
+        assertNotNull(caughtException);
+
+
+        // Add the first stroke
+        curator.addStroke(stroke0);
+        assertEquals(StrokeCuratorUserAction.AddStroke, curator.getLastUserAction());
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(1, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(0));
+
+        // Add the second stroke
+        curator.addStroke(stroke1);
+        assertEquals(StrokeCuratorUserAction.AddStroke, curator.getLastUserAction());
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+
+        // Undo the AddStroke action
+        curator.undoUserAction();
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(1, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(0));
+
+        // Redo the AddStroke action
+        curator.redoUserAction();
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+
+        // Undo the two actions
+        curator.undoUserAction();
+        curator.undoUserAction();
+
+        assertEquals(0, curator.getNumTokens());
+        assertEquals(0, curator.getNumStrokes());
+
+        // Redo both actions
+        curator.redoUserAction();
+        curator.redoUserAction();
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+
+        // Unmerge the 2nd stroke
+        curator.mergeStrokesAsToken(new int[] {1});
+        assertEquals(2, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(2, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(1));
+
+        // The internal implementation of the unmerge action is actually merge
+        assertEquals(StrokeCuratorUserAction.MergeStrokesAsToken, curator.getLastUserAction());
+
+        // Undo the unmerge (i.e., implemented as merge internally)
+        curator.undoUserAction();
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals(StrokeCuratorUserAction.AddStroke, curator.getLastUserAction());
+
+        // Force set token name
+        curator.forceSetRecogWinner(0, "A");
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("A", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals(StrokeCuratorUserAction.ForceSetTokenName, curator.getLastUserAction());
+
+        // Undo force set token name
+        curator.undoUserAction();
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals(StrokeCuratorUserAction.AddStroke, curator.getLastUserAction());
+
+        // Clear tokens
+        curator.clear();
+
+        assertEquals(0, curator.getNumTokens());
+        assertEquals(0, curator.getNumStrokes());
+        assertEquals(StrokeCuratorUserAction.ClearStrokes, curator.getLastUserAction());
+
+        // Undo clear strokes
+        curator.undoUserAction();
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals(StrokeCuratorUserAction.AddStroke, curator.getLastUserAction());
+
+        // Add the third and fourth strokes
+        curator.addStroke(stroke2);
+        curator.addStroke(stroke3);
+
+        assertEquals(3, curator.getNumTokens());
+        assertEquals(4, curator.getNumStrokes());
+        assertEquals(3, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(1));
+        assertEquals("1", curator.getWrittenTokenRecogWinners().get(2));
+
+        // Merge the third and fourth strokes into "T"
+        curator.mergeStrokesAsToken(new int[] {2, 3});
+
+        assertEquals(2, curator.getNumTokens());
+        assertEquals(4, curator.getNumStrokes());
+        assertEquals(2, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals("T", curator.getWrittenTokenRecogWinners().get(1));
+        assertEquals(StrokeCuratorUserAction.MergeStrokesAsToken, curator.getLastUserAction());
+
+        // Remove a token
+        curator.removeToken(1);
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals(StrokeCuratorUserAction.RemoveToken, curator.getLastUserAction());
+
+        // Undo remove token
+        curator.undoUserAction();
+
+        assertEquals(2, curator.getNumTokens());
+        assertEquals(4, curator.getNumStrokes());
+        assertEquals(2, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals("T", curator.getWrittenTokenRecogWinners().get(1));
+        assertEquals(StrokeCuratorUserAction.MergeStrokesAsToken, curator.getLastUserAction());
+
+        // Redo remove token
+        curator.redoUserAction();
+
+        assertEquals(1, curator.getNumTokens());
+        assertEquals(2, curator.getNumStrokes());
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals(StrokeCuratorUserAction.RemoveToken, curator.getLastUserAction());
+
+        // Redo again and it should throw an exception
+        caughtException = null;
+
+        try {
+            curator.redoUserAction();
+        } catch (IllegalStateException e) {
+            caughtException = e;
+        }
+
+        assertNotNull(caughtException);
 
     }
 

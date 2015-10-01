@@ -36,9 +36,15 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         private static final String SERIALIZATION_WT_CTR_XS_KEY            = "wtCtrXs";
         private static final String SERIALIZATION_WT_CTR_YS_KEY            = "wtCtrYs";
 
+        private static final int STATE_STACK_CAPACITY = 16;
+
         /* Member variables */
         /* Parameters */
         private final String configFileCommentString = "#";
+
+        /* State stack, for undo/redo */
+
+        private StateStack stateStack = new StateStack(STATE_STACK_CAPACITY);
 
     //	private List<String> noMergeTokens = new ArrayList<String>();
         private StrokeCuratorConfig config;
@@ -72,6 +78,8 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         private List<int []> wtConstStrokeIdx = new LinkedList<int []>();	/* Indices to constituents stroke indices */
 
         private float mergePValueRatioThresh = 0.5F;
+
+        private JsonObject initialState;
         /* ~Member variables */
 
         /* Methods */
@@ -82,6 +90,12 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             tokenEngine = tokEngine;
 
             config = StrokeCuratorConfig.fromJsonFileAtUrl(configFN);
+
+            generateInitialStateSerialization();
+        }
+
+        private void generateInitialStateSerialization() {
+            initialState = getStateSerialization();
         }
 
         /* Constructor */
@@ -169,6 +183,10 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
         @Override
         public void addStroke(CStroke s) {
+            addStroke(s, false);
+        }
+
+        private void addStroke(CStroke s, boolean internal) {
             strokes.add(s);
             strokesUN.add(new CStroke(s)); 	/* Uses copy constructor */
             strokeState.add(-1);
@@ -272,6 +290,11 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
             /* TODO */
     //		reRecognize();
+
+            /* Push to state stack */
+            if (!internal) {
+                pushStateStack(StrokeCuratorUserAction.AddStroke);
+            }
         }
 
         private String recognizeSingleStroke(CStroke s0) {
@@ -322,7 +345,11 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         }
 
         @Override
-        public int [] removeToken(int idxToken) {
+        public int[] removeToken(int idxToken) {
+            return removeToken(idxToken, false);
+        }
+
+        private int[] removeToken(int idxToken, boolean internal) {
             if ( idxToken >= wtSet.getNumTokens() ) {
                 throw new IllegalArgumentException("idxToken exceeds number of tokens");
             }
@@ -358,6 +385,10 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                 }
             }
 
+            if (!internal) {
+                pushStateStack(StrokeCuratorUserAction.RemoveToken);
+            }
+
             return constIdx;
         }
 
@@ -377,7 +408,11 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         }
 
         @Override
-        public int [] removeLastToken() {
+        public int[] removeLastToken() {
+            return removeLastToken(false);
+        }
+
+        private int[] removeLastToken(boolean internal) {
             final int idxToken = wtSet.nTokens() - 1;
 
             return removeToken(idxToken);
@@ -533,6 +568,10 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         /* Force setting the recognition winner */
         @Override
         public void forceSetRecogWinner(int tokenIdx, String recogWinner) {
+            forceSetRecogWinner(tokenIdx, recogWinner, false);
+        }
+
+        private void forceSetRecogWinner(int tokenIdx, String recogWinner, boolean internal) {
             if (tokenIdx >= wtRecogWinners.size()) {
                 return;
             }
@@ -544,6 +583,10 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
     //	    System.out.println("Calling setTokenRecogRes with tokenIdx=" + tokenIdx + " and recogWinner=" + recogWinner);
             wtSet.setTokenRecogRes(tokenIdx, recogWinner, null);
+
+            if (!internal) {
+                pushStateStack(StrokeCuratorUserAction.ForceSetTokenName);
+            }
         }
 
         /* Force the merging of specified strokes into a token. The strokes may already
@@ -552,6 +595,10 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
          */
         @Override
         public void mergeStrokesAsToken(int [] indices) {
+            mergeStrokesAsToken(indices, false);
+        }
+
+        private void mergeStrokesAsToken(int [] indices, boolean internal) {
             /* TODO: Sanity check on indices: no repeats, no invalid indices */
 
             int nStrokes = indices.length;
@@ -656,10 +703,18 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             /* Update the wtConstStrokeIdx */
             wtConstStrokeIdx.add(indices);
 
+            if (!internal) {
+                pushStateStack(StrokeCuratorUserAction.MergeStrokesAsToken);
+            }
+
         }
 
         @Override
         public void clear() {
+            clear(false);
+        }
+
+        private void clear(boolean internal) {
             wtSet.clear();
             strokes.clear();
             strokesUN.clear();
@@ -675,6 +730,10 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             wtRecogMaxPs.clear();
 
             wtConstStrokeIdx.clear();
+
+            if (!internal) {
+                pushStateStack(StrokeCuratorUserAction.ClearStrokes);
+            }
         }
 
         @Override
@@ -741,7 +800,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         }
 
         @Override
-        public JsonElement getStateSerialization() {
+        public JsonObject getStateSerialization() {
             JsonObject stateData = new JsonObject();
 
             /* strokes */
@@ -791,7 +850,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         @Override
         public void injectSerializedState(JsonObject state) {
             /* Clear state before injecting the state */
-            clear();
+            clear(true);        // true: Marking internal calls, to prevent the pushing of user action stack. Same below.
 
             /* strokes */
             if (!(state.has(SERIALIZATION_STROKES_KEY) && state.get(SERIALIZATION_STROKES_KEY).isJsonArray())) {
@@ -804,7 +863,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                 try {
                     CStroke stroke = CStrokeJsonHelper.json2CStroke(gson.toJson(jsonStrokes.get(i)));
 
-                    addStroke(stroke);
+                    addStroke(stroke, true);
                 } catch (CStrokeJsonHelper.CStrokeJsonConversionException exc) {
                     throw new RuntimeException("Failed to convert stroke of index " + i + " to CStroke, due to: " + exc.getMessage());
                 }
@@ -832,7 +891,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                     strokeIndices[j] = jsonStrokeIndices.get(j).getAsInt();
                 }
 
-                mergeStrokesAsToken(strokeIndices);
+                mergeStrokesAsToken(strokeIndices, true);
             }
 
             /* Force set recognition winners */
@@ -850,10 +909,32 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             List<String> currRecogWinners = getWrittenTokenRecogWinners();
             for (int i = 0; i < jsonRecogWinners.size(); ++i) {
                 if ( !currRecogWinners.get(i).equals(jsonRecogWinners.get(i).getAsString()) ) {
-                    forceSetRecogWinner(i, jsonRecogWinners.get(i).getAsString());
+                    forceSetRecogWinner(i, jsonRecogWinners.get(i).getAsString(), true);
                 }
             }
 
+        }
+
+        @Override
+        public StrokeCuratorUserAction getLastUserAction() {
+            return stateStack.getLastUserAction();
+        }
+
+        @Override
+        public void undoUserAction() {
+            stateStack.undo();
+
+            injectSerializedState(stateStack.getLastSerializedState() == null ?
+                                  initialState :
+                                  stateStack.getLastSerializedState().getAsJsonObject());
+
+        }
+
+        @Override
+        public void redoUserAction() {
+            stateStack.redo();
+
+            injectSerializedState(stateStack.getLastSerializedState());
         }
 
         /* ~Methods */
@@ -871,5 +952,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         @Override
         public List<String> getAllTokenNames() {
             return tokenEngine.getAllTokenNames();
+        }
+
+        private void pushStateStack(StrokeCuratorUserAction action) {
+            stateStack.push(new StrokeCuratorState(action, getStateSerialization()));
         }
 }

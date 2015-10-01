@@ -1,14 +1,10 @@
 package me.scai.handwriting;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.List;
 
 public interface StrokeCurator {
-	/* Set the token engine */
-//	void initialize(String [] tokNames, TokenEngineDerived tokEngine);
-//	void initialize(TokenRecogEngine tokEngine);
 	
 	/* Add a new stroke */
 	void addStroke(CStroke s);
@@ -16,21 +12,22 @@ public interface StrokeCurator {
 	/* Merge a number of strokes as a token. These strokes may have already been
 	 * incorporated in other tokens, in which case the proper removal and plucking
 	 * of old tokens need to take place. */
-	public void mergeStrokesAsToken(int [] indices);
+	void mergeStrokesAsToken(int [] indices);
 	
 	/* Remove the last stroke */
+    // TODO
 //	void removeLastStroke();
 
     /**
      * Remove i-th token
      * @param     idxToken: Index to the token
      * @return    Indices to constituent strokes that made up the removed token */
-    public int [] removeToken(int idxToken);
+    int [] removeToken(int idxToken);
 
 	/**
 	 * Remove the last token
 	 * @return    Indices to constituent strokes that made up the removed token */
-	public int [] removeLastToken();
+	int [] removeLastToken();
 	
 	/* Delete all strokes */
 	void clear();
@@ -48,32 +45,45 @@ public interface StrokeCurator {
 	boolean isEmpty();
 	
 	/* Getters for status information: written tokens and their recognition results */
-	public CWrittenTokenSet getWrittenTokenSet();
-	public List<String> getWrittenTokenRecogWinners();
-	public List<double []> getWrittenTokenRecogPs();
+	CWrittenTokenSet getWrittenTokenSet();
+	List<String> getWrittenTokenRecogWinners();
+	List<double []> getWrittenTokenRecogPs();
 	
 	/* Get the constituent stroke indicies */
-	public List<int []> getWrittenTokenConstStrokeIndices();
+	List<int []> getWrittenTokenConstStrokeIndices();
 	
 	/* Force setting the recognition winner */
-	public void forceSetRecogWinner(int tokenIdx, String recogWinner);
+	void forceSetRecogWinner(int tokenIdx, String recogWinner);
 
     /* Serialization methods */
     /* Get serialized form of the strokes */
-    public List<String> getSerializedStrokes();
+    List<String> getSerializedStrokes();
 
-    public String getSerializedTokenSet();
+    String getSerializedTokenSet();
 
-    public String getSerializedConstStrokeIndices();
+    String getSerializedConstStrokeIndices();
 
-    public JsonElement getStateSerialization();
-    public String getStateSerializationString();
+    /* State and stack */
+    JsonObject getStateSerialization();
+    String getStateSerializationString();
+
+    /**
+     * Get the last user action;
+     *
+     * @return
+     */
+    StrokeCuratorUserAction getLastUserAction();
+    void undoUserAction();
+    void redoUserAction();
+
 
     /* Injection of serialized state */
-    public void injectSerializedState(JsonObject json);
+    void injectSerializedState(JsonObject json);
 
     /**
      * Get all possible toke names (NOT display names)
      */
-    public abstract List<String> getAllTokenNames();
+    List<String> getAllTokenNames();
+
+
 }
