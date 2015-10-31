@@ -287,7 +287,7 @@ public class Test_StrokeCurator {
     /* Test undo / redo stack */
     @Test
     public void testUndoRedo() {
-        CStroke[] strokesToAdd = new CStroke[4];
+        final float tol = 1E-9f;
 
         /* stroke0 and stroke1 constitute "=" */
         CStroke stroke0 = new CStroke();
@@ -316,10 +316,8 @@ public class Test_StrokeCurator {
         stroke3.addPoint(55.0f, 10.0f);
         stroke3.addPoint(55.1f, 20.1f);
 
-        strokesToAdd[0] = stroke0;
-        strokesToAdd[1] = stroke1;
-        strokesToAdd[2] = stroke2;
-        strokesToAdd[3] = stroke3;
+        // State stack is empty initially
+        assertNull(curator.getLastUserAction());
 
         // Initially the state stack should be empty. An exception should be thrown if you attempt to undo or redo.
         IllegalStateException caughtException = null;
@@ -340,10 +338,15 @@ public class Test_StrokeCurator {
         }
         assertNotNull(caughtException);
 
+        assertFalse(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
 
         // Add the first stroke
         curator.addStroke(stroke0);
         assertEquals(StrokeCuratorUserAction.AddStroke, curator.getLastUserAction());
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
 
         assertEquals(1, curator.getNumTokens());
         assertEquals(1, curator.getNumStrokes());
@@ -353,6 +356,8 @@ public class Test_StrokeCurator {
         // Add the second stroke
         curator.addStroke(stroke1);
         assertEquals(StrokeCuratorUserAction.AddStroke, curator.getLastUserAction());
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
 
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());
@@ -362,6 +367,9 @@ public class Test_StrokeCurator {
         // Undo the AddStroke action
         curator.undoUserAction();
 
+        assertTrue(curator.canUndoUserAction());
+        assertTrue(curator.canRedoUserAction());
+
         assertEquals(1, curator.getNumTokens());
         assertEquals(1, curator.getNumStrokes());
         assertEquals(1, curator.getWrittenTokenRecogWinners().size());
@@ -370,21 +378,67 @@ public class Test_StrokeCurator {
         // Redo the AddStroke action
         curator.redoUserAction();
 
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());
         assertEquals(1, curator.getWrittenTokenRecogWinners().size());
         assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
 
-        // Undo the two actions
+        float[] tokenBounds = curator.getWrittenTokenSet().getTokenBounds(0);
+        assertArrayEquals(new float[] {0.0f, 0.0f, 30.0f, 10.95f}, tokenBounds, tol);
+
+        // Move token
+        curator.moveToken(0, new float[] {1.0f, 1.0f, 31.0f, 11.95f});
+
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        tokenBounds = curator.getWrittenTokenSet().getTokenBounds(0);
+        assertArrayEquals(new float[] {1.0f, 1.0f, 31.0f, 11.95f}, tokenBounds, tol);
+
+        assertEquals(StrokeCuratorUserAction.MoveToken, curator.getLastUserAction());
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
+        // Undo MoveToken
+        curator.undoUserAction();
+
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        tokenBounds = curator.getWrittenTokenSet().getTokenBounds(0);
+        assertArrayEquals(new float[] {0.0f, 0.0f, 30.0f, 10.95f}, tokenBounds, tol);
+
+        assertEquals(StrokeCuratorUserAction.AddStroke, curator.getLastUserAction());
+        assertTrue(curator.canUndoUserAction());
+        assertTrue(curator.canRedoUserAction());
+
+        // Redo MoveToken
+        curator.redoUserAction();
+
+        assertEquals("=", curator.getWrittenTokenRecogWinners().get(0));
+        tokenBounds = curator.getWrittenTokenSet().getTokenBounds(0);
+        assertArrayEquals(new float[] {1.0f, 1.0f, 31.0f, 11.95f}, tokenBounds, tol);
+
+        assertEquals(StrokeCuratorUserAction.MoveToken, curator.getLastUserAction());
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
+        // Undo the MoveToken and two AddStroke actions
         curator.undoUserAction();
         curator.undoUserAction();
+        curator.undoUserAction();
+
+        assertFalse(curator.canUndoUserAction());
+        assertTrue(curator.canRedoUserAction());
 
         assertEquals(0, curator.getNumTokens());
         assertEquals(0, curator.getNumStrokes());
 
-        // Redo both actions
+        // Redo both AddStroke actions
         curator.redoUserAction();
         curator.redoUserAction();
+
+        assertTrue(curator.canUndoUserAction());
+        assertTrue(curator.canRedoUserAction());
 
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());
@@ -399,11 +453,17 @@ public class Test_StrokeCurator {
         assertEquals("-", curator.getWrittenTokenRecogWinners().get(0));
         assertEquals("-", curator.getWrittenTokenRecogWinners().get(1));
 
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
         // The internal implementation of the unmerge action is actually merge
         assertEquals(StrokeCuratorUserAction.MergeStrokesAsToken, curator.getLastUserAction());
 
         // Undo the unmerge (i.e., implemented as merge internally)
         curator.undoUserAction();
+
+        assertTrue(curator.canUndoUserAction());
+        assertTrue(curator.canRedoUserAction());
 
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());
@@ -414,6 +474,9 @@ public class Test_StrokeCurator {
         // Force set token name
         curator.forceSetRecogWinner(0, "A");
 
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());
         assertEquals(1, curator.getWrittenTokenRecogWinners().size());
@@ -422,6 +485,9 @@ public class Test_StrokeCurator {
 
         // Undo force set token name
         curator.undoUserAction();
+
+        assertTrue(curator.canUndoUserAction());
+        assertTrue(curator.canRedoUserAction());
 
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());
@@ -432,12 +498,18 @@ public class Test_StrokeCurator {
         // Clear tokens
         curator.clear();
 
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
         assertEquals(0, curator.getNumTokens());
         assertEquals(0, curator.getNumStrokes());
         assertEquals(StrokeCuratorUserAction.ClearStrokes, curator.getLastUserAction());
 
         // Undo clear strokes
         curator.undoUserAction();
+
+        assertTrue(curator.canUndoUserAction());
+        assertTrue(curator.canRedoUserAction());
 
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());
@@ -449,6 +521,9 @@ public class Test_StrokeCurator {
         curator.addStroke(stroke2);
         curator.addStroke(stroke3);
 
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
         assertEquals(3, curator.getNumTokens());
         assertEquals(4, curator.getNumStrokes());
         assertEquals(3, curator.getWrittenTokenRecogWinners().size());
@@ -458,6 +533,9 @@ public class Test_StrokeCurator {
 
         // Merge the third and fourth strokes into "T"
         curator.mergeStrokesAsToken(new int[] {2, 3});
+
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
 
         assertEquals(2, curator.getNumTokens());
         assertEquals(4, curator.getNumStrokes());
@@ -469,6 +547,9 @@ public class Test_StrokeCurator {
         // Remove a token
         curator.removeToken(1);
 
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
+
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());
         assertEquals(1, curator.getWrittenTokenRecogWinners().size());
@@ -477,6 +558,9 @@ public class Test_StrokeCurator {
 
         // Undo remove token
         curator.undoUserAction();
+
+        assertTrue(curator.canUndoUserAction());
+        assertTrue(curator.canRedoUserAction());
 
         assertEquals(2, curator.getNumTokens());
         assertEquals(4, curator.getNumStrokes());
@@ -487,6 +571,9 @@ public class Test_StrokeCurator {
 
         // Redo remove token
         curator.redoUserAction();
+
+        assertTrue(curator.canUndoUserAction());
+        assertFalse(curator.canRedoUserAction());
 
         assertEquals(1, curator.getNumTokens());
         assertEquals(2, curator.getNumStrokes());

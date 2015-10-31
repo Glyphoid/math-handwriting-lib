@@ -6,6 +6,7 @@ import java.util.Map;
 import com.google.gson.JsonObject;
 import me.scai.handwriting.CStroke;
 import me.scai.handwriting.CWrittenTokenSet;
+import me.scai.handwriting.StrokeCuratorUserAction;
 import me.scai.parsetree.evaluation.PlatoVarMap;
 import me.scai.parsetree.evaluation.ValueUnion;
 
@@ -66,6 +67,14 @@ public interface HandwritingEngine {
     public void injectState(JsonObject stateData)
         throws HandwritingEngineException;
 
+    /* Undo and redo */
+    StrokeCuratorUserAction getLastStrokeCuratorUserAction();
+    void undoStrokeCuratorUserAction();
+    void redoStrokeCuratorUserAction();
+
+    boolean canUndoStrokeCuratorUserAction();
+    boolean canRedoStrokeCuratorUserAction();
+
     public void removeEngine()
         throws HandwritingEngineException;
 
@@ -74,5 +83,7 @@ public interface HandwritingEngine {
      */
     public List<String> getAllTokenNames()
         throws HandwritingEngineException;
+
+
 }
 

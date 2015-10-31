@@ -242,6 +242,9 @@ public class Test_QADataSet {
             new QADataEntry("sim_3", "-(23 / 4)").withMathTex("-\\frac{23}{4}").withEvalRes(-5.75), /* Negative of high-level expressions */
             new QADataEntry("sim_4", "((1 / 2) + (3 / 4))").withMathTex("{\\frac{1}{2}}+{\\frac{3}{4}}").withEvalRes(1.25),
             new QADataEntry("sim_5", "((1 / 2) * (3 / 4))", "{\\frac{1}{2}}\\ast{\\frac{3}{4}}"), /* Multiplication of two fractions */
+            new QADataEntry("sim_224", "(0 / 3)", "\\frac{0}{3}").withEvalRes(0.0), /* Numerator is zero */
+            new QADataEntry("sim_225", "(9 / 0)", "\\frac{9}{0}")   /* Denominator is zero */
+
         };
         QADataSuites.put("fraction", new QADataSuite(entries_fraction, false));
         

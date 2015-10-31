@@ -2,6 +2,7 @@ package me.scai.handwriting;
 
 public enum StrokeCuratorUserAction {
     AddStroke("add-stroke"),
+    MoveToken("move-token"),
     RemoveLastToken("remove-last-token"),
     RemoveToken("remove-token"),
     MergeStrokesAsToken("merge-strokes-as-token"),
@@ -12,5 +13,10 @@ public enum StrokeCuratorUserAction {
 
     StrokeCuratorUserAction(String commandString) {
         this.commandString  = commandString;
+    }
+
+    @Override
+    public String toString() {
+        return this.commandString;
     }
 }

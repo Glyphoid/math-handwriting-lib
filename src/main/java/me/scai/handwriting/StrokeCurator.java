@@ -1,22 +1,28 @@
 package me.scai.handwriting;
 
 import com.google.gson.JsonObject;
+import me.scai.parsetree.HandwritingEngineException;
 
 import java.util.List;
 
 public interface StrokeCurator {
-	
+
 	/* Add a new stroke */
 	void addStroke(CStroke s);
-	
+
 	/* Merge a number of strokes as a token. These strokes may have already been
 	 * incorporated in other tokens, in which case the proper removal and plucking
 	 * of old tokens need to take place. */
 	void mergeStrokesAsToken(int [] indices);
-	
+
+    /* Move a token
+     * @returns  old bounds
+     */
+    public float[] moveToken(int tokenIdx, float [] newBounds);
+
 	/* Remove the last stroke */
     // TODO
-//	void removeLastStroke();
+    //	void removeLastStroke();
 
     /**
      * Remove i-th token
@@ -28,30 +34,30 @@ public interface StrokeCurator {
 	 * Remove the last token
 	 * @return    Indices to constituent strokes that made up the removed token */
 	int [] removeLastToken();
-	
+
 	/* Delete all strokes */
 	void clear();
-	
+
 	/* Get the set of written tokens (CWrittenTokenSet) */
 	CWrittenTokenSet getTokenSet();
-	
+
 	/* Get the number of strokes that have been added */
 	int getNumStrokes();
-	
+
 	/* Get the number of recognized tokens */
 	int getNumTokens();
-	
+
 	/* Test and see if the stroke set is currently empty */
 	boolean isEmpty();
-	
+
 	/* Getters for status information: written tokens and their recognition results */
 	CWrittenTokenSet getWrittenTokenSet();
 	List<String> getWrittenTokenRecogWinners();
 	List<double []> getWrittenTokenRecogPs();
-	
+
 	/* Get the constituent stroke indicies */
 	List<int []> getWrittenTokenConstStrokeIndices();
-	
+
 	/* Force setting the recognition winner */
 	void forceSetRecogWinner(int tokenIdx, String recogWinner);
 
@@ -76,6 +82,8 @@ public interface StrokeCurator {
     void undoUserAction();
     void redoUserAction();
 
+    boolean canUndoUserAction();
+    boolean canRedoUserAction();
 
     /* Injection of serialized state */
     void injectSerializedState(JsonObject json);

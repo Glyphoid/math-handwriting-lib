@@ -437,11 +437,6 @@ public class ParseTreeEvaluator {
 		double d_numer = getDouble(numer); /* TODO: Figure out what is wrong */
 		double d_denom = getDouble(denom);
 
-		if (d_numer == 0.0) {
-			throw new DivisionByZeroException();
-		}
-
-//		return d_denom / d_numer;
         return d_numer / d_denom;
 	}
 

@@ -155,6 +155,10 @@ public class CHandWritingTokenImageData {
 
 				for (int i = 0; i < strs.length; ++i) {
 					dat.imData[dcnt++] = Double.parseDouble(strs[i]);
+
+                    if (dat.imData[dcnt - 1] < 0) {
+                        throw new IllegalStateException("Encountered negative stroke image data");
+                    }
 				}
 			}
 

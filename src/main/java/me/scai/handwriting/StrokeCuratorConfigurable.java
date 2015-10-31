@@ -27,6 +27,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
         private static final String SERIALIZATION_STROKES_KEY              = "strokes";
         private static final String SERIALIZATION_STROKES_UN_KEY           = "strokes_un";
+        private static final String SERIALIZATION_TOKEN_BOUNDS_KEY         = "tokenBounds";
         private static final String SERIALIZATION_WRITTEN_TOKEN_SET_KEY    = "tokenSet";
         private static final String SERIALIZATION_CONST_STROKE_INDICES_KEY = "wtConstStrokeIndices";
         private static final String SERIALIZATION_WT_RECOG_WINNERS_KEY     = "wtRecogWinners";
@@ -817,6 +818,20 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             }
             stateData.add(SERIALIZATION_STROKES_UN_KEY, strokesUN);
 
+            /* Token bounds: for moveToken states */
+            JsonArray tokenBounds = new JsonArray();
+            for (int i = 0; i < this.wtSet.getNumTokens(); ++i) {
+                float[] tb = this.wtSet.getTokenBounds(i);
+
+                JsonArray thisTokenBounds = new JsonArray();
+                for (int j = 0; j < tb.length; ++j) {
+                    thisTokenBounds.add(new JsonPrimitive(tb[j]));
+                }
+
+                tokenBounds.add(thisTokenBounds);
+            }
+            stateData.add(SERIALIZATION_TOKEN_BOUNDS_KEY, tokenBounds);
+
             /* Token set */
             stateData.add(SERIALIZATION_WRITTEN_TOKEN_SET_KEY, CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSet));
 
@@ -894,6 +909,18 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                 mergeStrokesAsToken(strokeIndices, true);
             }
 
+            /* Force set token bounds: For actions such as MoveToken */
+            JsonArray tokenBounds = state.get(SERIALIZATION_TOKEN_BOUNDS_KEY).getAsJsonArray();
+            for (int i = 0; i < tokenBounds.size(); ++i) {
+                JsonArray thisTokenBounds = tokenBounds.get(i).getAsJsonArray();
+                float[] tb = new float[thisTokenBounds.size()];
+                for (int j = 0; j < tb.length; ++j) {
+                    tb[j] = thisTokenBounds.get(j).getAsFloat();
+                }
+
+                this.moveToken(i, tb, true);
+            }
+
             /* Force set recognition winners */
             if (!(state.has(SERIALIZATION_WT_RECOG_WINNERS_KEY) && state.get(SERIALIZATION_WT_RECOG_WINNERS_KEY).isJsonArray())) {
                 throw new RuntimeException("Serialized state is missing field: " + SERIALIZATION_WT_RECOG_WINNERS_KEY);
@@ -916,6 +943,30 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         }
 
         @Override
+        public float[] moveToken(int tokenIdx, float [] newBounds) {
+            return moveToken(tokenIdx, newBounds, false);
+        }
+
+        private float[] moveToken(int tokenIdx, float [] newBounds, boolean internal) {
+            if (tokenIdx < 0 || tokenIdx >= wtSet.nTokens()) {
+                throw new IllegalArgumentException("Invalid token index " + tokenIdx);
+            }
+            if (newBounds.length != 4) {
+                throw new IllegalArgumentException("newBounds must have a length of 4, but has a length of " +
+                        newBounds.length);
+            }
+
+            float[] oldBounds = wtSet.getTokenBounds(tokenIdx);
+            wtSet.tokens.get(tokenIdx).setBounds(newBounds);
+
+            if (!internal) {
+                pushStateStack(StrokeCuratorUserAction.MoveToken);
+            }
+
+            return oldBounds;
+        }
+
+        @Override
         public StrokeCuratorUserAction getLastUserAction() {
             return stateStack.getLastUserAction();
         }
@@ -935,6 +986,16 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             stateStack.redo();
 
             injectSerializedState(stateStack.getLastSerializedState());
+        }
+
+        @Override
+        public boolean canUndoUserAction() {
+            return stateStack.canUndo();
+        }
+
+        @Override
+        public boolean canRedoUserAction() {
+            return stateStack.canRedo();
         }
 
         /* ~Methods */
