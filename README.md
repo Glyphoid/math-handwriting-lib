@@ -1,5 +1,7 @@
 # math-handwriting-lib
-Java library for parsing and evaluating handwritten mathematical formulae
+Java library for parsing and evaluating handwritten mathematical formulae. 
+
+Stroke representations of handwritten math expressions are recognized and evaluated. 
 
 This is the core part of Glyphoid.
 
