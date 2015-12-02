@@ -66,8 +66,8 @@ public class CWrittenTokenJsonHelper {
         obj.add("height", new JsonPrimitive(wt.height));
 
         /* Get the recognition winner (if exists) */
-        if (wt.getRecogWinner() != null) {
-            obj.add("recogWinner", new JsonPrimitive(wt.getRecogWinner()));
+        if (wt.getRecogResult() != null) {
+            obj.add("recogWinner", new JsonPrimitive(wt.getRecogResult()));
         }
 
         /* Get the recognition p-values (if exists) */
@@ -110,7 +110,7 @@ public class CWrittenTokenJsonHelper {
         
         /* Recognition winner */
         if (jsonObj.has("recogWinner")) {
-            wt.setRecogWinner(jsonObj.get("recogWinner").getAsString());
+            wt.setRecogResult(jsonObj.get("recogWinner").getAsString());
         }
         
         /* Recognition p-values */

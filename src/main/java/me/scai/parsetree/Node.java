@@ -188,7 +188,11 @@ public class Node {
 	public float getGeometricScore() {
 		return geometricScore;
 	}
-	
+
+    public void setBounds(float[] bounds) {
+        this.bounds = bounds;
+    }
+
 	public float [] getBounds() {
 		return bounds;
 	}

@@ -30,7 +30,7 @@ public class CWrittenTokenSetJsonHelper {
             CWrittenToken wt = CWrittenTokenJsonHelper.jsonObj2CWrittenTokenNoStroke(tokens.get(i).getAsJsonObject());
             wtSet.addToken(wt);
                         
-            wtSet.recogWinners.add(wt.getRecogWinner());
+            wtSet.recogWinners.add(wt.getRecogResult());
             wtSet.recogPs.add(wt.getRecogPs());
         }
         
@@ -60,7 +60,12 @@ public class CWrittenTokenSetJsonHelper {
         JsonArray jsonTokens = new JsonArray();
 
         for (int i = 0; i < wtSet.getNumTokens(); ++i) {
-            jsonTokens.add(CWrittenTokenJsonHelper.CWrittenToken2JsonObjNoStroke(wtSet.tokens.get(i)));
+            if ( !(wtSet.tokens.get(i) instanceof CWrittenToken) ) {
+                throw new IllegalStateException("Not implemented yet");
+                // TODO: Implement JSON serialization for NodeToken members
+            }
+
+            jsonTokens.add(CWrittenTokenJsonHelper.CWrittenToken2JsonObjNoStroke((CWrittenToken) wtSet.tokens.get(i)));
         }
 
         obj.add("tokens", jsonTokens);

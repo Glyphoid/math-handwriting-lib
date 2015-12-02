@@ -1,24 +1,24 @@
 package me.scai.handwriting;
 
 import java.util.ArrayList;
-import java.lang.IllegalStateException;
 import java.util.Iterator;
 
 public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	public ArrayList<String> recogWinners = new ArrayList<String>();
 	public ArrayList<double []> recogPs = new ArrayList<double []>();
 	
-	public ArrayList<CWrittenToken> tokens = new ArrayList<CWrittenToken>();
+	public ArrayList<AbstractToken> tokens = new ArrayList<AbstractToken>();
 	
 	/* Constructor */
 	public CWrittenTokenSet() {
 	}
 	
 	/* Add a token at the end: without any recognition results */
-	public void addToken(CWrittenToken wt) {
+	public void addToken(AbstractToken wt) {
 		/* TODO: Merge into addToken(int i, CWrittenToken wt) */
-		if ( !wt.bNormalized )
-			wt.normalizeAxes();
+		if ( wt instanceof CWrittenToken && !((CWrittenToken) wt).bNormalized ) {
+            ((CWrittenToken) wt).normalizeAxes();
+        }
 		
 		float [] bounds = wt.getBounds();
 		if ( min_x > bounds[0] ) 
@@ -65,7 +65,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	}
 	
 	/* Add a token at the end: with recognition results */
-	public void addToken(CWrittenToken wt, String t_recogWinner, double [] t_recogP) {
+	public void addToken(AbstractToken wt, String t_recogWinner, double [] t_recogP) {
 		addToken(wt);
 		addTokenRecogRes(t_recogWinner, t_recogP);
 	}
@@ -97,8 +97,11 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	    recogWinners.set(i, t_recogWinner);
 	    recogPs.set(i,  t_recogPs);
 	    
-	    tokens.get(i).setRecogWinner(t_recogWinner);
-	    tokens.get(i).setRecogPs(t_recogPs);
+	    tokens.get(i).setRecogResult(t_recogWinner);
+
+        if (tokens.get(i) instanceof CWrittenToken) {
+            ((CWrittenToken) tokens.get(i)).setRecogPs(t_recogPs);
+        }
 	}
 	
 	/* Replace a token at specified index, with recognition results */
@@ -180,56 +183,56 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	}
 	
 	/* Get descriptive string: brief format, without the detailed stroke data */
-	@Override
-	public String getStringBrief() {
-		/* Check if tokeNames has been configured */
-		if ( tokenNames == null )
-			throw new IllegalStateException("tokenNames have not been configured yet");
-	
-		if ( tokens.size() != recogWinners.size() || 
-		     tokens.size() != recogPs.size() )
-			throw new IllegalStateException("Difference in sizes of tokens and recognition results");
-		
-		String str = "";
-		
-		/* Write token names */
-		str += "Token set: [";
-		for (int k = 0; k < tokenNames.length; ++k) {
-			str += tokenNames[k];
-			if ( k < tokenNames.length - 1 )
-				str += ", ";
-		}
-		str += "]\n";
-		str += "\n";
-		
-		/* Write tokens */
-		for (int k = 0; k < nt; ++k) {
-			/* Bound */
-			str += "bounds = [";			
-			float [] bnds = tokens.get(k).getBounds();
-			str += bnds[0] + ", ";
-			str += bnds[1] + ", ";
-			str += bnds[2] + ", ";
-			str += bnds[3];
-			str += "]\n";
-						
-			/* Recognition winner */
-			str += "recogWinner = " + recogWinners.get(k) + "\n";
-			
-			/* Recognition Ps */
-			str += "recogPs = [";
-			for (int n = 0; n < recogPs.get(k).length; ++n) {
-				str += recogPs.get(k)[n];
-				if ( n < recogPs.get(k).length - 1 )
-					str += ", ";
-			}
-			str += "]\n";
-			str += "\n";
-		}
-		
-		
-		return str;
-	}
+//	@Override
+//	public String getStringBrief() {
+//		/* Check if tokeNames has been configured */
+//		if ( tokenNames == null )
+//			throw new IllegalStateException("tokenNames have not been configured yet");
+//
+//		if ( tokens.size() != recogWinners.size() ||
+//		     tokens.size() != recogPs.size() )
+//			throw new IllegalStateException("Difference in sizes of tokens and recognition results");
+//
+//		String str = "";
+//
+//		/* Write token names */
+//		str += "Token set: [";
+//		for (int k = 0; k < tokenNames.length; ++k) {
+//			str += tokenNames[k];
+//			if ( k < tokenNames.length - 1 )
+//				str += ", ";
+//		}
+//		str += "]\n";
+//		str += "\n";
+//
+//		/* Write tokens */
+//		for (int k = 0; k < nt; ++k) {
+//			/* Bound */
+//			str += "bounds = [";
+//			float [] bnds = tokens.get(k).getBounds();
+//			str += bnds[0] + ", ";
+//			str += bnds[1] + ", ";
+//			str += bnds[2] + ", ";
+//			str += bnds[3];
+//			str += "]\n";
+//
+//			/* Recognition winner */
+//			str += "recogWinner = " + recogWinners.get(k) + "\n";
+//
+//			/* Recognition Ps */
+//			str += "recogPs = [";
+//			for (int n = 0; n < recogPs.get(k).length; ++n) {
+//				str += recogPs.get(k)[n];
+//				if ( n < recogPs.get(k).length - 1 )
+//					str += ", ";
+//			}
+//			str += "]\n";
+//			str += "\n";
+//		}
+//
+//
+//		return str;
+//	}
 
 	@Override
 	public float [] getTokenBounds(int i) {
@@ -273,14 +276,15 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		return tokens.get(i).tokenTermType;
 	}
 
-    public int getNumStrokes() {
-        int nStrokes = 0;
-
-        Iterator<CWrittenToken> tokenIt = tokens.iterator();
-        while (tokenIt.hasNext()) {
-            nStrokes += tokenIt.next().nStrokes();
-        }
-
-        return nStrokes;
-    }
+//    public int getNumStrokes() {
+//        int nStrokes = 0;
+//
+//        Iterator<AbstractToken> tokenIt = tokens.iterator();
+//
+//        while (tokenIt.hasNext()) {
+//            nStrokes += tokenIt.next().nStrokes();
+//        }
+//
+//        return nStrokes;
+//    }
 }

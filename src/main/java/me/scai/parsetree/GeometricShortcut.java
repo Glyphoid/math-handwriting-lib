@@ -1,9 +1,6 @@
 package me.scai.parsetree;
 
-import me.scai.handwriting.CAbstractWrittenTokenSet;
-import me.scai.handwriting.CWrittenToken;
-import me.scai.handwriting.CWrittenTokenSetNoStroke;
-import me.scai.handwriting.Rectangle;
+import me.scai.handwriting.*;
 import me.scai.parsetree.geometry.AlignRelation;
 import me.scai.parsetree.geometry.GeometricRelation;
 import me.scai.parsetree.geometry.GeometryHelper;
@@ -417,8 +414,8 @@ class GeometricShortcut {
         }
 
         for (int i = 0; i < nTokens; ++i) {
-            CWrittenToken wt = wts.tokens.get(i);
-            if (wt.getRecogWinner().equals(integTokenName)) {
+            AbstractToken wt = wts.tokens.get(i);
+            if (wt.getRecogResult().equals(integTokenName)) {
                 integCount++;
 
                 if (idxInteg == -1 || wt.getCentralX() < integCtrX) {
@@ -433,7 +430,7 @@ class GeometricShortcut {
                     integCtrX    = wt.getCentralX();
                     integCtrY    = wt.getCentralY();
                 }
-            } else if (wt.getRecogWinner().equals(dTokenName)) {
+            } else if (wt.getRecogResult().equals(dTokenName)) {
                 dCount++;
 
                 if (idxD == -1 || wt.getCentralX() > dCtrX) {
@@ -474,7 +471,7 @@ class GeometricShortcut {
             } else if (i == idxD) {
                 divh[i] = 4;     // d token
             } else {
-                CWrittenToken wt = wts.tokens.get(i);
+                AbstractToken wt = wts.tokens.get(i);
 
                 float ctrX = wt.getCentralX();
                 float ctrY = wt.getCentralY();
@@ -526,9 +523,9 @@ class GeometricShortcut {
         int nTokens = wts.getNumTokens();
 
         for (int i = 0; i < nTokens; ++i) {
-            CWrittenToken wt = wts.tokens.get(i);
-            if (wt.getRecogWinner().equals(sigmaTokenName) ||
-                wt.getRecogWinner().equals(piTokenName)) {
+            AbstractToken wt = wts.tokens.get(i);
+            if (sigmaTokenName.equals(wt.getRecogResult()) ||
+                piTokenName.equals(wt.getRecogResult())) {
                 if (idxSigmaPi == -1 || wt.getCentralX() < sigmaPiCtrX) { // Identify the left-most sigma/pi token
                     idxSigmaPi = i;
 
@@ -562,7 +559,7 @@ class GeometricShortcut {
             if (i == idxSigmaPi) {        // TODO: Grammar dependency warning!
                 divh[i] = 0;     // Integ token does not need to be labeled, it is already
             } else {
-                CWrittenToken wt = wts.tokens.get(i);
+                AbstractToken wt = wts.tokens.get(i);
 
                 float[] bounds = wt.getBounds();
                 float tokenWidth = bounds[2] - bounds[0];

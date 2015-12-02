@@ -2,25 +2,22 @@ package me.scai.parsetree;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 import java.net.URL;
 
-import me.scai.handwriting.CWrittenTokenSetNoStroke;
+import me.scai.handwriting.*;
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
 
 public class GraphicalProductionSet {
 	private static final String commentString = "#";
 	private static final String separatorString = "---";
 	
-	public ArrayList<GraphicalProduction> prods
-		= new ArrayList<GraphicalProduction>(); /* List of productions */
-	
-//	protected ArrayList<String []> terminalTypes = new ArrayList<String []>();
-	protected String [][] terminalTypes;
+	public ArrayList<GraphicalProduction> prods = new ArrayList<>(); /* List of productions */
+    public ArrayList<String> prodSumStrings = new ArrayList<>(); /* List of productions */
+
+    private List<List<String>> terminalTypes;
+    private Map<Integer, Set<Integer>> transitiveChildrenProdMap; // Key: production index; Value: all children production indices.
+    private Set<Integer> visitedProdIndices;
 	
 	public TerminalSet terminalSet;
 	private int [] searchIdx = null;
@@ -75,8 +72,10 @@ public class GraphicalProductionSet {
 			try {
 				if ( pLines.get(0).startsWith(separatorString) )
 					pLines.remove(0);
-				
-				prods.add(GraphicalProduction.genFromStrings(pLines, termSet));
+
+                GraphicalProduction gp = GraphicalProduction.genFromStrings(pLines, termSet);
+				prods.add(gp);
+                prodSumStrings.add(gp.sumString);
 			}
 			catch ( Exception e ) {
 				System.err.println(e.getMessage());
@@ -128,13 +127,21 @@ public class GraphicalProductionSet {
 		
 		readProductionsFromLines(lines, termSet);
 	}
-	
-	/* Get the indices to the productions that are valid for the token set.
-	 * Output: int []: indices to all valid productions
-	 *         Side effect input argument:
-	 *             idxPossibleHead: has the same length as the return value.
-	 *             Contain indices to the possible heads. */
-	public int [][] getIdxValidProds(CWrittenTokenSetNoStroke tokenSet,
+
+//    public int [][] getIdxValidProds(NodeToken nodeToken,
+//                                     ArrayList<int [][]> idxPossibleHead) {
+//
+//    }
+
+	/** Get the indices to the productions that are valid for the token set.
+	 * @param  termSet: Terminal set
+     * @param  lhs:     Name of the graphical production LHS (e.g., "ROOT")
+     * @param  idxPossibleHead:  Side effect input argument:
+     *             idxPossibleHead: has the same length as the return value.
+     *             Contain indices to the possible heads.
+	 * @return int []: indices to all valid productions
+     */
+	public int[][] getIdxValidProds(CWrittenTokenSetNoStroke tokenSet,
 			                         int [] searchSubsetIdx, 
 			                         TerminalSet termSet, 
 			                         String lhs,
@@ -150,42 +157,44 @@ public class GraphicalProductionSet {
 			idxPossibleHead.clear();
 		}
 	
-		ArrayList<Integer> idxValidProdsList_woExclude = new ArrayList<Integer>();
-		ArrayList<Integer> idxValidProdsList = new ArrayList<Integer>(); 
-		
-		
-//		for (int i = 0; i < prods.size(); ++i) {
-		for (int i = 0; i < searchIdx.length; ++i) {
-			int prodIdx = searchIdx[i];
-			
-			int [][] t_iph = evalWrittenTokenSet(prodIdx, tokenSet, termSet);
-			if ( t_iph == null || t_iph.length == 0 ) {
+		ArrayList<Integer> idxValidProdsList_woExclude = new ArrayList<>();
+		ArrayList<Integer> idxValidProdsList = new ArrayList<>();
+
+		for (int prodIdx : searchIdx) {
+
+            /* Flags for exclusion due to lhs mismatch */
+            if ( lhs != null && !prods.get(prodIdx).lhs.equals(lhs) ) {
+                continue;
+            }
+
+			int[][] iph = evalWrittenTokenSet(prodIdx, tokenSet, termSet); // Get indices to possible head (iph)
+			if ( iph == null || iph.length == 0 ) {
 				continue;
 			}
-			
-			/* Flags for exclusion due to lhs mismatch */
-			if ( lhs != null && !prods.get(prodIdx).lhs.equals(lhs) ) {
-				continue;
-			}
-			
+
 			idxValidProdsList_woExclude.add(prodIdx);
 			
 			boolean bExclude = false;
 			
 			/* Flags for exclusion due to extra terminal nodes */
-			String [] possibleTermTypes = terminalTypes[prodIdx];
-			List<String> possibleTermTypesList = Arrays.asList(possibleTermTypes);
+            List<String> possibleTermTypesList = terminalTypes.get(prodIdx);
 			
 			for (int k = 0; k < tokenSet.nTokens(); ++k) {
-//				String tokenType = termSet.getTypeOfToken(tokenSet.recogWinners.get(k));
-				String tokenName = tokenSet.tokens.get(k).getRecogWinner();
-				
-//				String tokenType = termSet.getTypeOfToken(tokenName);
-				if ( !termSet.typeListContains(possibleTermTypesList, tokenName) ) { //
-//			    if ( !possibleTermTypesList.contains(tokenType) ) { 
-					bExclude = true;
-					break;
-				}
+                AbstractToken token = tokenSet.tokens.get(k);
+
+                if (token instanceof CWrittenToken) {
+                    String tokenName = token.getRecogResult();
+
+                    if ( !termSet.typeListContains(possibleTermTypesList, tokenName) ) {
+                        bExclude = true;
+                        break;
+                    }
+                } else if (token instanceof NodeToken) {
+                    //TODO: Implement: Exclusion based on the grammar graph
+                } else {
+                    throw new IllegalStateException("Unsupported AbstractNode subtype");
+                }
+
 			}
 			
 			if ( bExclude ) {
@@ -193,31 +202,27 @@ public class GraphicalProductionSet {
 			}
 
 			idxValidProdsList.add(prodIdx);
-			idxPossibleHead.add(t_iph);
+			idxPossibleHead.add(iph);
 		}
 		
-		int [][] indices2 = new int[2][];
+		int[][] indices2 = new int[2][];
 		indices2[0] = new int[idxValidProdsList.size()];
 		indices2[1] = new int[idxValidProdsList_woExclude.size()];
+
+		for (int i = 0; i < idxValidProdsList.size(); ++i) {
+            indices2[0][i] = idxValidProdsList.get(i);
+        }
 		
-//		int [] idxValidProds = new int[idxValidProdsList.size()];
-		for (int i = 0; i < idxValidProdsList.size(); ++i)
-//			idxValidProds[i] = idxValidProdsList.get(i);
-			indices2[0][i] = idxValidProdsList.get(i);
-		
-		for (int i = 0; i < idxValidProdsList_woExclude.size(); ++i) 
-			indices2[1][i] = idxValidProdsList_woExclude.get(i);
-		
-//		if ( idxValidProdsList_woExclude.size() > idxValidProdsList.size() )	//DEBUG
-//			System.out.println("Without exclusion: " + idxValidProdsList_woExclude.size() + 
-//					           "; with exclusion: " + idxValidProdsList.size());
-		
-//		return idxValidProds;
+		for (int i = 0; i < idxValidProdsList_woExclude.size(); ++i) {
+            indices2[1][i] = idxValidProdsList_woExclude.get(i);
+        }
+
+
 		return indices2;
 	}
 	
 	
-	/* Evaluate whether a token set meets the requirement of this production, 
+	/** Evaluate whether a token set meets the requirement of this production,
 	 * i.e., has the head node available. 
 	 * NOTE: this method does _not_ exclude productions that have extra head nodes.
 	 * E.g., for production "DIGIT_STRING --> DIGIT DIGIT_STRING", the only 
@@ -225,101 +230,153 @@ public class GraphicalProductionSet {
 	 * type of head node, e.g., POINT ("."), it is invalid for this production
 	 * but will still be included in the output. 
 	 * 
-	 * Return value: boolean: will contain all indices (within the token set)
+	 * @return int[][]: will contain all indices (within the token set)
 	 * of all tokens that can potentially be the head.
 	 *  */
-	public int [][] evalWrittenTokenSet(int prodIdx,  
+	public int [][] evalWrittenTokenSet(int prodIdx,        /* TODO: Change the return type to Array<Array<Integer>> */
 										CWrittenTokenSetNoStroke wts,
 			                            TerminalSet termSet) {
+        /* TODO: Generalize to written token sets with NodeToken */
 		/* TODO: Deal with a production in which none of the rhs items are terminal */
-		/* Can use MathHelper.getFullDiscreteSpace() */
-		GraphicalProduction t_prod = prods.get(prodIdx);
+		GraphicalProduction prod = prods.get(prodIdx);
 		
-		ArrayList<ArrayList<Integer>> possibleHeadIdx = new ArrayList<ArrayList<Integer>>();
-		String headNodeType = t_prod.rhs[0];
-		
-		if (headNodeType.startsWith("TERMINAL(")) { //DEBUG
-			headNodeType = headNodeType.substring(0, headNodeType.length()); //DEBUG
-		}
+		ArrayList<ArrayList<Integer>> possibleHeadIdx = new ArrayList<>();
+		String headNodeType = prod.rhs[0];
 		
 		if ( termSet.isTypeTerminal(headNodeType) ) {
 			/* The head node is a terminal (T). So each possible head 
 			 * is just a single token in the token set.
 			 */
 			for (int i = 0; i < wts.nTokens(); ++i) {
-//				String tTokenName = wts.recogWinners.get(i);
-				String tTokenName = wts.tokens.get(i).getRecogWinner();				
+                String tTokenName = null;
+
+                if (wts.tokens.get(i) instanceof NodeToken &&
+                    !((NodeToken) wts.tokens.get(i)).isPotentiallyTerminal()) {
+                    // This is a NodeToken with >1 tokens, so this can't be a terminal
+                    continue;
+                }
+
+                if (wts.tokens.get(i) instanceof NodeToken) {
+                    CAbstractWrittenTokenSet wtSet = ((NodeToken) wts.tokens.get(i)).getTokenSet();
+
+                    tTokenName = wtSet.getNumTokens() == 1 ? wtSet.getTokenName(0) : null;
+                } else {
+                    tTokenName = wts.tokens.get(i).getRecogResult();
+                }
+
 				if ( termSet.match(tTokenName, headNodeType) ) {
-					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
+					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<>();
 					t_possibleHeadIdx.add(i);
 					
 					possibleHeadIdx.add(t_possibleHeadIdx);
 				}
 			}
 			
-		}
-		else {
-			/* The head node is a non-terminal (NT). 
-			 */
-			if ( t_prod.rhs.length == 1 ) {
+		} else {
+			/* The head node is a non-terminal (NT). */
+			if ( prod.rhs.length == 1 ) {
 				/* The rhs is an NT head node. In this case, we need to
 				 * check whether this entire token is potentially suitable
 				 * for the production specified by this NT rhs, in a
 				 * recursive way. If the answer is no, will return empty.
 				 */
-				
-				String t_lhs = t_prod.rhs[0];
-				/* Find all productions that fit this lhs */
-				boolean anyRHSMatch = false;
-				for (int i = 0; i < prods.size(); ++i) { 
-					if ( prods.get(i).lhs.equals(t_lhs) ) {
-						int [][] t_t_iph = evalWrittenTokenSet(i, wts, termSet);
-						if ( t_t_iph != null && t_t_iph.length > 0 )
-							anyRHSMatch = true;
-					}
-				}
-				
-				if ( !anyRHSMatch ) {
-					return null;
-				}
-				else {
-					/* There is only one rhs, that is, the NT, and the RHS 
-					 * has potential matches to the token set. So all tokens 
-					 * in the token set should belong to the head. */
-					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
-					for (int i = 0; i < wts.nTokens(); ++i)
-						t_possibleHeadIdx.add(i);
-				
-					possibleHeadIdx.add(t_possibleHeadIdx);
-				}
-			}
-			else {
-				/* There are rhs items other than the head NT. */
-				int [][] combs = null;
 
-				if ( t_prod.geomShortcut.existsBipartite() ) {
-					combs = t_prod.geomShortcut.getPartitionBipartite(wts, true);
+                if (wts.hasNodeToken()) { // This token set contains at least one NodeToken // TODO: Verify logic
+                    Set<Integer> childProdIndices = transitiveChildrenProdMap.get(prodIdx);
+
+                    boolean allTokensFoundMatch = true;
+                    for (AbstractToken token : wts.tokens) {
+                        if (token instanceof NodeToken) {
+
+                            List<Integer> matchingProdIndices = ((NodeToken) token).getMatchingGraphicalProductionIndices(this);
+                            boolean tokenFoundMatch = false;
+
+                            for (int mpi : matchingProdIndices) {
+                                if (childProdIndices.contains(mpi)) {
+                                    tokenFoundMatch = true;
+                                    break;
+                                }
+                            }
+
+                            if ( !tokenFoundMatch ) {
+                                allTokensFoundMatch = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if ( !allTokensFoundMatch ) {
+                        return null;
+                    } else{
+                        /* There is only one rhs, that is, the NT, and the RHS
+                         * has potential matches to the token set. So all tokens
+                         * in the token set should belong to the head. */
+                        ArrayList<Integer> t_possibleHeadIdx = new ArrayList<>();
+                        for (int i = 0; i < wts.nTokens(); ++i) {
+                            t_possibleHeadIdx.add(i);
+                        }
+
+                        possibleHeadIdx.add(t_possibleHeadIdx);
+                    }
+
+                } else {
+                    String lhs = prod.rhs[0];
+
+				    /* Find all productions that fit this lhs */
+                    boolean anyRHSMatch = false;
+                    for (int i = 0; i < prods.size(); ++i) {
+                        if (prods.get(i).lhs.equals(lhs)) {
+                            int[][] t_t_iph = evalWrittenTokenSet(i, wts, termSet);
+                            if (t_t_iph != null && t_t_iph.length > 0) {
+                                anyRHSMatch = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!anyRHSMatch) {
+                        return null;
+                    } else {
+                        /* There is only one rhs, that is, the NT, and the RHS
+                         * has potential matches to the token set. So all tokens
+                         * in the token set should belong to the head. */
+                        ArrayList<Integer> t_possibleHeadIdx = new ArrayList<>();
+                        for (int i = 0; i < wts.nTokens(); ++i) {
+                            t_possibleHeadIdx.add(i);
+                        }
+
+                        possibleHeadIdx.add(t_possibleHeadIdx);
+                    }
+                }
+
+			} else {
+				/* There are rhs items other than the head NT. */
+                // TODO: Accommodate NodeToken
+
+				int[][] combs = null;
+				if ( prod.geomShortcut.existsBipartite() ) {
+					combs = prod.geomShortcut.getPartitionBipartite(wts, true);
+				} else if ( prod.geomShortcut.existsTripartiteNT1T2() ) {
+					combs = prod.geomShortcut.getPartitionTripartiteNT1T2(wts);
+				} else {
+                    if (wts.nTokens() > 3) {
+                        int iii = 111; //DEBUG DEL
+                    }
+
+					combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens()); // Binary divide between head and non-head
+                    /* TODO: Discard the partitions that don't make sense to speed things up.
+                     * For example, interlocking partitions. */
 				}
-				else if ( t_prod.geomShortcut.existsTripartiteNT1T2() ) {
-					combs = t_prod.geomShortcut.getPartitionTripartiteNT1T2(wts);
-					/* TODO */
-//					/* This is the case in which the head node is NT,  
-//					 * and there are two non-heads
-//					 */
-//					int [] iHead = new iHead;
-//					combs = t_prod.geomShortcut.getPartitionTripartite(wts, true)
-				}
-				else {
-					combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens());
-				}
-				/* TODO: Discard the partitions that don't make sense to speed things up */
+
 				
 				for (int i = 0; i < combs.length; ++i) {
-					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<Integer>();
+					ArrayList<Integer> t_possibleHeadIdx = new ArrayList<>();
 					
-					for (int j = 0; j < combs[i].length; ++j)
-						if ( combs[i][j] == 1 )
-							t_possibleHeadIdx.add(j);
+					for (int j = 0; j < combs[i].length; ++j) {
+                        if (combs[i][j] == 1) {
+                            t_possibleHeadIdx.add(j);
+                        }
+                    }
 					
 					possibleHeadIdx.add(t_possibleHeadIdx);	
 				}
@@ -377,6 +434,7 @@ public class GraphicalProductionSet {
 		}
 		
 		gpSet.calcTermTypes(termSet);
+        gpSet.calcTransitiveChildrenProdMap();
 		
 		return gpSet;
 	}
@@ -402,18 +460,76 @@ public class GraphicalProductionSet {
 //			System.err.println(e);
 //		}
 //	}
+
+    private void calcTransitiveChildrenProdMap() {
+        transitiveChildrenProdMap = new HashMap<>();
+
+        for (int i = 0; i < prods.size(); ++i) {
+            visitedProdIndices = new HashSet<>();
+            getTransitiveChildrenProdIndices(i);
+        }
+    }
+
+    /**
+     * Get the children productions of a given production.
+     * @param prodIdx
+     * @return
+     */
+    private Set<Integer> getTransitiveChildrenProdIndices(int prodIdx) {
+        visitedProdIndices.add(prodIdx); // Prevent going in loops
+
+        Set<Integer> result = new HashSet<>(); // TODO: Performance fine tune?
+
+        GraphicalProduction gp = prods.get(prodIdx);
+
+        List<String> rhsList = new ArrayList<>();
+        for (int i = 0; i < gp.rhs.length; ++i) {
+            if ( !gp.rhsIsTerminal[i] ) {
+                rhsList.add(gp.rhs[i]);
+            }
+        }
+
+        if (rhsList.isEmpty()) { // No NT children: return an empty list
+            transitiveChildrenProdMap.put(prodIdx, result);
+            return result;
+        }
+
+        for (int i = 0; i < prods.size(); ++i) {
+//            if (i == prodIdx) {
+//                continue;
+//            }
+
+            GraphicalProduction gp1 = prods.get(i);
+
+            if (rhsList.contains(gp1.lhs)) {
+                // Add the production itself
+                result.add(i);
+
+                // Transitively add all its children
+//                if ( !gp.lhs.equals(gp1.lhs) ) {  // How about right recursion?
+                if ( !visitedProdIndices.contains(i) ) {  // How about right recursion?
+                    if (transitiveChildrenProdMap.containsKey(i)) {
+                        result.addAll(transitiveChildrenProdMap.get(i)); // Use caching
+                    } else {
+                        result.addAll(getTransitiveChildrenProdIndices(i));
+                    }
+                }
+            }
+        }
+
+        transitiveChildrenProdMap.put(prodIdx, result);
+        return result;
+    }
+
 	
 	/* Get the lists of all possible heads that corresponds to all
 	 * productions.
 	 */
 	private void calcTermTypes(TerminalSet termSet) {
-//		terminalTypes.clear();
-//		ntTerminalTypes.clear();
-		terminalTypes = new String[prods.size()][];
-		
-		for (int i = 0; i < prods.size(); ++i) { 
-//			terminalTypes.add(calcTermTypes(i, termSet, null));
-			terminalTypes[i] = calcTermTypes(i, termSet, null);
+        terminalTypes = new ArrayList<>();
+
+		for (int i = 0; i < prods.size(); ++i) {
+            terminalTypes.add(calcTermTypes(i, termSet, null));
 		}
 	}
 
@@ -427,7 +543,7 @@ public class GraphicalProductionSet {
 	 * until a production that contains only terminals (including 
 	 * EPS) is met. 
 	 */
-	private String [] calcTermTypes(int ip, 
+	private List<String> calcTermTypes(int ip,
 			                        TerminalSet termSet, 
 			                        boolean [] visited) {		
 		if ( visited == null ) {
@@ -464,20 +580,22 @@ public class GraphicalProductionSet {
 //				else {
 				for (int j = 0; j < visited.length; ++j) {						
 					if ( gp.rhs[i].equals(prods.get(j).lhs) && !visited[j] ) {
-						String [] childTermTypes = calcTermTypes(j, termSet, visited);
-						
-						for (int k = 0; k < childTermTypes.length; ++k) {
-							termTypesList.add(childTermTypes[k]);
-//								ntTerminalTypes.get(gp.rhs[i]).add(childTermTypes[k]);
-						}
+                        List<String> childTermTypes = calcTermTypes(j, termSet, visited);
+
+                        termTypesList.addAll(childTermTypes);
+
 					}
 				}
 			}
 		}
 		
-		Set<String> uniqueTermTypes = new HashSet<String>(termTypesList);
-		String [] termTypes = new String[uniqueTermTypes.size()];
-		uniqueTermTypes.toArray(termTypes);
+		Set<String> uniqueTermTypes = new HashSet<>(termTypesList);
+
+        ArrayList<String> termTypes = new ArrayList<>();
+        termTypes.ensureCapacity(uniqueTermTypes.size());
+
+        termTypes.addAll(uniqueTermTypes);
+
 		return termTypes;
 	}
 	

@@ -43,41 +43,14 @@ public abstract class CAbstractWrittenTokenSet {
 	}
 	
 	public String getTokenName(int i) {
-		/* TODO: bound check */
-		return tokenNames[i]; 
+        if (tokenNames == null) {
+            return null;
+        } else {
+            /* TODO: bound check */
+            return tokenNames[i];
+        }
 	}
-	
-	/* Write data to .wts file */
-	public void writeToFileBrief(String fileName, boolean bBrief) 
-			throws IOException, IllegalStateException {
-		PrintWriter writer = null;
-		try {			
-			writer = new PrintWriter(fileName);
-			if ( bBrief ) {
-				writer.print(getStringBrief());
-			}
-			else {
-				/* TODO */
-			}
-		}
-//		catch ( IOException e ) {
-//			/* TODO */
-//			throw e;
-//		}
-		catch ( FileNotFoundException e) {
-			/* TODO */
-			throw new IOException();
-		}
-		catch ( IllegalStateException e ) {
-			/* TODO */
-			throw e;
-		}
-		finally {
-			if ( writer != null )
-				writer.close();
-		}
-	}	
-	
+
 	public void deleteOneToken() {
 		nt--;
 	}
@@ -103,7 +76,6 @@ public abstract class CAbstractWrittenTokenSet {
 	
 	public abstract float [] getTokenBounds(int i);
 	public abstract float [] getTokenBounds(int [] is);
-	public abstract String getStringBrief();
 
 	public abstract String getTokenTermType(int i);
 

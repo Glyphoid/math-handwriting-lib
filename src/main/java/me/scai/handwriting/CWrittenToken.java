@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.IOException;
 
-import me.scai.handwriting.CHandWritingTokenImageData;
 import me.scai.parsetree.TerminalSet;
 import me.scai.parsetree.MathHelper;
 
@@ -18,25 +17,19 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
-public class CWrittenToken {
+public class CWrittenToken extends AbstractToken {
 	/* Member variables */
     private LinkedList<CStroke> strokes = new LinkedList<>();
     public boolean bNormalized = false;
-    private float [] tokenBounds = new float[4];
-    public float width = 0f;
-    public float height = 0f;
 
     private String recogWinner;
     private double [] recogPs;
-
-    /* The type of a token, according to the terminal set */
-    public String tokenTermType = null;
 
 	/* ~Member variables */
 
     /* Constructor */
     public CWrittenToken() {
-        initializeTokenBounds();
+        super();
     }
 
     /* Copy constructor */
@@ -69,13 +62,7 @@ public class CWrittenToken {
 		initializeTokenBounds();
 	}
 	
-	private void initializeTokenBounds() {
-	    /* Initialize the token bounds: [min_x, min_y, max_x, max_y] */        
-        tokenBounds[0] = Float.POSITIVE_INFINITY;
-        tokenBounds[1] = Float.POSITIVE_INFINITY;
-        tokenBounds[2] = Float.NEGATIVE_INFINITY;
-        tokenBounds[3] = Float.NEGATIVE_INFINITY;
-	}
+
 	
 	/* Constructor: From JSON string */
 	/* Expected fields: 
@@ -147,13 +134,10 @@ public class CWrittenToken {
 	
 	/* Clear */
 	public void clear() {
+        super.clear();
+
 		strokes.clear();
 
-		initializeTokenBounds();
-		
-		width = 0f;
-		height = 0f;
-		
 		bNormalized = false;
 	}
 	
@@ -211,32 +195,23 @@ public class CWrittenToken {
 	public int nStrokes() {
 		return strokes.size();
 	}
-	
-	/* Get the bounds: min_x, min_y, max_x, max_y */
-	public float [] getBounds() {
-	    return tokenBounds;
-	}
 
-	public void setBounds(float [] bounds) {
-	    this.tokenBounds = bounds;
-	}
-	
-	
+    @Override
 	public float getCentralX() {
 		if ( !bNormalized )
 			throw new RuntimeException("Calling getCentralX before normalization");
 		
 		return 0.5f * (tokenBounds[2] + tokenBounds[0]); 
 	}
-	
+
+    @Override
 	public float getCentralY() {
 		if ( !bNormalized )
 			throw new RuntimeException("Calling getCentralY before normalization");
 		
 		return 0.5f * (tokenBounds[3] + tokenBounds[1]); 
 	}
-	
-	
+
 	@Override 
 	public String toString() {
 		String s = new String("CWrittenToken (nStrokes=");
@@ -533,13 +508,17 @@ public class CWrittenToken {
 		return im;
 	}
 	
-	public void setRecogWinner(String rw) {
-		recogWinner = rw;
-	}
-	
-	public String getRecogWinner() {
+
+
+    @Override
+	public String getRecogResult() {
 		return recogWinner;
 	}
+
+    @Override
+    public void setRecogResult(String rw) {
+        recogWinner = rw;
+    }
 	
 	public void setRecogPs(double [] ps) {
 		recogPs = ps;
@@ -673,6 +652,7 @@ public class CWrittenToken {
 	}
 	
 	/* Get the terminal type of token */
+    @Override
 	public void getTokenTerminalType(TerminalSet termSet) {
 		if ( recogWinner != null )
 			tokenTermType = termSet.getTypeOfToken(recogWinner);

@@ -155,7 +155,7 @@ public class Test_QADataSet {
         QADataEntry[] entries_basicNumberAlgebra = {
             new QADataEntry("10", "(21 - 3)").withMathTex("{21}-{3}").withEvalRes(18.0),
             new QADataEntry("11", "(21 + 3)").withMathTex("{21}+{3}").withEvalRes(24.0),
-            new QADataEntry("12", "(21 - 5)").withMathTex("{21}-{5}").withEvalRes(16.0),            
+            new QADataEntry("12", "(21 - 5)").withMathTex("{21}-{5}").withEvalRes(16.0),
             new QADataEntry("18", "(56 - 3)").withMathTex("{56}-{3}").withEvalRes(53.0),
             new QADataEntry("56", "(5 * 3)").withMathTex("{5}\\ast{3}").withEvalRes(15.0),
             new QADataEntry("57", "(3 * 4)").withMathTex("{3}\\ast{4}").withEvalRes(12.0),
@@ -176,6 +176,8 @@ public class Test_QADataSet {
             new QADataEntry("113", "((4 - 8) + 5)").withMathTex("{{4}-{8}}+{5}").withEvalRes(1.0), /* AssocLeft3B */
             new QADataEntry("sim_20", "((11 * 22) * 33)").withMathTex("{{11}\\ast{22}}\\ast{33}").withEvalRes(7986.0),
             new QADataEntry("sim_33", "(12 * 34)").withMathTex("{12}\\ast{34}").withEvalRes(408.0),
+            new QADataEntry("sim_226", "(((1 + 2) + 3) + 4)").withMathTex("{{{1}+{2}}+{3}}+{4}").withEvalRes(10.0),
+//            new QADataEntry("sim_227", "((((1 + 2) + 3) + 4) + 5)").withMathTex("{{{{1}+{2}}+{3}}+{4}}+{5}").withEvalRes(15.0) // TODO: Fix infinite loop
         };
         QADataSuites.put("basicNumberAlgebra", new QADataSuite(entries_basicNumberAlgebra, false));
         

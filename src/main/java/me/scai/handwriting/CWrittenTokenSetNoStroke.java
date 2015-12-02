@@ -8,19 +8,21 @@ import java.io.IOException;
 import java.lang.AssertionError;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.util.Iterator;
 
 import me.scai.parsetree.TerminalSet;
 
 public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	/* Member variables */
-	public ArrayList<CWrittenToken> tokens = new ArrayList<CWrittenToken>();
-	public ArrayList<Integer> tokenIDs = new ArrayList<Integer>();
+	public ArrayList<AbstractToken> tokens = new ArrayList<>();
+	public ArrayList<Integer> tokenIDs = new ArrayList<>();
+
+    private boolean hasNodeToken = false;
+
 	/* ~Member variables */
 	
 	/* ************ Methods ************ */
 	/* Default constructor */
-	public CWrittenTokenSetNoStroke() { }		
+	public CWrittenTokenSetNoStroke() { }
 	
 	/* Constructor: taking a CWrittenTokenSetNoStroke, extract a subset of the
 	 * tokens and used them to form a new CWrittenTokenSetNoStroke. 
@@ -33,8 +35,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			addToken(owts.tokens.get(indices[i]));
 			tokenIDs.add(owts.tokenIDs.get(indices[i]));
 		}
-		
-//		assert( tokens.size() == tokenIDs.size() );	// DEBUG
 		
 		calcBounds();
 	}
@@ -50,9 +50,31 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		
 		calcBounds();
 	}
+
+    /* Factory method: From an array of written tokens */
+    public static CWrittenTokenSetNoStroke from(AbstractToken[] writtenTokens) {
+        if (writtenTokens == null) {
+            throw new IllegalArgumentException("Null writtenTokens array");
+        }
+
+        CWrittenTokenSet wtSet0 = new CWrittenTokenSet();
+
+
+        for (AbstractToken writtenToken : writtenTokens) {
+            wtSet0.addToken(writtenToken);
+        }
+
+        return new CWrittenTokenSetNoStroke(wtSet0);
+
+    }
 	
-	public void addToken(CWrittenToken wt) {
+	public void addToken(AbstractToken wt) {
+        if (wt instanceof NodeToken) {
+            hasNodeToken = true;
+        }
+
 		tokens.add(wt);
+
 		addOneToken();
 	}
 
@@ -75,85 +97,24 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		}
 	}
 
-	@Override
-	public String getStringBrief() {
-		/* Check if tokeNames has been configured */
-//		if ( tokenBounds == null )
-//			throw new IllegalStateException("tokenNames have not been configured yet");
-//	
-//		if ( tokenBounds.size() != recogWinners.size() || 
-//		     tokenBounds.size() != recogPs.size() )
-//			throw new IllegalStateException("Difference in sizes of tokens and recognition results");
-		
-		String str = "";
-		
-		/* Write token names */
-		str += "Token set: [";
-		for (int k = 0; k < tokenNames.length; ++k) {
-			str += tokenNames[k];
-			if ( k < tokenNames.length - 1 )
-				str += ", ";
-		}
-		str += "]\n";
-		str += "\n";
-		
-		/* Write tokens */
-		for (int k = 0; k < nt; ++k) {
-			/* Bound */
-			str += "bounds = [";			
-//			float [] bnds = tokenBounds.get(k);
-			float [] bnds = tokens.get(k).getBounds();
-			str += bnds[0] + ", ";
-			str += bnds[1] + ", ";
-			str += bnds[2] + ", ";
-			str += bnds[3];
-			str += "]\n";
-						
-			/* Recognition winner */
-//			str += "recogWinner = " + recogWinners.get(k) + "\n";
-			str += "recogWinner = " + tokens.get(k).getRecogWinner() + "\n";
-			
-			/* Recognition Ps */
-			str += "recogPs = [";
-//			for (int n = 0; n < recogPs.get(k).length; ++n) {
-//				str += recogPs.get(k)[n];
-//				if ( n < recogPs.get(k).length - 1 )
-//					str += ", ";
-//			}
-			for (int n = 0; n < tokens.get(k).getRecogPs().length; ++n) {
-				str += tokens.get(k).getRecogPs()[n];
-				if ( n < tokens.get(k).getRecogPs().length - 1 )
-					str += ", ";
-			}
-			str += "]\n";
-			str += "\n";
-		}
-		
-		
-		return str;
-	}
-
-
-	public void deleteToken(int i) {
-		if ( i < 0 ) {
-			System.err.println("Deletion index is negative");
-			return;
-		}
-		
-		if ( i >= nTokens() ) {
-			System.err.println("Deletion index exceeds number of tokens");
-			return;
-		}
-		
-		tokens.remove(i);
-//		tokenBounds.remove(i);
-//		recogWinners.remove(i);
-//		recogPs.remove(i);
-		
-		calcBounds();
-		
-		deleteOneToken();
-	}
+    // TODO: Since this is not used, should it be removed?
+//	public void deleteToken(int i) {
+//		if ( i < 0 ) {
+//			System.err.println("Deletion index is negative");
+//			return;
+//		}
+//
+//		if ( i >= nTokens() ) {
+//			System.err.println("Deletion index exceeds number of tokens");
+//			return;
+//		}
+//
+//		tokens.remove(i);
+//
+//		calcBounds();
+//
+//		deleteOneToken();
+//	}
 	
 	/* Read from .wts file */
 	public void readFromFile(String fileName) throws FileNotFoundException, IOException {
@@ -253,8 +214,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			in.close();
 		}
 		
-//		assert( tokens.size() == tokenIDs.size() );	// DEBUG
-		
 		calcBounds();
 	}
 	
@@ -342,28 +301,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		return tokens.get(i).tokenTermType;
 	}
 
-//	@Override
-//	public String toString() {
-//		String s = "[";
-//		
-//		for (int i = 0; i < tokens.size(); ++i) {
-//			s += tokens.get(i).getRecogWinner();
-//			s += "_" + String.format("%.0f",  min_x) + ","
-//			          + String.format("%.0f",  min_y) + ","
-//					  + String.format("%.0f",  max_x) + ","
-//			          + String.format("%.0f",  max_y);
-//			if ( i < tokens.size() - 1 )
-//				s += ";";
-//			
-////			s += tokenIDs.get(i);
-////			if ( i < tokens.size() - 1 )
-////				s += ",";
-//		}
-//		s += "]";
-//		
-//		return s;
-//	}
-	
 	public String toString() {
 		String s = "";
 		
@@ -386,5 +323,9 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
         }
 
         return hc;
+    }
+
+    public boolean hasNodeToken() {
+        return hasNodeToken;
     }
 }

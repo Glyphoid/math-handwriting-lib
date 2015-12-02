@@ -147,7 +147,7 @@ public class TerminalSet {
 		}
 		else {
 			String tTokenType = getTypeOfToken(tokenName);
-			return tTokenType.equals(typeName);
+            return typeName.equals(tTokenType); // null guard
 		}
 	}
 	

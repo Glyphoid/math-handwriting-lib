@@ -166,7 +166,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                 strokeState.set(strokeState.size() - 1, oldWrittenTokenIdx);
 
                 wtSet.deleteToken(oldWrittenTokenIdx);
-                tmpWT.setRecogWinner(newWinnerTokenName);
+                tmpWT.setRecogResult(newWinnerTokenName);
                 tmpWT.setRecogPs(newPs);
 
                 wtSet.addToken(oldWrittenTokenIdx, tmpWT, newWinnerTokenName, newPs);
@@ -330,7 +330,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             wtRecogMaxPs.add(ps[recRes]);
 
             wt.setRecogPs(ps);	/* TODO: Wrap into tokenEngine.recognize() */
-            wt.setRecogWinner(winnerTokenName); /* TODO: Wrap into tokenEngine.recognize() */
+            wt.setRecogResult(winnerTokenName); /* TODO: Wrap into tokenEngine.recognize() */
 
             wtSet.addToken(wt, winnerTokenName, ps);
 
@@ -498,7 +498,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
             for (int k = 0; k < toPreserve.length; ++k) {
                 if (toPreserve[k]) {
-                    new_wtSet.addToken(wtSet.tokens.get(k), wtRecogWinners.get(k), wtRecogPs.get(k));
+                    new_wtSet.addToken(wtSet.tokens.get(k),
+                                       wtRecogWinners.get(k),
+                                       wtRecogPs.get(k));
 
                     new_wtCtrXs.add(wtCtrXs.get(k));
                     new_wtCtrYs.add(wtCtrYs.get(k));
@@ -553,7 +555,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                 String newWinnerTokenName = tokenEngine.getTokenName(newRecRes);
                 double newMaxP = newPs[newRecRes];
 
-                tmpWT.setRecogWinner(newWinnerTokenName);
+                tmpWT.setRecogResult(newWinnerTokenName);
                 tmpWT.setRecogPs(newPs);
 
                 wtSet.replaceToken(tokenIdx, tmpWT, newWinnerTokenName, newPs);
@@ -680,7 +682,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             String newWinnerTokenName = tokenEngine.getTokenName(newRecRes);
             double newMaxP = newPs[newRecRes];
 
-            tmpWT.setRecogWinner(newWinnerTokenName); /* TODO: Refactor into tokenEngine.recognize() */
+            tmpWT.setRecogResult(newWinnerTokenName); /* TODO: Refactor into tokenEngine.recognize() */
             tmpWT.setRecogPs(newPs);
 
     //		System.out.println("Done calling tokenEngine.recognize()"); //DEBUG

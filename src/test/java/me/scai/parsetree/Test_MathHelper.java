@@ -2,7 +2,10 @@ package me.scai.parsetree;
 
 import org.junit.Test;
 
+import java.util.IllegalFormatCodePointException;
+
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class Test_MathHelper {
 
@@ -112,6 +115,70 @@ public class Test_MathHelper {
 
         assertEquals(0, MathHelper.countOccurrences(X2, 2));
 
+    }
+
+    @Test
+    public void testGetFullDiscreteSpace() {
+        // Invalid input: negative number of values
+        boolean exceptionCaught = false;
+        try {
+            int[][] ds_minus1_1 = MathHelper.getFullDiscreteSpace(-1, 1);
+        } catch (IllegalArgumentException e) {
+            exceptionCaught = true;
+        }
+        assertTrue(exceptionCaught);
+
+        // Invalid input: negative number of dimensions
+        exceptionCaught = false;
+        try {
+            int[][] ds_1_minus1 = MathHelper.getFullDiscreteSpace(1, -1);
+        } catch (IllegalArgumentException e) {
+            exceptionCaught = true;
+        }
+        assertTrue(exceptionCaught);
+
+        // Edge case: 1 value, 0 dimension
+        int[][] ds_1_0 = MathHelper.getFullDiscreteSpace(1, 0);
+
+        assertEquals(1, ds_1_0.length);
+        assertEquals(0, ds_1_0[0].length);
+
+        // Edge case: 0 value, 1 dimension
+        int[][] ds_0_1 = MathHelper.getFullDiscreteSpace(0, 1);
+
+        assertEquals(0, ds_0_1.length);
+
+        // Edge case: 1 value, 1 dimension
+        int[][] ds_1_1 = MathHelper.getFullDiscreteSpace(1, 1);
+
+        assertEquals(1, ds_1_1.length);
+        for (int[] ds : ds_1_1) {
+            assertEquals(1, ds.length);
+        }
+
+        // 2 values, 2 dimensions
+        int[][] ds_2_2 = MathHelper.getFullDiscreteSpace(2, 2);
+
+        assertEquals(4, ds_2_2.length);
+        for (int[] ds : ds_2_2) {
+            assertEquals(2, ds.length);
+        }
+
+        // 3 values, 2 dimensions
+        int[][] ds_3_2 = MathHelper.getFullDiscreteSpace(3, 2);
+
+        assertEquals(9, ds_3_2.length);
+        for (int[] ds : ds_2_2) {
+            assertEquals(2, ds.length);
+        }
+
+        // 2 values, 3 dimensions
+        int[][] ds_2_3 = MathHelper.getFullDiscreteSpace(2, 3);
+
+        assertEquals(8, ds_2_3.length);
+        for (int[] ds : ds_2_3) {
+            assertEquals(3, ds.length);
+        }
     }
 
 

@@ -142,7 +142,6 @@ public class StrokeCuratorConfig {
 		catch (IOException exc) {
 			return null;
 		}
-//		System.out.println("configJson = \"" + configJson + "\""); //DEBUG
 		
 		return fromJson(configJson);
 	}

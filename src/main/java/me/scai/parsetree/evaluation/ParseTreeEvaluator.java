@@ -238,12 +238,10 @@ public class ParseTreeEvaluator {
 			try {
 				evalRes = m.invoke(this, args);
 			}  catch (InvocationTargetException iteExc) {
-				throw new ParseTreeEvaluatorException(
-						"Evaluation failed due to InvocationTargetException");
+				throw new ParseTreeEvaluatorException("Evaluation failed due to InvocationTargetException");
 			} 
 			catch (IllegalAccessException iaeExc) {
-				throw new ParseTreeEvaluatorException(
-						"Evaluation failed due to IllegalAccessExcpetion");
+				throw new ParseTreeEvaluatorException("Evaluation failed due to IllegalAccessExcpetion");
 			}
 
 		} 

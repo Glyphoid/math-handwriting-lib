@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
+import me.scai.handwriting.NodeToken;
 
 public class TokenSetParser implements ITokenSetParser {
 
@@ -119,11 +120,13 @@ public class TokenSetParser implements ITokenSetParser {
      *     maxGeomScores,
      *     aRemainingSets */
 	private float evalGeometry(final CWrittenTokenSetNoStroke tokenSet,
-                               final int[] idxValidProds, final int[] idxValidProds_wwoe,
+                               final int[] idxValidProds,
+                               final int[] idxValidProds_wwoe,
                                final ArrayList<int[][]> idxPossibleHead,
                                final Node[][] nodes,
                                final float[][] maxGeomScores,
                                final CWrittenTokenSetNoStroke[][][] aRemainingSets) {
+
 		final boolean bDebug = false;
 		final float selectiveDrillThresh = recursionGeomScoreRatioThresh; /* To disable selective drill, set to 0.0f */
 
@@ -193,11 +196,30 @@ public class TokenSetParser implements ITokenSetParser {
                                 maxGeomScores[i][j] = 0.0f;
                                 maxGeomScores_noFlag[i][j] = 0.0f;
                             } else {
-                                Node n = gpSet.prods.get(idxValidProds[i]).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
+
+                                Node n = null;
+                                if (tokenSet.getNumTokens() == 1 && (tokenSet.tokens.get(0) instanceof NodeToken) && idxHead.length == 1) { // TODO: Similar cases
+                                    NodeToken nodeToken = (NodeToken) tokenSet.tokens.get(0);
+
+                                    List<Integer> matchingProds = nodeToken.getMatchingGraphicalProductionIndices(gpSet); // TODO: null is okay?
+                                    if (matchingProds.contains(idxValidProds[i])) {
+
+                                        n = nodeToken.getNode();
+                                        maxGeomScore[0] = 1.0f;
+                                        remainingSets[0] = tokenSet; // TODO: What needs to be done about aRemainingSets?
+                                    } else {
+                                        maxGeomScore[0] = 0.0f;
+
+                                        // TODO: What to do here?
+                                    }
+
+                                } else {
+                                    n = gpSet.prods.get(idxValidProds[i]).attempt(tokenSet, idxHead, remainingSets, maxGeomScore);
+                                }
 
 						        /* If the head child is a terminal, replace tokenName with the actual name of the token */
-                                if (n != null && termSet.isTypeTerminal(n.ch[0].termName)) {
-                                    n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogWinner();
+                                if (n != null && n.ch[0].termName != null && termSet.isTypeTerminal(n.ch[0].termName)) {
+                                    n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogResult();
                                 }
 
                                 /* Writing data to outside variables */
@@ -249,6 +271,8 @@ public class TokenSetParser implements ITokenSetParser {
 		/* Second pass: Selective drill-down */
 //        Thread[] jobThreads2p = new Thread[idxValidProds.length]; /* Second-pass jobs */
 		for (int ii = 0; ii < idxValidProds.length; ++ii) { /* Iterate through valid productions */
+
+
             final int i = ii;
 
             final boolean[] bToDrill2p = bToDrill[i];
@@ -256,6 +280,7 @@ public class TokenSetParser implements ITokenSetParser {
 //            Runnable jobRunnable2p = new Runnable() {
 //                @Override
 //                public void run() {
+
                     int nrhs = gpSet.prods.get(idxValidProds[i]).rhs.length;
 			        /* Number of right-hand size elements, including the head */
 
@@ -286,7 +311,7 @@ public class TokenSetParser implements ITokenSetParser {
 
                                 /* If the head child is a terminal, replace tokenName with the actual name of the token */
                                 if (n != null && termSet.isTypeTerminal(n.ch[0].termName)) {
-                                    n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogWinner();
+                                    n.ch[0].termName = tokenSet.tokens.get(idxPossibleHead.get(i)[j][0]).getRecogResult();
                                 }
                             } else {
                                 n = nodes[i][j];
@@ -303,6 +328,7 @@ public class TokenSetParser implements ITokenSetParser {
                             if (bToDrillThis && currDrillDepth < drillDepthLimit && maxGeomScore[0] != 0.0f && nrhs > 1) {
                                 /* Drill one level down: get the maximum geometric scores from its children */
                                 float[] d_scores = new float[nrhs];
+
                                 for (int k = 0; k < nrhs; ++k) {
                                     /* Iterate through all rhs items, including the head and the non-heads. */
                                     ArrayList<int[][]> d_idxPossibleHead = new ArrayList<int[][]>();
@@ -317,77 +343,144 @@ public class TokenSetParser implements ITokenSetParser {
                                         nTokens = remainingSets[k].nTokens(); // Assumes that remainingSets includes the head
                                         d_scores[k] = (nTokens == 1) ? 1.0f : 0.0f;
 
-                                        continue;
-                                    }
-
-                                    CWrittenTokenSetNoStroke d_tokenSet;
-                                    if (k == 0) {
-                                        /* Head */
-                                        d_tokenSet = new CWrittenTokenSetNoStroke(
-                                                tokenSet, idxHead);
+//                                        continue;
                                     } else {
+
+                                        CWrittenTokenSetNoStroke d_tokenSet;
+                                        if (k == 0) {
+                                        /* Head */
+                                            d_tokenSet = new CWrittenTokenSetNoStroke(
+                                                    tokenSet, idxHead);
+                                        } else {
                                         /* Non-head */
-                                        d_tokenSet = remainingSets[k]; // Assume that remainingSets includes the head
-                                    }
+                                            d_tokenSet = remainingSets[k]; // Assume that remainingSets includes the head
+                                        }
 
-                                    if (bDebug) {
-                                        System.out.println("Drilling down from level "
-                                                + currDrillDepth + " to level "
-                                                + (currDrillDepth + 1) + ": "
-                                                + gpSet.prods.get(idxValidProds[i]).lhs
-                                                + " --> " + d_lhs);
-                                    }
+                                        if (bDebug) {
+                                            System.out.println("Drilling down from level "
+                                                    + currDrillDepth + " to level "
+                                                    + (currDrillDepth + 1) + ": "
+                                                    + gpSet.prods.get(idxValidProds[i]).lhs
+                                                    + " --> " + d_lhs);
+                                        }
 
-                                    int[][] d_idxValidProds_wwoe = null; /* wwoe: with or without exclusion */
-                                    int[] d_idxValidProds = null;
-                                    int[] d_idxValidProds_noExclude = null;
+                                        boolean singleNodeToken = d_tokenSet.getNumTokens() == 1 && d_tokenSet.tokens.get(0) instanceof NodeToken;
+                                        NodeToken nodeToken = null;
+                                        List<Integer> nodeTokenMatchingProdIndices = null;
+                                        int nodeTokenDirectMatchProdIndex = -1;
+                                        Node nodeTokenDirectMatchNode = null;
 
-                                    hashKey1[0] = d_tokenSet.toString() + "@" + d_lhs;
-                                    if (!existsInTokenSetLHS2IdxValidProdsMap(hashKey1[0])) {
-                                        d_idxValidProds_wwoe = gpSet.getIdxValidProds(d_tokenSet, null, termSet, d_lhs, d_idxPossibleHead, bDebug);
-                                        d_idxValidProds = d_idxValidProds_wwoe[0];
-                                        d_idxValidProds_noExclude = d_idxValidProds_wwoe[1];
+                                        if (singleNodeToken) {
+                                            nodeToken = (NodeToken) d_tokenSet.tokens.get(0);
+                                            nodeTokenMatchingProdIndices = nodeToken.getMatchingGraphicalProductionIndices(gpSet);
+
+                                            for (int matchingProdIndex : nodeTokenMatchingProdIndices) {
+                                                if (gpSet.prods.get(matchingProdIndex).lhs.equals(d_lhs)) {
+                                                    nodeTokenDirectMatchProdIndex = matchingProdIndex;
+                                                    nodeTokenDirectMatchNode = nodeToken.getSingleLineageDirectDescendant(d_lhs);
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        int[][] d_idxValidProds_wwoe = null; /* wwoe: with or without exclusion */
+                                        int[] d_idxValidProds = null;
+                                        int[] d_idxValidProds_noExclude = null;
+
+                                        hashKey1[0] = d_tokenSet.toString() + "@" + d_lhs;
+                                        if (!existsInTokenSetLHS2IdxValidProdsMap(hashKey1[0])) {
+
+                                            if (singleNodeToken) {
+
+                                                d_idxValidProds_wwoe = gpSet.getIdxValidProds(d_tokenSet, null, termSet, d_lhs, d_idxPossibleHead, bDebug);
+                                                d_idxValidProds = d_idxValidProds_wwoe[0];
+                                                d_idxValidProds_noExclude = d_idxValidProds_wwoe[1];
+
+                                                int[] iIntersect = MathHelper.findFirstIntersect(nodeTokenMatchingProdIndices, d_idxValidProds);
+
+                                                if (iIntersect == null) {
+                                                    if (nodeTokenDirectMatchProdIndex != -1) {
+                                                        d_scores[k] = 1.0f;
+
+                                                        String remHashKey = d_tokenSet.toString() + "@" + d_lhs;
+                                                        putInTokenSetLHS2IdxBestProdMap(remHashKey, nodeTokenDirectMatchProdIndex);
+                                                        putInTokenSetLHS2IdxValidProdsMap(remHashKey, new int[] {nodeTokenDirectMatchProdIndex});
+
+                                                        // TODO: Put node array array in evalGeom2NodesMap
+                                                        String tHashKey2 = d_tokenSet.toString() + "@" + nodeTokenDirectMatchProdIndex;
+                                                        Node[][] tNodes = new Node[1][1];
+                                                        tNodes[0][0] = nodeTokenDirectMatchNode;
+
+                                                        float[][] tScores = new float[1][1];
+                                                        tScores[0][0] = 1.0f;
+
+                                                        CWrittenTokenSetNoStroke[][][] tWtSets = new CWrittenTokenSetNoStroke[1][1][1];
+                                                        tWtSets[0][0][0] = d_tokenSet; // This is just a placeholder!
+
+                                                        this.evalGeom2ScoresMap.put(tHashKey2, tScores);
+                                                        this.evalGeom2NodesMap.put(tHashKey2, tNodes);
+                                                        this.evalGeom2RemSetsMap.put(tHashKey2, tWtSets);
+
+                                                        continue; //TODO: Prevent early exit
+                                                    }
+//                                                throw new IllegalStateException("Not implemented yet");
+                                                } else {
+                                                    assert (iIntersect.length == 2);
+
+                                                    d_idxValidProds = new int[]{nodeTokenMatchingProdIndices.get(iIntersect[0])};
+                                                    d_idxValidProds_noExclude = d_idxValidProds;
+
+                                                    int[][] iph = d_idxPossibleHead.get(iIntersect[1]);
+                                                    d_idxPossibleHead = new ArrayList<>();
+                                                    d_idxPossibleHead.add(iph);
+                                                }
+                                            } else {
+                                                d_idxValidProds_wwoe = gpSet.getIdxValidProds(d_tokenSet, null, termSet, d_lhs, d_idxPossibleHead, bDebug);
+                                                d_idxValidProds = d_idxValidProds_wwoe[0];
+                                                d_idxValidProds_noExclude = d_idxValidProds_wwoe[1];
+                                            }
 
                                         /* Store results in hash maps */
-                                        putInTokenSetLHS2IdxValidProdsMap(hashKey1[0], d_idxValidProds);
-                                        // tokenSetLHS2IdxValidProdsNoExcludeMap.put(hashKey1[0], d_idxValidProds_wwoe[1]);
-                                        putInTokenSetLHS2IdxPossibleHeadsMap(hashKey1[0], d_idxPossibleHead);
-                                    } else {
-                                        if (bDebug) {
-                                            System.out.println("Hash map getting: " + hashKey1[0]);
-                                        }
+                                            putInTokenSetLHS2IdxValidProdsMap(hashKey1[0], d_idxValidProds);
+                                            // tokenSetLHS2IdxValidProdsNoExcludeMap.put(hashKey1[0], d_idxValidProds_wwoe[1]);
+                                            putInTokenSetLHS2IdxPossibleHeadsMap(hashKey1[0], d_idxPossibleHead);
+                                        } else {
+                                            if (bDebug) {
+                                                System.out.println("Hash map getting: " + hashKey1[0]);
+                                            }
                                         /* Retrieve results from hash maps */
-                                        d_idxValidProds = getFromTokenSetLHS2IdxValidProdsMap(hashKey1[0]);
-                                        // d_idxValidProds_noExclude = tokenSetLHS2IdxValidProdsNoExcludeMap.get(hashKey1[0]);
-                                        d_idxPossibleHead = getFromTokenSetLHS2IdxPossibleHeadsMap(hashKey1[0]);
+                                            d_idxValidProds = getFromTokenSetLHS2IdxValidProdsMap(hashKey1[0]);
+                                            // d_idxValidProds_noExclude = tokenSetLHS2IdxValidProdsNoExcludeMap.get(hashKey1[0]);
+                                            d_idxPossibleHead = getFromTokenSetLHS2IdxPossibleHeadsMap(hashKey1[0]);
+                                        }
+
+                                        if (d_idxValidProds.length == 0) {
+                                            d_scores[k] = 0.0f;
+                                            continue;
+                                        }
+
+                                        Node[][] d_nodes = new Node[d_idxValidProds.length][];
+                                        float[][] d_c_maxGeomScores = new float[d_idxValidProds.length][];
+                                        CWrittenTokenSetNoStroke[][][] d_aRemainingSets = new CWrittenTokenSetNoStroke[d_idxValidProds.length][][];
+                                        // int [] d_t_idxMax2 = new int[2];
+
+                                        currDrillDepth++; /* To check: thread-safe? */
+
+                                        /************************************/
+                                        /*          Recursive call          */
+                                        float d_maxGeomScore = evalGeometry(d_tokenSet, d_idxValidProds, d_idxValidProds_noExclude,
+                                                d_idxPossibleHead, d_nodes, d_c_maxGeomScores, d_aRemainingSets);
+                                        /************************************/
+
+                                        currDrillDepth--;
+                                        if (d_maxGeomScore == 0.0f) {
+                                            break;  /* Because geometric mean will be calculated, if any of the score is zero, the result will also be zero */
+                                        }
+
+                                        d_scores[k] = d_maxGeomScore;
+
+                                        /* Is this right? Or should maxGeomScore be multiplied by the geometric mean of the d_maxGeomScores's? TODO */
                                     }
-
-                                    if (d_idxValidProds.length == 0) {
-                                        d_scores[k] = 0.0f;
-                                        continue;
-                                    }
-
-                                    Node[][] d_nodes = new Node[d_idxValidProds.length][];
-                                    float[][] d_c_maxGeomScores = new float[d_idxValidProds.length][];
-                                    CWrittenTokenSetNoStroke[][][] d_aRemainingSets = new CWrittenTokenSetNoStroke[d_idxValidProds.length][][];
-                                    // int [] d_t_idxMax2 = new int[2];
-
-                                    currDrillDepth++; /* To check: thread-safe? */
-
-                                    /************************************/
-                                    /*          Recursive call          */
-                                    float d_maxGeomScore = evalGeometry(d_tokenSet, d_idxValidProds, d_idxValidProds_noExclude,
-                                            d_idxPossibleHead, d_nodes, d_c_maxGeomScores, d_aRemainingSets);
-                                    /************************************/
-
-                                    currDrillDepth--;
-                                    if (d_maxGeomScore == 0.0f) {
-                                        break;  /* Because geometric mean will be calculated, if any of the score is zero, the result will also be zero */
-                                    }
-
-                                    d_scores[k] = d_maxGeomScore;
-
-                                    /* Is this right? Or should maxGeomScore be multiplied by the geometric mean of the d_maxGeomScores's? TODO */
                                 }
 
                                 maxGeomScore[0] *= MathHelper.geometricMean(d_scores);
@@ -466,7 +559,7 @@ public class TokenSetParser implements ITokenSetParser {
 				c_idxValidProds = getFromTokenSetLHS2IdxValidProdsMap(hashKey);
 				// c_idxValidProds_noExclude = tokenSetLHS2IdxValidProdsNoExcludeMap.get(hashKey);
 				c_idxPossibleHead = getFromTokenSetLHS2IdxPossibleHeadsMap(hashKey);
-			}
+	 		}
 
 			if (c_idxValidProds == null || c_idxValidProds.length == 0) {
 				maxGeomScores[i][j] = 0.0f; /* Necessary? */
@@ -566,26 +659,24 @@ public class TokenSetParser implements ITokenSetParser {
             throw new IllegalArgumentException("Parsing null token set!");
         }
 
-		ArrayList<int[][]> idxPossibleHead = new ArrayList<int[][]>();
+		ArrayList<int[][]> idxPossibleHead = new ArrayList<>();
 		/* Determine the name of the lhs */
 
-		int[][] idxValidProds_wwoe = null; /* wwoe: ?? */
+		int[][] idxValidProds_wwoe = null; /* wwoe: "with and without exclusion" */
 		int[] idxValidProds = null;
 
 		String hashKey = tokenSet.toString() + "@" + lhs;
-		if (!existsInTokenSetLHS2IdxValidProdsMap(hashKey)) {
+		if ( !existsInTokenSetLHS2IdxValidProdsMap(hashKey) ) {
 			idxValidProds_wwoe = gpSet.getIdxValidProds(tokenSet, null, termSet, lhs, idxPossibleHead, this.bDebug);
 			idxValidProds = idxValidProds_wwoe[0];
 			// idxValidProds_noExclude = idxValidProds_wwoe[1];
 
 			/* Store results in hash maps */
 			putInTokenSetLHS2IdxValidProdsMap(hashKey, idxValidProds);
-			// tokenSetLHS2IdxValidProdsNoExcludeMap.put(hashKey, idxValidProds_noExclude);
 			putInTokenSetLHS2IdxPossibleHeadsMap(hashKey, idxPossibleHead);
 		} else {
 			/* Retrieve results from hash maps */
 			idxValidProds = getFromTokenSetLHS2IdxValidProdsMap(hashKey);
-			// idxValidProds_noExclude = tokenSetLHS2IdxValidProdsNoExcludeMap.get(hashKey);
 			idxPossibleHead = getFromTokenSetLHS2IdxPossibleHeadsMap(hashKey);
 		}
 
@@ -599,6 +690,7 @@ public class TokenSetParser implements ITokenSetParser {
 		CWrittenTokenSetNoStroke[][][] aRemainingSets = new CWrittenTokenSetNoStroke[idxValidProds.length][][];
 
 		currDrillDepth = 0;
+
 		evalGeometry(tokenSet, idxValidProds, null, idxPossibleHead, nodes, maxGeomScores, aRemainingSets);
 
 		/* Select the maximum geometric score */
@@ -609,10 +701,10 @@ public class TokenSetParser implements ITokenSetParser {
 		 * New approach: After evalGeometry has been called once, all the
 		 * information should be there, utilize that information.
 		 */
-		LinkedList<Node> nStack = new LinkedList<Node>();
-		LinkedList<Boolean> bParsedStack = new LinkedList<Boolean>();
-		LinkedList<CWrittenTokenSetNoStroke[]> rsStack = new LinkedList<CWrittenTokenSetNoStroke[]>();
-		LinkedList<Integer> levelStack = new LinkedList<Integer>();
+		LinkedList<Node> nStack = new LinkedList<>();
+		LinkedList<Boolean> bParsedStack = new LinkedList<>();
+		LinkedList<CWrittenTokenSetNoStroke[]> rsStack = new LinkedList<>();
+		LinkedList<Integer> levelStack = new LinkedList<>();
 
 		Node t_node = nodes[idxMax2[0]][idxMax2[1]];
 		CWrittenTokenSetNoStroke[] t_remSets = aRemainingSets[idxMax2[0]][idxMax2[1]]; /* Includes the head */
@@ -646,8 +738,9 @@ public class TokenSetParser implements ITokenSetParser {
 					isParsed = parent.next();
 					boolean levelMatch = (parentLevel.next() == topLevel - 1);
 					n++;
-					if ((!isParsed) && levelMatch)
-						break;
+					if ((!isParsed) && levelMatch) {
+                        break;
+                    }
 				}
 
 				if (isParsed) { /* Broke out due to stack exhaustion */
@@ -659,36 +752,6 @@ public class TokenSetParser implements ITokenSetParser {
 
                 Node tParent = nStack.get(n - 2);
                 tParent.setChild(idxChild, ch);
-
-//                /* Check the match of row element counts between rows */
-//                if (idxChild == 0 && tParent.prodSumString.startsWith("COLUMN_CONTENT->COLUMN_CONTENT ROW_CONTENT") && tParent.ch[1] != null) {
-//                    assert(tParent.ch[1].lhs.equals("ROW_CONTENT")); // TODO: Grammar dependency removal
-//                    assert(ch.lhs.equals("COLUMN_CONTENT"));
-//
-//                    int rowElemCount = 0;
-//                    Node rowNode = tParent.ch[1];
-//                    while (rowNode.lhs.equals("ROW_CONTENT")) {
-//                        rowElemCount++;
-//                        rowNode = rowNode.ch[0];
-//                    }
-//
-//                    int newRowElemCount = 0;
-//                    if (ch.ch[0].prodSumString.startsWith("ROW_CONTENT")) {
-//                        rowNode = ch.ch[0];
-//                    } else {
-//                        rowNode = ch.ch[1];
-//                    }
-//                    while (rowNode.lhs.equals("ROW_CONTENT")) {
-//                        newRowElemCount++;
-//                        rowNode = rowNode.ch[0];
-//                    }
-//
-//                    if (rowElemCount != newRowElemCount) {
-//                        throw new RuntimeException("Mismatch between row sizes " + rowElemCount + " != " + newRowElemCount);
-//                    }
-//
-//                    int i26 = 26;
-//                }
 
 				if (idxChild == 0) {
                     bParsedStack.set(n - 1, true);
@@ -714,7 +777,7 @@ public class TokenSetParser implements ITokenSetParser {
 					boolean bNodeIsTerminal = termSet.isTypeTerminal(nStackTop.rhsTypes[k]);
 
 					CWrittenTokenSetNoStroke t_remSet = remSets[k];
-					if (!bNodeIsTerminal) { /* This node is NT */						
+					if (!bNodeIsTerminal) { /* This node is NT */
 						if (t_remSet == null) {
                             return null;
                         }
@@ -725,10 +788,9 @@ public class TokenSetParser implements ITokenSetParser {
 						t_idxValidProds = getFromTokenSetLHS2IdxValidProdsMap(tHashKey1);
 
                         if (t_idxValidProds == null) {
-                            throw new TokenSetParserException();
+                            throw new TokenSetParserException("No valid productions could be found");
                         }
 
-//						String tHashKey2 = t_remSet.toString() + "@" + MathHelper.intArray2String(t_idxValidProds);
                         String tHashKey2 = getHashCodeFromTokenSetAndIdxValidProds(t_remSet, t_idxValidProds);
 
 						float[][] t_c_scores = this.evalGeom2ScoresMap.get(tHashKey2);
@@ -744,15 +806,17 @@ public class TokenSetParser implements ITokenSetParser {
 						Node t_c_node = t_c_nodes[t_c_idxMax2[0]][t_c_idxMax2[1]];
 						CWrittenTokenSetNoStroke[] t_c_remSets = this.evalGeom2RemSetsMap.get(tHashKey2)[t_c_idxMax2[0]][t_c_idxMax2[1]];
 
-						/* Push onto stack */
-//                        if (t_c_node == null) {
-//                            int iii = 0; //DEBUG
-//                        }
+                        nStack.push(t_c_node);
+                        rsStack.push(t_c_remSets);
+                        levelStack.push(topLevel + 1);
 
-						nStack.push(t_c_node);
-						rsStack.push(t_c_remSets);
-						bParsedStack.push(t_c_node.isTerminal());
-						levelStack.push(topLevel + 1);
+                        if ( t_c_remSets.length == 1 && t_c_remSets[0].tokens.size() == 1 &&
+                             (t_c_remSets[0].tokens.get(0) instanceof NodeToken) ) { // NodeToken: Already parsed
+                            bParsedStack.push(true);
+                        } else {
+                            bParsedStack.push(t_c_node.isTerminal());
+                        }
+
 					} else { /* This node is T */
 						rsStack.push(null); /* No need to parse */
 

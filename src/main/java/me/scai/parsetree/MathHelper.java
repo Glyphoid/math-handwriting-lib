@@ -1,6 +1,7 @@
 package me.scai.parsetree;
 
 import java.lang.IllegalArgumentException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -182,9 +183,17 @@ public class MathHelper {
 	/* Input: dimSize: number of discrete values in each dimension; 
 	 *        numDims: number of dimensions;
 	 */
-	public static int [][] getFullDiscreteSpace(int dimSize, int numDims) {		
+	public static int[][] getFullDiscreteSpace(int dimSize, int numDims) {
+        if (dimSize < 0) {
+            throw new IllegalArgumentException("Encountered invalid (negative) value in dimSize: " + dimSize);
+        }
+
+        if (numDims < 0) {
+            throw new IllegalArgumentException("Encountered invalid (negative) value in numDims: " + numDims);
+        }
+
 	    int numRows = (int) Math.pow(dimSize, numDims);
-	    int [][] labels = new int[numRows][numDims];
+	    int[][] labels = new int[numRows][numDims];
 	    
 	    for (int i = 0; i < numRows; ++i) {
 	    	int n = i;
@@ -259,6 +268,31 @@ public class MathHelper {
 		
 		return sb.toString();
 	}
+
+    /* Convert an array of floats to string */
+    public static String floatArray2String(float [] xs) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < xs.length; ++i) {
+            sb.append(Float.toString(xs[i]));
+            if (i < xs.length - 1) {
+                sb.append(",");
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /* Add a float scalar to a float array */
+    public static float[] floatArrayPlusFloat(float[] xs, float y) {
+        float[] r = new float[xs.length];
+
+        for (int i = 0; i < xs.length; ++i) {
+            r[i] = xs[i] + y;
+        }
+
+        return r;
+    }
 
     public static int intArray2HashCode(int [] xs) {
         int hc = 0;
@@ -410,6 +444,33 @@ public class MathHelper {
 
         return indices;
 
+    }
+
+    /**
+     * Find the 1st intersection between X and Y
+     * @param X
+     * @param Y
+     * @return    null if the intersect is empty
+     *            int[2] array if the intersect is not empty:
+     *              First element:  Index of the first element in input X
+     *              Second element: Index of the first element in input Y
+     */
+    public static int[] findFirstIntersect(List<Integer> X, final int [] Y) {
+        if (X == null || Y == null) {
+            throw new IllegalArgumentException("One or both of X and Y are null");
+        }
+
+        for (int i = 0; i < X.size(); ++i) {
+            int x = X.get(i);
+
+            for (int j = 0; j < Y.length; ++j) {
+                if (x == Y[j]) {
+                    return new int[] {i, j};   // Returned indices: In x and in y
+                }
+            }
+        }
+
+        return null;
     }
 	 
 }

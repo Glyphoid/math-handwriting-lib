@@ -1,9 +1,11 @@
 package me.scai.parsetree;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
+import me.scai.handwriting.NodeToken;
 import me.scai.handwriting.Rectangle;
 
 import me.scai.parsetree.geometry.GeometricRelation;
@@ -169,7 +171,7 @@ public class GraphicalProduction {
 		if ( iHead.length == 0 ) {
 			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
 		}
-		
+
 		/* Configuration constants */
 		final boolean bUseShortcut = true; /* TODO: Get rid of this constant when the method proves to be reliable */
 		
@@ -199,11 +201,13 @@ public class GraphicalProduction {
 			/* Get all possible partitions: in "labels" */
 			/* This is the brute-force approach. */
 			labels = MathHelper.getFullDiscreteSpace(nrn, nnht);
+            /* TODO: Discard the partitions that don't make sense to speed things up. */
 		}
 
         if (labels == null || labels.length == 0) {
             return null;
         }
+
 
 	    /* Get index to all non-head token */
 	    ArrayList<Integer> inht = new ArrayList<Integer>();
@@ -290,7 +294,8 @@ public class GraphicalProduction {
 		    			
 //		    			String tokenTermType = tTokenSet.tokens.get(0).tokenTermType;
 		    			/* TODO: Accommodate terminal name types (e.g., "TERMINAL(s)") */
-		    			if ( terminalSet.match(tTokenSet.tokens.get(0).getRecogWinner(), this.rhs[j + 1]) ) {
+                        // TODO: NodeToken
+		    			if ( terminalSet.match(tTokenSet.tokens.get(0).getRecogResult(), this.rhs[j + 1]) ) {
 //		    			if ( tokenTermType.equals(this.rhs[j + 1]) ) {	
 		    				t_geomScores[j] = 1.0f;
 		    			}
@@ -332,10 +337,11 @@ public class GraphicalProduction {
     			/* This is the case in which the entire token is the head, 
     			 * and the head is an NT. 
     			 */
-    			if ( !rhsIsTerminal[0] )
-    				geomScores[i] = flagNTNeedsParsing;	/* 2.0f is a flag that indicates further geometric parsing is necessary */
-    			else
-    				geomScores[i] = 1.0f;
+    			if ( !rhsIsTerminal[0] ) {
+                    geomScores[i] = flagNTNeedsParsing;	/* 2.0f is a flag that indicates further geometric parsing is necessary */
+                } else {
+                    geomScores[i] = 1.0f;
+                }
     		}
 	    }
 	    

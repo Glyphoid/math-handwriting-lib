@@ -300,4 +300,28 @@ public class GeometryHelper {
 		return nBetween;
 		
 	}
+
+    public static float[] getInitBounds() {
+        return new float[] {
+            Float.POSITIVE_INFINITY,        // xMin
+            Float.POSITIVE_INFINITY,        // yMin
+            Float.NEGATIVE_INFINITY,        // xMax
+            Float.NEGATIVE_INFINITY         // yMax
+        };
+    }
+
+    public static float[] mergeBounds(final float[] bounds1, final float[] bounds2) {
+        assert bounds1.length == 4;
+        assert bounds2.length == 4;
+
+        float[] r = new float[4];
+
+        r[0] = bounds1[0] < bounds2[0] ? bounds1[0] : bounds2[0];
+        r[1] = bounds1[1] < bounds2[1] ? bounds1[1] : bounds2[1];
+        r[2] = bounds1[2] > bounds2[2] ? bounds1[2] : bounds2[2];
+        r[3] = bounds1[3] > bounds2[3] ? bounds1[3] : bounds2[3];
+
+        return r;
+    }
+
 }
