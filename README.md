@@ -1,7 +1,7 @@
 # math-handwriting-lib
 Java library for parsing and evaluating handwritten mathematical formulae. 
 
-Stroke representations of handwritten math expressions are recognized and evaluated. 
+This library is for "online" recognition of handwritten math, i.e., recognition based on stroke information. Stroke representations of handwritten math expressions are recognized and evaluated. 
 
 This is the core part of Glyphoid.
 
