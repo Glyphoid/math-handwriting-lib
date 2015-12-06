@@ -99,7 +99,8 @@ public class TokenSetParser implements ITokenSetParser {
 	}
 
 	@Override
-	public Node parse(CWrittenTokenSetNoStroke tokenSet) throws TokenSetParserException {
+	public Node parse(CWrittenTokenSetNoStroke tokenSet)
+            throws TokenSetParserException, InterruptedException {
 		init();
 
 		tokenSet.getAllTokensTerminalTypes(termSet);
@@ -125,7 +126,8 @@ public class TokenSetParser implements ITokenSetParser {
                                final ArrayList<int[][]> idxPossibleHead,
                                final Node[][] nodes,
                                final float[][] maxGeomScores,
-                               final CWrittenTokenSetNoStroke[][][] aRemainingSets) {
+                               final CWrittenTokenSetNoStroke[][][] aRemainingSets)
+        throws InterruptedException {
 
 		final boolean bDebug = false;
 		final float selectiveDrillThresh = recursionGeomScoreRatioThresh; /* To disable selective drill, set to 0.0f */
@@ -653,7 +655,8 @@ public class TokenSetParser implements ITokenSetParser {
 
 
 	/* This implements a recursive descend parser */
-	private Node parse(CWrittenTokenSetNoStroke tokenSet, String lhs) throws TokenSetParserException {
+	private Node parse(CWrittenTokenSetNoStroke tokenSet, String lhs)
+            throws TokenSetParserException, InterruptedException {
 		/* Input sanity check */
 		if (tokenSet == null) {
             throw new IllegalArgumentException("Parsing null token set!");
@@ -849,5 +852,9 @@ public class TokenSetParser implements ITokenSetParser {
     private String getHashCodeFromTokenSetAndIdxValidProds(CWrittenTokenSetNoStroke wtSet, int[] idxValidProds) {
         return wtSet.toString() + "@" + MathHelper.intArray2String(idxValidProds);
 //        return Integer.toString(wtSet.hashCode()) + "@" + MathHelper.intArray2HashCode(idxValidProds);
+    }
+
+    public GraphicalProductionSet getGraphicalProductionSet() {
+        return gpSet;
     }
 }

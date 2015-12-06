@@ -1,5 +1,6 @@
 package me.scai.parsetree.geometry;
 
+import com.google.gson.annotations.Expose;
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.parsetree.geometry.GeometricRelation;
 import me.scai.parsetree.geometry.GeometryHelper;
@@ -29,7 +30,8 @@ public class PositionRelation extends GeometricRelation {
 	
 	/* Member variables */
 	private PositionRelation() {}
-	
+
+    @Expose
 	public PositionType positionType;
 	
 	/* Constructor */

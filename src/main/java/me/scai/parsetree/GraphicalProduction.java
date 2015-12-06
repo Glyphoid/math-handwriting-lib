@@ -1,16 +1,12 @@
 package me.scai.parsetree;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
-import me.scai.handwriting.NodeToken;
-import me.scai.handwriting.Rectangle;
 
 import me.scai.parsetree.geometry.GeometricRelation;
 import me.scai.parsetree.geometry.PositionRelation;
-import me.scai.parsetree.geometry.PositionRelation.PositionType;
 import me.scai.parsetree.geometry.AlignRelation;
 import me.scai.parsetree.geometry.HeightRelation;
 import me.scai.parsetree.geometry.WidthRelation;
@@ -32,7 +28,7 @@ public class GraphicalProduction {
 		AssocRight2B, 		/* For productions with two RHS items. Bias toward the second item. */
 		AssocLeft3B,			/* For productions with three RHS items, the first one being the T head node. Bias toward the second item. */		
 //		BiasRight
-	};
+	}
 	
 	/* Member variables */
 	/* Constants */
@@ -47,38 +43,40 @@ public class GraphicalProduction {
 	
 	public final static float flagNTNeedsParsing = 111f;
 	
-	private TerminalSet terminalSet;
-	
+	private transient TerminalSet terminalSet;
+
 	String lhs; 	/* Left-hand side, i.e., name of the production, e.g., DIGIT_STRING */
-	
-	//int level;		/* Level: 0 is the lowest: numbers */
+
 	private int nrhs; 	   	/* Number of right-hand side tokens, e.g., 2 */
+
 	public String [] rhs;
+
+
 	boolean [] rhsIsTerminal;
 	/* Right-hand side items: can be a list of terminal (T) and non-terminal (NT) items.
 	 * E.g., {DIGIT, DIGIT_STRING} */
 	
 	boolean [] bt; 	/* Boolean flags for terminals (T), e.g., {true, false} */
-	
-	public String sumString; 
+
+	public String sumString;
 	/* Production summary string that does not contain geometric information, e.g.,
 	 * "DIGIT_STRING --> DIGIT DIGIT_STRING" 
 	 */
-	
+
 	GeometricRelation [][] geomRels;
 	GeometricShortcut geomShortcut;
 	
-	AssocType assocType = AssocType.NoAssoc;
-	String assocName = "";
+	transient AssocType assocType = AssocType.NoAssoc;
+	transient String assocName = "";
 	/* In addition to association type, the association name needs to be specified. 
 	 * This is because different sets of productions may share different associations, 
 	 * e.g., addition-subtraction, multiplication-division (non-fraction)
 	 */
 	
-	String [] stringizeInstr;		/* Instruction for stringization */
-	String [] mathTexInstr;         /* Instruction for generating Math TeX */
-	String [] mathMlInstr;         /* Instruction for generating MathML */
-	public String [] evalInstr;            /* Instruction for evaluation */
+	transient String [] stringizeInstr;		/* Instruction for stringization */
+    transient String [] mathTexInstr;         /* Instruction for generating Math TeX */
+    transient String [] mathMlInstr;         /* Instruction for generating MathML */
+	public transient  String [] evalInstr;            /* Instruction for evaluation */
 	
 	/* ~Member variables */
 

@@ -1,5 +1,6 @@
 package me.scai.parsetree.geometry;
 
+import com.google.gson.annotations.Expose;
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.parsetree.TerminalSet;
 
@@ -13,6 +14,8 @@ public class SpacingRelation extends GeometricRelation {
 	
 	/* Member variables */
 	private NodeInternalGeometry nodeInternalGeom;
+
+    @Expose
 	SpacingRelationType spacingRelationType;
 	
 	/* Constructor */

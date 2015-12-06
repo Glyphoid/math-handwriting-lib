@@ -100,6 +100,8 @@ public class Test_TokenSetParser {
                 parseRoot = tokenSetParser.parse(wts); /* Parsing action */
             } catch (TokenSetParserException exc) {
 
+            } catch (InterruptedException exc) {
+                fail("Failed due to InterruptedException: " + exc.getMessage());
             }
 
             long millis_1 = System.currentTimeMillis();

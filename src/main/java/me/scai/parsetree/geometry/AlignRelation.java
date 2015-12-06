@@ -1,5 +1,6 @@
 package me.scai.parsetree.geometry;
 
+import com.google.gson.annotations.Expose;
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 
 /* AlignRelation */
@@ -31,6 +32,7 @@ public class AlignRelation extends GeometricRelation {
 	static final float pastEdgeDisplacementLB = -0.25f;
 	static final float pastEdgeDisplacementUB = 0.00f;		/* Apply to relations such as AlignTopNorthPastTop */
 
+    @Expose
     public AlignType alignType;
 	
 	/* Constructor */

@@ -146,7 +146,7 @@ public class GraphicalProductionSet {
 			                         TerminalSet termSet, 
 			                         String lhs,
 			                         ArrayList<int [][]> idxPossibleHead, 
-			                         boolean bDebug) {
+			                         boolean bDebug) throws InterruptedException {
 		/* TODO: Make use of geomShortcuts */
 		
 		if ( bDebug )
@@ -235,7 +235,9 @@ public class GraphicalProductionSet {
 	 *  */
 	public int [][] evalWrittenTokenSet(int prodIdx,        /* TODO: Change the return type to Array<Array<Integer>> */
 										CWrittenTokenSetNoStroke wts,
-			                            TerminalSet termSet) {
+			                            TerminalSet termSet) throws InterruptedException {
+        Thread.sleep(0); // For effectiveness of timeout
+
         /* TODO: Generalize to written token sets with NodeToken */
 		/* TODO: Deal with a production in which none of the rhs items are terminal */
 		GraphicalProduction prod = prods.get(prodIdx);

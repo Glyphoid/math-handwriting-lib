@@ -3,6 +3,7 @@ package me.scai.parsetree;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.scai.handwriting.CStroke;
 import me.scai.handwriting.CWrittenTokenSet;
@@ -50,6 +51,9 @@ public interface HandwritingEngine {
     /* Perform token set parsing */
     public TokenSetParserOutput parseTokenSet()
         throws HandwritingEngineException;
+
+    /* Get the graphical production set */
+    public JsonArray getGraphicalProductions();
 
     /* Get the bounds of a token */
     public float[] getTokenBounds(int tokenIdx)

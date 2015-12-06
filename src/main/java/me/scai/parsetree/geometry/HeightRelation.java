@@ -1,5 +1,6 @@
 package me.scai.parsetree.geometry;
 
+import com.google.gson.annotations.Expose;
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 
 /* HeightRelation */
@@ -12,7 +13,8 @@ public class HeightRelation extends GeometricRelation {
 	
 	/* Member variables */
 	private HeightRelation() {}
-	
+
+    @Expose
 	HeightRelationType heightRelationType;
 	
 	/* Constructor */

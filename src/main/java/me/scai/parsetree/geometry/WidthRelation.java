@@ -1,5 +1,6 @@
 package me.scai.parsetree.geometry;
 
+import com.google.gson.annotations.Expose;
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 
 /* WidthRelation */
@@ -10,7 +11,8 @@ public class WidthRelation extends GeometricRelation {
 		WidthRelationGreater,
 	}
 	
-	/* Member variables */		
+	/* Member variables */
+    @Expose
 	WidthRelationType widthRelationType;
 	
 	/* Constructor */

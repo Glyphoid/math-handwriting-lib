@@ -32,6 +32,19 @@ public class Test_NodeToken {
         evaluator      = workerTuple.evaluator;
     }
 
+    private Node parseTokenSet(CWrittenTokenSetNoStroke wtSet) {
+        Node node = null;
+        try {
+            node = tokenSetParser.parse(wtSet);
+        } catch (TokenSetParserException e) {
+            fail("Parsing failed due to TokenSetParserException: " + e.getMessage());
+        } catch (InterruptedException e) {
+            fail("Parsing failed due to InterruptedException: " + e.getMessage());
+        }
+
+        return node;
+    }
+
     @Test
     public void test_oneNodeTokenAddedToSQROOT() throws TokenSetParserException {
 
@@ -47,12 +60,7 @@ public class Test_NodeToken {
         assertFalse(wtSet.hasNodeToken());
         assertEquals(3, wtSet.getNumTokens());
 
-        Node node = null;
-        try {
-            node = tokenSetParser.parse(wtSet);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node node = parseTokenSet(wtSet);
 
         assertNotNull(node);
 
@@ -114,12 +122,7 @@ public class Test_NodeToken {
         assertFalse(wtSet.hasNodeToken());
         assertEquals(3, wtSet.getNumTokens());
 
-        Node node = null;
-        try {
-            node = tokenSetParser.parse(wtSet);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node node = parseTokenSet(wtSet);
 
         assertNotNull(node);
 
@@ -184,12 +187,7 @@ public class Test_NodeToken {
         assertFalse(wtSetNum0.hasNodeToken());
         assertEquals(2, wtSetNum0.getNumTokens());
 
-        Node nodeNum0 = null;
-        try {
-            nodeNum0 = tokenSetParser.parse(wtSetNum0);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeNum0 = parseTokenSet(wtSetNum0);
 
         assertNotNull(nodeNum0);
         assertEquals("12", stringizer.stringize(nodeNum0));
@@ -208,12 +206,7 @@ public class Test_NodeToken {
         assertFalse(wtSetNum1.hasNodeToken());
         assertEquals(2, wtSetNum1.getNumTokens());
 
-        Node nodeNum1 = null;
-        try {
-            nodeNum1 = tokenSetParser.parse(wtSetNum1);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeNum1 = parseTokenSet(wtSetNum1);
 
         assertNotNull(nodeNum1);
         assertEquals("34", stringizer.stringize(nodeNum1));
@@ -264,12 +257,7 @@ public class Test_NodeToken {
         assertFalse(wtSetNumer.hasNodeToken());
         assertEquals(3, wtSetNumer.getNumTokens());
 
-        Node nodeNumer = null;
-        try {
-            nodeNumer = tokenSetParser.parse(wtSetNumer);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeNumer = parseTokenSet(wtSetNumer);
 
         assertNotNull(nodeNumer);
 
@@ -298,12 +286,7 @@ public class Test_NodeToken {
         assertFalse(wtSetDenom.hasNodeToken());
         assertEquals(3, wtSetDenom.getNumTokens());
 
-        Node nodeDenom = null;
-        try {
-            nodeDenom = tokenSetParser.parse(wtSetDenom);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeDenom = parseTokenSet(wtSetDenom);
 
         assertNotNull(nodeDenom);
 
@@ -362,14 +345,8 @@ public class Test_NodeToken {
         assertFalse(wtSetSymbol.hasNodeToken());
         assertEquals(1, wtSetSymbol.getNumTokens());
 
-        Node nodeSymbol = null;
-        String stringizedSymbol = null;
-        try {
-            nodeSymbol = tokenSetParser.parse(wtSetSymbol);
-            stringizedSymbol = stringizer.stringize(nodeSymbol);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeSymbol = parseTokenSet(wtSetSymbol);
+        String stringizedSymbol = stringizer.stringize(nodeSymbol);
 
         assertNotNull(nodeSymbol);
         assertEquals("A", stringizedSymbol);
@@ -393,14 +370,8 @@ public class Test_NodeToken {
         assertFalse(wtSetValue.hasNodeToken());
         assertEquals(2, wtSetValue.getNumTokens());
 
-        Node nodeValue = null;
-        String stringizedValue = null;
-        try {
-            nodeValue = tokenSetParser.parse(wtSetValue);
-            stringizedValue = stringizer.stringize(nodeValue);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeValue = parseTokenSet(wtSetValue);
+        String stringizedValue = stringizer.stringize(nodeValue);
 
         assertNotNull(nodeValue);
         assertEquals("34", stringizedValue);
@@ -462,14 +433,8 @@ public class Test_NodeToken {
         assertFalse(wtSetSummed.hasNodeToken());
         assertEquals(1, wtSetSummed.getNumTokens());
 
-        Node nodeSummed = null;
-        String stringizedSummed = null;
-        try {
-            nodeSummed = tokenSetParser.parse(wtSetSummed);
-            stringizedSummed = stringizer.stringize(nodeSummed);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeSummed = parseTokenSet(wtSetSummed);
+        String stringizedSummed = stringizer.stringize(nodeSummed);
 
         assertNotNull(nodeSummed);
         assertEquals("x", stringizedSummed);
@@ -489,14 +454,8 @@ public class Test_NodeToken {
         assertFalse(wtSetLB.hasNodeToken());
         assertEquals(3, wtSetLB.getNumTokens());
 
-        Node nodeLB = null;
-        String stringizedLB = null;
-        try {
-            nodeLB = tokenSetParser.parse(wtSetLB);
-            stringizedLB = stringizer.stringize(nodeLB);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeLB = parseTokenSet(wtSetLB);
+        String stringizedLB = stringizer.stringize(nodeLB);
 
         assertNotNull(nodeLB);
         assertEquals("(x = 1)", stringizedLB);
@@ -514,14 +473,8 @@ public class Test_NodeToken {
         assertFalse(wtSetUB.hasNodeToken());
         assertEquals(1, wtSetUB.getNumTokens());
 
-        Node nodeUB = null;
-        String stringizedUB = null;
-        try {
-            nodeUB = tokenSetParser.parse(wtSetUB);
-            stringizedUB = stringizer.stringize(nodeUB);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeUB = parseTokenSet(wtSetUB);
+        String stringizedUB = stringizer.stringize(nodeUB);
 
         assertNotNull(nodeUB);
         assertEquals("3", stringizedUB);
@@ -575,14 +528,8 @@ public class Test_NodeToken {
         assertFalse(wtSetSummed.hasNodeToken());
         assertEquals(2, wtSetSummed.getNumTokens());
 
-        Node nodeSummed = null;
-        String stringizedSummed = null;
-        try {
-            nodeSummed = tokenSetParser.parse(wtSetSummed);
-            stringizedSummed = stringizer.stringize(nodeSummed);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeSummed = parseTokenSet(wtSetSummed);
+        String stringizedSummed = stringizer.stringize(nodeSummed);
 
         assertNotNull(nodeSummed);
         assertEquals("(x ^ 5)", stringizedSummed);
@@ -604,14 +551,8 @@ public class Test_NodeToken {
         assertFalse(wtSetLB.hasNodeToken());
         assertEquals(5, wtSetLB.getNumTokens());
 
-        Node nodeLB = null;
-        String stringizedLB = null;
-        try {
-            nodeLB = tokenSetParser.parse(wtSetLB);
-            stringizedLB = stringizer.stringize(nodeLB);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeLB = parseTokenSet(wtSetLB);
+        String stringizedLB = stringizer.stringize(nodeLB);
 
         assertNotNull(nodeLB);
         assertEquals("(x = (1 + 2))", stringizedLB);
@@ -631,14 +572,8 @@ public class Test_NodeToken {
         assertFalse(wtSetUB.hasNodeToken());
         assertEquals(3, wtSetUB.getNumTokens());
 
-        Node nodeUB = null;
-        String stringizedUB = null;
-        try {
-            nodeUB = tokenSetParser.parse(wtSetUB);
-            stringizedUB = stringizer.stringize(nodeUB);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeUB = parseTokenSet(wtSetUB);
+        String stringizedUB = stringizer.stringize(nodeUB);
 
         assertNotNull(nodeUB);
         assertEquals("(3 + 4)", stringizedUB);
@@ -692,12 +627,7 @@ public class Test_NodeToken {
         assertFalse(wtSetDenom1.hasNodeToken());
         assertEquals(2, wtSetDenom1.getNumTokens());
 
-        Node nodeDenom1 = null;
-        try {
-            nodeDenom1 = tokenSetParser.parse(wtSetDenom1);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeDenom1 = parseTokenSet(wtSetDenom1);
 
         assertNotNull(nodeDenom1);
         assertEquals("12", stringizer.stringize(nodeDenom1));
@@ -716,12 +646,7 @@ public class Test_NodeToken {
         assertFalse(wtSetDenom2.hasNodeToken());
         assertEquals(2, wtSetDenom2.getNumTokens());
 
-        Node nodeDenom2 = null;
-        try {
-            nodeDenom2 = tokenSetParser.parse(wtSetDenom2);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeDenom2 = parseTokenSet(wtSetDenom2);
 
         assertNotNull(nodeDenom2);
         assertEquals("34", stringizer.stringize(nodeDenom2));
@@ -767,12 +692,7 @@ public class Test_NodeToken {
         assertFalse(wtSetNumer1.hasNodeToken());
         assertEquals(2, wtSetNumer1.getNumTokens());
 
-        Node nodeNumer1 = null;
-        try {
-            nodeNumer1 = tokenSetParser.parse(wtSetNumer1);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeNumer1 = parseTokenSet(wtSetNumer1);
 
         assertNotNull(nodeNumer1);
         assertEquals("56", stringizer.stringize(nodeNumer1));
@@ -791,12 +711,7 @@ public class Test_NodeToken {
         assertFalse(wtSetNumer2.hasNodeToken());
         assertEquals(2, wtSetNumer2.getNumTokens());
 
-        Node nodeNumer2 = null;
-        try {
-            nodeNumer2 = tokenSetParser.parse(wtSetNumer2);
-        } catch (TokenSetParserException e) {
-            fail("Failed due to TokenSetParserException: " + e.getMessage());
-        }
+        Node nodeNumer2 = parseTokenSet(wtSetNumer2);
 
         assertNotNull(nodeNumer2);
         assertEquals("78", stringizer.stringize(nodeNumer2));

@@ -7,7 +7,8 @@ public enum StrokeCuratorUserAction {
     RemoveToken("remove-token"),
     MergeStrokesAsToken("merge-strokes-as-token"),
     ForceSetTokenName("force-set-token-name"),
-    ClearStrokes("clear");
+    ClearStrokes("clear"),
+    GetGraphicalProductions("get-graphical-productions");
 
     private String commandString;     // Strnig for HTTP requests
 
