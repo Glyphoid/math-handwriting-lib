@@ -140,7 +140,12 @@ public class CHandWritingTokenImageData {
 					if ( bIncludeTokenWHRatio ) {
 						if ( w != -1.0 ) {
 							//extraFeatures.add(w / h);
-							dat.imData[dcnt++] = w / h;
+                            if (h == 0.0) {
+                                dat.imData[dcnt++] = 100.0; // Prevent infinity values
+                            } else {
+                                dat.imData[dcnt++] = w / h;
+                            }
+
 						}
 						else {
 							System.err.println("w value has not been retrieved yet");

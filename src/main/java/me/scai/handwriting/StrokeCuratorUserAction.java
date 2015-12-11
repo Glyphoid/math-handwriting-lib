@@ -10,7 +10,7 @@ public enum StrokeCuratorUserAction {
     ClearStrokes("clear"),
     GetGraphicalProductions("get-graphical-productions");
 
-    private String commandString;     // Strnig for HTTP requests
+    private String commandString;     // String for HTTP requests
 
     StrokeCuratorUserAction(String commandString) {
         this.commandString  = commandString;

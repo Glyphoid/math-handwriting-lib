@@ -20,14 +20,14 @@ public class Train_TokenRecogEngineSDV {
 
         final int hiddenLayerSize1 = 185; /* Orig: 100 --> 140 */
         final int hiddenLayerSize2 = 0;
-        final int trainMaxIter = 200;
+        final int trainMaxIter = 400;
         final double trainThreshErr = 0.001;
 
         final int t_npPerStroke = 16;
         final int t_maxNumStrokes = 4;
 
         final boolean bIncludeTokenSize = false;
-        final boolean bIncludeTokenWHRatio = false;
+        final boolean bIncludeTokenWHRatio = true;
         final boolean bIncludeTokenNumStrokes = true;
 
         Properties props = new Properties();

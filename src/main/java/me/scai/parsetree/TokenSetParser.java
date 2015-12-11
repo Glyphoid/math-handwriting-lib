@@ -86,17 +86,12 @@ public class TokenSetParser implements ITokenSetParser {
 		evalGeom2NodesMap = new ConcurrentHashMap<String, Node[][]>();
 		evalGeom2ScoresMap = new ConcurrentHashMap<String, float[][]>();
 		evalGeom2RemSetsMap = new ConcurrentHashMap<String, CWrittenTokenSetNoStroke[][][]>();
-
-		// tokenSetLHS2IdxValidProdsMap.clear();
-		// // tokenSetLHS2IdxValidProdsNoExcludeMap.clear();
-		// tokenSetLHS2IdxPossibleHeadsMap.clear();
-		// tokenSetLHS2IdxBestProdMap.clear();
-		//
-		// evalGeom2MaxScoreMap.clear();
-		// evalGeom2NodesMap.clear();
-		// evalGeom2ScoresMap.clear();
-		// evalGeom2RemSetsMap.clear();
 	}
+
+    @Override
+    public void setProductionEnabled(int idx) {
+        //TODO
+    }
 
 	@Override
 	public Node parse(CWrittenTokenSetNoStroke tokenSet)
