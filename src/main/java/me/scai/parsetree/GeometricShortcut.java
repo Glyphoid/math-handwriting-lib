@@ -409,10 +409,6 @@ class GeometricShortcut {
         CWrittenTokenSetNoStroke wts = (CWrittenTokenSetNoStroke) wts0;
         int nTokens = wts.getNumTokens();
 
-        if (wts.getNumTokens() == 12) { // DEBUG
-            int jjj = 111;
-        }
-
         for (int i = 0; i < nTokens; ++i) {
             AbstractToken wt = wts.tokens.get(i);
             if (wt.getRecogResult().equals(integTokenName)) {

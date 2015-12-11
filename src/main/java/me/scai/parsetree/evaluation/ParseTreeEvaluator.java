@@ -708,13 +708,6 @@ public class ParseTreeEvaluator {
 		    hasDirectAncestor("USER_FUNCTION_DEF")) {
 			return varName;
 		}
-		
-//		int argIdx = EvaluatorHelper.getArgIdx(varName);
-//		if (argIdx != -1) {
-//		    String tempVarName = EvaluatorHelper.genFuncArgName(this.funcNameStack.size() - 1, argIdx, "whatever"); //TODO!
-//		    return varMap.getVarValue(tempVarName); //DEBUG
-//            return varMap.getVarValue(varName);
-//		} else
 
         if (varMap.containsVarName(varName)) {
 			return varMap.getVarValue(varName);
@@ -810,7 +803,18 @@ public class ParseTreeEvaluator {
 			Object obj) {
 		FunctionArgumentList argList = (FunctionArgumentList) argListObj;
 
-		argList.append(obj);
+        Object appended = null;
+        if (obj.getClass().equals(String.class)) { //TODO: The producer of "obj" should probably never return a string
+            try {
+                appended = Double.parseDouble((String) obj);
+            } catch (Exception e) {
+                appended = obj;
+            }
+        } else {
+            appended = obj;
+        }
+
+		argList.append(appended);
 		return argList;
 	}
 

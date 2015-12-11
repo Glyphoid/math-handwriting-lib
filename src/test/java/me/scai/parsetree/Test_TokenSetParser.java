@@ -54,9 +54,7 @@ public class Test_TokenSetParser {
 	private void testParser(String suiteName) {
 	    /* Create written token set */
         CWrittenTokenSetNoStroke wts = new CWrittenTokenSetNoStroke();
-        
-//      NodeInternalGeometry nodeInternalGeom = new NodeInternalGeometry(termSet); //DEBUG
-        
+
         /* Create token set parser */
         int nPass = 0;
         int nTested = 0;
@@ -108,9 +106,6 @@ public class Test_TokenSetParser {
 
             long parsingTime = millis_1 - millis_0;
             totalParsingTime_ms += parsingTime;
-            
-//          List<float []> allBounds = nodeInternalGeom.getMajorTokenBounds(parseRoot); //DEBUG
-//          float maxTokenWidth = nodeInternalGeom.getMaxMajorTokenWidth(parseRoot);
 
             String stringized = stringizer.stringize(parseRoot);
             String evalResStr = null;
@@ -119,8 +114,7 @@ public class Test_TokenSetParser {
                 try {
                     evalRes = evaluator.eval(parseRoot);
                     evalResStr = evaluator.evalRes2String(evalRes);
-                }
-                catch (ParseTreeEvaluatorException exc) {
+                } catch (ParseTreeEvaluatorException exc) {
                     evalResStr = "[Evaluator exception occurred]";
                 }
 

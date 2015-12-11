@@ -74,9 +74,6 @@ public class ParseTreeBiaser {
 		lvStack.push(0);
 		
 		while ( nStack.size() != 0 ) {
-//			System.out.println("nStack.size() = " + nStack.size() + 
-//					           "; rStack.size() = " + rStack.size() + 
-//					           "; lvStack.size() = " + lvStack.size());	//DEBUG
 			
 			Node nTop = nStack.getFirst();	
 			boolean rTop = rStack.getFirst();
@@ -144,7 +141,6 @@ public class ParseTreeBiaser {
 				}
 				
 				if ( bMatchFound && nInter == nInterExpected ) {
-//					System.out.println("Match found for bias type"); //DEBUG					
 					Node A = nStack.get(k);
 					Node B = nStack.get(0);
 					String A_LHS = A.lhs;
@@ -234,8 +230,6 @@ public class ParseTreeBiaser {
 				
 			
 			if ( rTop ) {	/* Action: Pop */
-//				System.out.println("Popping: " + nTop.toString()); //DEBUG
-
 				nStack.pop();
 				rStack.pop();
 				lvStack.pop();

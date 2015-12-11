@@ -52,12 +52,8 @@ public class GraphicalProductionSet {
 	
 		/* Remove the empty lines at the end */
 		lines = TextHelper.removeTrailingEmptyLines(lines);
-		
-//		System.out.println("Number of lines = " + lines.length); //DEBUG
+
 		while ( idxLine < lines.length ) {
-//			System.out.println("Line # = " + idxLine); //DEBUG
-//			System.out.println("Current line = \"" + lines[idxLine] + "\""); //DEBUG
-			
 			//assert(lines[idxLine].startsWith(separatorString));
 			idxLine++;
 			
@@ -81,18 +77,11 @@ public class GraphicalProductionSet {
 				System.err.println(e.getMessage());
 			}
 		}
-		
-//		final boolean bFast = false;		//DEBUG
-//		int [] searchIdx = null;		/* TODO: Create a member variable, so that this array doesn't need to be created every time */
-//		if ( searchSubsetIdx == null || !bFast ) { //DEBUG
+
 		searchIdx = new int[prods.size()];
 		for (int i = 0; i < searchIdx.length; ++i) {
 			searchIdx[i] = i;
 		}
-//		}
-//		else {
-//			searchIdx = searchSubsetIdx;
-//		}
 	}
 	
 	/* Read productions from production list file */
@@ -361,10 +350,6 @@ public class GraphicalProductionSet {
 				} else if ( prod.geomShortcut.existsTripartiteNT1T2() ) {
 					combs = prod.geomShortcut.getPartitionTripartiteNT1T2(wts);
 				} else {
-                    if (wts.nTokens() > 3) {
-                        int iii = 111; //DEBUG DEL
-                    }
-
 					combs = MathHelper.getFullDiscreteSpace(2, wts.nTokens()); // Binary divide between head and non-head
                     /* TODO: Discard the partitions that don't make sense to speed things up.
                      * For example, interlocking partitions. */

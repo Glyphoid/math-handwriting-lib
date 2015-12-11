@@ -21,7 +21,6 @@ public class TokenDegeneracy {
 	
 	/* Constructor */
 	public TokenDegeneracy(JsonObject obj) {
-//		System.out.println("TokenDegeneracy constructor: obj = " + obj); //DEBUG
 		for (Map.Entry<String, JsonElement> kv : obj.entrySet()) {
 			String tokenName = kv.getKey();
 			String substituteTokenName = kv.getValue().getAsString();

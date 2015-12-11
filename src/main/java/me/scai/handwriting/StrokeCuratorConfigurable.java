@@ -606,9 +606,6 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
             int nStrokes = indices.length;
 
-    //		System.out.println("nStrokes = " + nStrokes); //DEBUG
-    //		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
-
             if (nStrokes == 0) { /* Edge case: no strokes to merge */
                 return;
             }
@@ -621,7 +618,6 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
             for (int i = 0; i < nStrokes; ++i) {
                 ownerIndices[i] = getOwningTokenIndex(indices[i]);
-    //			System.out.println("ownerIndices[" + i + "] = " + ownerIndices[i]); //DEBUG
             }
 
             /* Determine tokens needs to be removed and which need to be plucked */
@@ -630,43 +626,23 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
                 int numConstStrokes = constIndices.length;	/* Number of strokes in the token */
                 int numOccurrences = MathHelper.countOccurrences(ownerIndices, ownerIndices[i]);
-    //			System.out.println("Number of occurrences for token " + ownerIndices[i] + " in ownerIndices = " + numOccurrences); //DEBUG
 
                 if (numConstStrokes == numOccurrences) {
                     if ( !idxTokensToRemove.contains(ownerIndices[i]) ) {	/* TODO: Replace with Set */
                         idxTokensToRemove.add(ownerIndices[i]);
-    //					System.out.println("Adding token " + ownerIndices[i] + " to list of tokens to be removed"); //DEBUG
                     }
                 }
                 else {
                     idxTokensToPluck.add(ownerIndices[i]);
                     idxStrokeIndicesToPluck.add(MathHelper.find(constIndices, indices[i]));
-    //				System.out.println("Adding token " + ownerIndices[i] + " to list of tokens to be plucked"); //DEBUG
                 }
             }
 
-    //		System.out.println("# of tokens to be removed = " + idxTokensToRemove.size()); //DEBUG
-    //		System.out.println("# of tokens to be plucked = " + idxTokensToPluck.size()); //DEBUG
-
             /* Remove the tokens that need to be removed (while preserving the strokes) */
-    //		System.out.println("About to call removeTokens()");
-    //		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
-
             int [] removedTokenIndices = MathHelper.listOfIntegers2ArrayOfInts(idxTokensToRemove);
             removeTokens(removedTokenIndices);
 
-    //		System.out.println("Done calling removeTokens()"); //DEBUG
-    //		System.out.println("  getNumTokens() = " + this.getNumTokens()); //DEBUG
-    //		System.out.println("  getNuMStrokes() = " + this.getNumStrokes()); //DEBUG
-    //		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
-
-            /* Pluck tokens that need to be plucked (while preserving the strokes */
-    //		System.out.println("idxTokensToPluck.size() = " + idxTokensToPluck.size()); //DEBUG
-    //		System.out.println("idxStrokeIndicesToPluck.size() = " + idxStrokeIndicesToPluck.size()); //DEBUG
-
             pluckTokens(idxTokensToPluck, idxStrokeIndicesToPluck);
-
-    //		System.out.println("Done calling pluckTokens()"); //DEBUG
 
             /* Create a new token and add the strokes in */
             CWrittenToken tmpWT = new CWrittenToken();
@@ -685,13 +661,6 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             tmpWT.setRecogResult(newWinnerTokenName); /* TODO: Refactor into tokenEngine.recognize() */
             tmpWT.setRecogPs(newPs);
 
-    //		System.out.println("Done calling tokenEngine.recognize()"); //DEBUG
-    //		System.out.println("  newWinnerTokenName = \"" + newWinnerTokenName + "\""); //DEBUG
-    //		System.out.println("  newMaxP = \"" + newMaxP + "\""); //DEBUG
-
-            /* Add the new token */
-    //		System.out.println("About to call wtSet.addToken(): getNumTokens() = " + wtSet.getNumTokens()); //DEBUG
-    //		System.out.println("  wtSet.recogWinners.size() = " + wtSet.recogWinners.size()); //DEBUG
             wtSet.addToken(wtSet.getNumTokens(), tmpWT, newWinnerTokenName, newPs);
 
             /* Central X and Y coordinates of the token */

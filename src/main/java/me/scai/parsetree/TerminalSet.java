@@ -56,16 +56,12 @@ public class TerminalSet {
 			sb.append(lines[i]);
 			sb.append("\n");
 		}
-		
-//		System.out.println("Done concatenating string"); //DEBUG
-		
+
+
 		JsonObject obj = new JsonParser().parse(sb.toString()).getAsJsonObject();
-		
-//		System.out.println("Done calling JsonParser.parse()"); //DEBUG
-		
+
 		/* Read the terminals and their types */
-		JsonObject termsObj = obj.get("terminals").getAsJsonObject();	
-//		System.out.println("termsObj = " + termsObj); //DEBUG
+		JsonObject termsObj = obj.get("terminals").getAsJsonObject();
 		for (Map.Entry<String, JsonElement> entry : termsObj.entrySet()) {
 			String typeName = (String) entry.getKey();
 			
@@ -88,8 +84,7 @@ public class TerminalSet {
 				token2TypeMap.put(terms[j], typeName);
 			}
 		}
-//		System.out.println("Done extracting terminal types"); //DEBUG
-		
+
 		/* Read the TeX notations */
 		JsonObject texObj = obj.get("texNotations").getAsJsonObject();		
 		for (Map.Entry<String, JsonElement> entry : texObj.entrySet()) {
@@ -98,14 +93,11 @@ public class TerminalSet {
 			
 			token2TexNotationMap.put(termName, texNotation);
 		}
-//		System.out.println("Done reading terminal Math TeX notations"); //DEBUG
-		
-//		System.out.println("Obtaining tokenDegenObj"); //DEBUG
+
 		JsonObject tokenDegenObj = obj.get("tokenDegeneracy").getAsJsonObject();
-//		System.out.println("tokenDegenObj = " + tokenDegenObj); //DEBUG
+
 		tokenDegen = new TokenDegeneracy(tokenDegenObj);
-		
-//		System.out.println("Done creating new TokenDegeneracy instance"); //DEBUG
+
 	}
 		
 	/* Get the type of a token */

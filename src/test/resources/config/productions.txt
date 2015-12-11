@@ -554,8 +554,8 @@ _EVAL_          FUNCTION_ARG_LIST(n0)
 --- #
 USER_FUNCTION_ARGS # Argument list: either a variable symbol or an expression (only the former is accepted in definition of a function, of course)
 USER_FUNCTION_ARGS
-TERMINAL(1)             : {AlignBottom(0), PositionEast(0)} # Divisor between arguments, TODO: Replace with comma
-EXPR_LV4                : {AlignBottom(1), PositionEast(1)} # Next argument
+COMMA             : {PositionGenEast(0)} # Divisor between arguments: Comma; AlignTopSouthPastMiddleNotTooFarSouth(0), AlignBottomSouthPastBottom(0),
+EXPR_LV4          : {AlignBottom(0), PositionGenEast(0), PositionGenEast(1)} # Next argument ,
 _STRINGIZE_     n0 , _SPACE_ n2
 _MATH_TEX_      n0 , n2
 _EVAL_          APPEND_FUNCTION_ARG_LIST(n0, n2)

@@ -432,7 +432,6 @@ public class Test_QADataSet {
             new QADataEntry("sim_109", "(f(x) = (2*x))").withMathTex("{f{\\left(x\\right)}}={{2}{x}}"), // Function definition
             new QADataEntry("sim_112", "f(3)").withMathTex("f{\\left(3\\right)}").withEvalRes(6.0),             // Evaluation of custom function
             new QADataEntry("sim_110", "(g(y) = 1)").withMathTex("{g{\\left(y\\right)}}={1}"),     // Function definition
-            new QADataEntry("sim_111", "(h(x, y) = (x*y))").withMathTex("{h{\\left(x,y\\right)}}={{x}{y}}"), // Function definition
             new QADataEntry("sim_115", "f(27)").withMathTex("f{\\left(27\\right)}"),             // Evaluation of custom function
             new QADataEntry("sim_113", "f((3 + 2))").withMathTex("f{\\left({3}+{2}\\right)}"), // Evaluation of custom function
             new QADataEntry("sim_114", "f(-0.5)").withMathTex("f{\\left(-{0.5}\\right)}"),      // Evaluation of custom function
@@ -447,7 +446,20 @@ public class Test_QADataSet {
             new QADataEntry("sim_182", "p(Sum((b = 1) : (2))(b))").withMathTex("p{\\left(\\sum\\limits_{{b}={1}}^{2}{b}\\right)}").withEvalRes(27.0),
             new QADataEntry("sim_177", "(q(x) = (((3*x) + (x ^ 2)) / (sqrt(x))))").withMathTex("{q{\\left(x\\right)}}={\\frac{{{3}{x}}+{{x}^{2}}}{\\sqrt{x}}}"),
             new QADataEntry("sim_178", "q((3 + 1))").withEvalRes(14.0),
-            new QADataEntry("sim_179", "q((p(1) + 1))").withMathTex("q{\\left({p{\\left(1\\right)}}+{1}\\right)}").withEvalRes(14.0)
+            new QADataEntry("sim_179", "q((p(1) + 1))").withMathTex("q{\\left({p{\\left(1\\right)}}+{1}\\right)}").withEvalRes(14.0),
+            new QADataEntry("sim_228", "(M(x, y) = (x*y))").withMathTex("{M{\\left(x,y\\right)}}={{x}{y}}"), // Function definition: Two arguments
+            new QADataEntry("sim_233", "M(2, (1 / 3))").withMathTex("M{\\left(2,\\frac{1}{3}\\right)}").withEvalRes(2.0 / 3.0), // Invoke two-argument function
+            new QADataEntry("sim_230", "M(2, 3)").withMathTex("M{\\left(2,3\\right)}").withEvalRes(6.0), // Invoke two-argument function
+            new QADataEntry("sim_231", "M(12, 3)").withMathTex("M{\\left(12,3\\right)}").withEvalRes(36.0), // Invoke two-argument function
+            new QADataEntry("sim_234", "M(12, (sqrt(4)))").withMathTex("M{\\left(12,\\sqrt{4}\\right)}").withEvalRes(24.0), // Invoke two-argument function
+            new QADataEntry("sim_235", "M((1 / 2), 3)").withMathTex("M{\\left(\\frac{1}{2},3\\right)}").withEvalRes(1.5), // Invoke two-argument function
+            new QADataEntry("sim_236", "M((1 / 2), (3 / 4))").withMathTex("M{\\left(\\frac{1}{2},\\frac{3}{4}\\right)}").withEvalRes(0.375), // Invoke two-argument function
+            new QADataEntry("sim_229", "M(2, 34)").withMathTex("M{\\left(2,34\\right)}").withEvalRes(68.0), // Invoke two-argument function
+            new QADataEntry("sim_232", "M(2, 34)").withMathTex("M{\\left(2,34\\right)}").withEvalRes(68.0), // Invoke two-argument function
+            new QADataEntry("sim_237", "M(3, f(4))").withMathTex("M{\\left(3,f{\\left(4\\right)}\\right)}").withEvalRes(24.0), // Invoke two-argument function, in a nested way
+            new QADataEntry("sim_238", "M(M(1, 2), M(3, 4))").withMathTex("M{\\left(M{\\left(1,2\\right)},M{\\left(3,4\\right)}\\right)}").withEvalRes(24.0), // Invoke two-argument function, in a nested way
+            new QADataEntry("sim_239", "(B(x, y, z) = ((x / y) + (sqrt(z))))").withMathTex("{B{\\left(x,y,z\\right)}}={{\\frac{x}{y}}+{\\sqrt{z}}}"), // Define three-argument function
+            new QADataEntry("sim_240", "B(11, 22, 36)").withMathTex("B{\\left(11,22,36\\right)}").withEvalRes(6.5), // Define three-argument function
         };
         QADataSuites.put("definedFunctions", new QADataSuite(entries_definedFunctions, true));
         

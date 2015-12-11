@@ -166,6 +166,7 @@ public class GraphicalProduction {
 			            final int [] iHead,
 			            final CAbstractWrittenTokenSet [] remainingSets, 			//PerfTweak new
 			            final float [] maxGeomScore) {
+
 		if ( iHead.length == 0 ) {
 			throw new RuntimeException("GraphicalProductionSet.attempt encountered empty idxHead.");
 		}
@@ -208,22 +209,25 @@ public class GraphicalProduction {
 
 
 	    /* Get index to all non-head token */
-	    ArrayList<Integer> inht = new ArrayList<Integer>();
-	    
-	    for (int i = 0; i < tokenSet.nTokens(); ++i) {
-	    	boolean bContains = false;
-	    	for (int j = 0; j < iHead.length; ++j) {
+        int[] inht = new int[nnht];
+        int cnt = 0;
+        int match = 0;
+        for (int i = 0; i < tokenSet.nTokens(); ++i) {
+            boolean bContains = false;
+	    	for (int j = match; j < iHead.length; ++j) { // Assume: iHead is always in ascending order
 	    		if ( iHead[j] == i ) {
 	    			bContains = true;
+                    match = j + 1;
 	    			break;
 	    		}
 	    	}
-	    	if ( !bContains )
-	    		inht.add(i);
-	    }
+
+	    	if ( !bContains ) {
+                inht[cnt++] = i;
+            }
+        }
 	    
 	    /* Construct the remaining sets and evaluate their geometric relations */
-//	    boolean bFound = false;
 	    CWrittenTokenSetNoStroke [][] a_rems = new CWrittenTokenSetNoStroke[labels.length][];
 	    float [] geomScores = new float[labels.length];
 	    
@@ -237,7 +241,7 @@ public class GraphicalProduction {
     		
     		for (int k = 0; k < labels[i].length; ++k) {
     			int inode = labels[i][k];
-    			int irt = inht.get(k);
+                int irt = inht[k];
     			
     			/* The last input argument sets bCheck to false for speed */
     			/* Is this a dangerous action? */
@@ -276,59 +280,58 @@ public class GraphicalProduction {
 		    		/* Assume: there is only one head 
 		    		 * TODO: Make more general */
 		    		/* TODO: Deal with the case in which the remaining node is a Terminal (T) */
-		    		
+
+                    float terminalMultiplier = 1.0f;
 		    		if ( this.rhsIsTerminal[j + 1] ) {
-//		    			System.out.println("attempt encountered Terminal non-head: " + this.rhs[j + 1] + 
-//		    					           "; rem set nTokens = " + a_rems[i][j].nTokens() + 
-//		    					           "; rem set tokens[0] = " + a_rems[i][j].tokens.get(0).getRecogWinner());
 		    			/* TODO: Get the type of string, e.g, 1 -> DIGIT, ( -> BRACKET_L. 
 		    			 *       May need to add terminal set as an input argument. */
 		    			CWrittenTokenSetNoStroke tTokenSet = a_rems[i][j];
 		    			int t_nTokens = tTokenSet.nTokens();
 		    			if ( t_nTokens != 1 ) {
-		    				t_geomScores[j] = 0.0f; //TODO: Think about whether throwing an exception makes more sense. MATH_FUNCTION_NAME has trouble with the exception paradigm
-//		    				throw new RuntimeException("Encountered unexpected value of t_nTokens: != 1");
+//		    				t_geomScores[j] = 0.0f; //TODO: Think about whether throwing an exception makes more sense. MATH_FUNCTION_NAME has trouble with the exception paradigm
+                            terminalMultiplier = 0.0f;
 		    			}
-		    			
-//		    			String tokenTermType = tTokenSet.tokens.get(0).tokenTermType;
+
 		    			/* TODO: Accommodate terminal name types (e.g., "TERMINAL(s)") */
                         // TODO: NodeToken
 		    			if ( terminalSet.match(tTokenSet.tokens.get(0).getRecogResult(), this.rhs[j + 1]) ) {
-//		    			if ( tokenTermType.equals(this.rhs[j + 1]) ) {	
-		    				t_geomScores[j] = 1.0f;
+//		    				t_geomScores[j] = 1.0f;
 		    			}
 	    				else {
-	    					t_geomScores[j] = 0.0f;
+//	    					t_geomScores[j] = 0.0f;
+                            terminalMultiplier = 0.0f;
 	    				}
 		    		}
-		    		else {		    		
-//		    			boolean bVerified = true;
-			    		if ( geomRels[j + 1] == null ) {
-			    			t_geomScores[j] = 1.0f;
-			    			continue;
-			    		}
-			    		
-			    		float [] t_t_geomScores = new float[geomRels[j + 1].length];
-			    		for (int k = 0; k < geomRels[j + 1].length; ++k) {
-			    			int idxInRel = geomRels[j + 1][k].idxInRel[0];
-			    			float [] bndsInRel;
-			    			if ( idxInRel == 0 ) {
-			    				bndsInRel = tokenSet.getTokenBounds(iHead);
-			    			}
-			    			else {
-			    				bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
-			    			}
-			    			
-			    			float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);
-	
-			    			t_t_geomScores[k] = v;
-			    			
-			    		}
-			    		
-			    		t_geomScores[j] = MathHelper.mean(t_t_geomScores);
-		    		}
+//		    		else {
+
+                    if ( geomRels[j + 1] == null ) {
+                        t_geomScores[j] = 1.0f;
+                        continue;
+                    }
+
+                    float [] t_t_geomScores = new float[geomRels[j + 1].length];
+                    for (int k = 0; k < geomRels[j + 1].length; ++k) {
+                        int idxInRel = geomRels[j + 1][k].idxInRel[0];
+                        float [] bndsInRel;
+                        if ( idxInRel == 0 ) {
+                            bndsInRel = tokenSet.getTokenBounds(iHead);
+                        }
+                        else {
+                            bndsInRel = a_rems[i][idxInRel - 1].getSetBounds();
+                        }
+
+                        float v = geomRels[j + 1][k].verify(a_rems[i][j], bndsInRel);
+
+                        t_t_geomScores[k] = v;
+
+                    }
+
+                    t_geomScores[j] = MathHelper.mean(t_t_geomScores) * terminalMultiplier;
+
+
+//		    		}
 		    	}
-		    	
+
 		    	geomScores[i] = MathHelper.mean(t_geomScores);
     		}
     		else {
@@ -342,7 +345,7 @@ public class GraphicalProduction {
                 }
     		}
 	    }
-	    
+
 	    /* Find the partition that leads to the maximum geometric score */
 	    int idxMax = MathHelper.indexMax(geomScores);
 	    maxGeomScore[0] = geomScores[idxMax];

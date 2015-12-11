@@ -166,7 +166,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		/* Recursively retrieve data from sub-directories */
 		for (int i = 0; i < allFiles.length; ++i) {
 			if ( allFiles[i].isDirectory() ) {
-			  System.out.println("Reading data from subdirectory: " + allFiles[i].getPath()); //DEBUG
+			  System.out.println("Reading data from subdirectory: " + allFiles[i].getPath());
 			  this.readDataFromDir(allFiles[i].getPath(), testRatioDenom, testRatioNumer, 
 			                       sdvDataTrain, sdvDataTest, trueLabelsTrain, trueLabelsTest, aTokenNames);
 			}
