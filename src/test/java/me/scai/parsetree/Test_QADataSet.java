@@ -460,6 +460,7 @@ public class Test_QADataSet {
             new QADataEntry("sim_238", "M(M(1, 2), M(3, 4))").withMathTex("M{\\left(M{\\left(1,2\\right)},M{\\left(3,4\\right)}\\right)}").withEvalRes(24.0), // Invoke two-argument function, in a nested way
             new QADataEntry("sim_239", "(B(x, y, z) = ((x / y) + (sqrt(z))))").withMathTex("{B{\\left(x,y,z\\right)}}={{\\frac{x}{y}}+{\\sqrt{z}}}"), // Define three-argument function
             new QADataEntry("sim_240", "B(11, 22, 36)").withMathTex("B{\\left(11,22,36\\right)}").withEvalRes(6.5), // Define three-argument function
+            new QADataEntry("sim_241", "(T(x, y) = (x + y))").withMathTex("{T{\\left(x,y\\right)}}={{x}+{y}}") // Define three-argument function
         };
         QADataSuites.put("definedFunctions", new QADataSuite(entries_definedFunctions, true));
         
