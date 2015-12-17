@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.Properties;
 
 public class Train_TokenRecogEngineSDV {
-    private static final String TEST_ROOT_DIR = "test";
+    private static final String TEST_ROOT_DIR = TestHelper.TEST_ROOT_DIR;
     private static final String RESOURCES_DIR = "resources";
     private static final String RESOURCES_CONFIG_DIR = "config";
 
@@ -18,7 +18,7 @@ public class Train_TokenRecogEngineSDV {
 		/* Token engine settings */
         final boolean bLoadEngineFromDisk = false; /* false: train; true: test */
 
-        final int hiddenLayerSize1 = 185; /* Orig: 100 --> 140 */
+        final int hiddenLayerSize1 = 300;
         final int hiddenLayerSize2 = 0;
         final int trainMaxIter = 400;
         final double trainThreshErr = 0.001;

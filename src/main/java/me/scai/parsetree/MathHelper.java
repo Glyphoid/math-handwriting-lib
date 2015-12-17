@@ -2,10 +2,7 @@ package me.scai.parsetree;
 
 import java.lang.IllegalArgumentException;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.LinkedList;
+import java.util.*;
 
 /* Helper class for sort */
 class FloatPairedValueIndex implements Comparable<FloatPairedValueIndex> {
@@ -471,6 +468,115 @@ public class MathHelper {
         }
 
         return null;
+    }
+
+    /**
+     * TODO: Doc
+     * @param i
+     * @param j
+     * @return
+     */
+    public static int[] range(int i, int j) {
+        if (j <= i) {
+            return new int[0];
+        }
+
+        int n = j - i;
+        int[] r = new int[n];
+
+        int counter = 0;
+        for (int k = i; k < j; ++k) {
+            r[counter++] = k;
+        }
+
+        return r;
+    }
+
+    /**
+     * TODO: Doc
+     * @param n
+     * @return
+     */
+    public static int[] range(int n) {
+        return range(0, n);
+    }
+
+    /**
+     * Randomly assign n items to b bins, according a ratio
+     *
+     * @param n Number of items to assign
+     *
+     * @param ratios Float array: must sum to 1: The ratios for each bin
+     * @return
+     */
+    public static int[] randomlyAssignToBins(int n, float[] ratios) {
+        if (ratios.length == 0) {
+            throw new IllegalArgumentException("No bins");
+        }
+        int b = ratios.length;
+
+        int[] result = new int[n];
+
+        Random random = new Random(System.currentTimeMillis());
+        int[] perm  = getRandomPermutation(n, random);
+
+        int head = 0;
+        for (int i = 0; i < b; ++i) {
+            final int tail;
+            if (i < b - 1) {
+                tail = head + Math.round(ratios[i] * n);
+            } else {
+                tail = n;
+            }
+
+            for (int j = head; j < tail; ++j) {
+                result[perm[j]] = i;
+            }
+
+            head = tail;
+        }
+
+        return result;
+    }
+
+    /**
+     * Randomly assign n items into a number of bins
+     * @param n       Number of items
+     * @param ratios  Count ratios of the bins
+     * @return        Assignment: each element being the bin the element is assigned to, 0-based indices
+     */
+    public static int[] randomlyAssignToBins(int n, List<Float> ratios) {
+        float[] ratiosArray = new float[ratios.size()];
+
+        for (int i = 0; i < ratiosArray.length; ++i) {
+            ratiosArray[i] = ratios.get(i);
+        }
+
+        return randomlyAssignToBins(n, ratiosArray);
+
+    }
+
+    public static int[] getRandomPermutation(int length, Random random){
+        // initialize array and fill it with {0,1,2...}
+        int[] array = new int[length];
+        for(int i = 0; i < array.length; i++)
+            array[i] = i;
+
+        for(int i = 0; i < length; i++){
+
+            // randomly chosen position in array whose element
+            // will be swapped with the element in position i
+            // note that when i = 0, any position can chosen (0 thru length-1)
+            // when i = 1, only positions 1 through length -1
+            // NOTE: r is an instance of java.util.Random
+            int ran = i + random.nextInt (length-i);
+
+            // perform swap
+            int temp = array[i];
+            array[i] = array[ran];
+            array[ran] = temp;
+        }
+        return array;
     }
 	 
 }

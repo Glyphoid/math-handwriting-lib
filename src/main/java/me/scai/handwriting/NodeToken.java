@@ -11,11 +11,14 @@ import java.util.List;
  * A token that is a parsed node
  */
 public class NodeToken extends AbstractToken {
+    /* Members */
     private Node node;
     private CAbstractWrittenTokenSet wtSet;
 
     private List<Integer> matchingGraphicalProductionIndices;
 
+
+    /* Constructors */
     public NodeToken(Node node, CAbstractWrittenTokenSet wtSet) {
         // Set the bounds of the node
         node.setBounds(wtSet.getSetBounds());
@@ -45,6 +48,7 @@ public class NodeToken extends AbstractToken {
 
     }
 
+    /* Methods */
     @Override
     public float getCentralX() {
         return 0.5f * (tokenBounds[2] + tokenBounds[0]);

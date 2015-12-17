@@ -8,6 +8,7 @@ import com.google.gson.*;
 
 import me.scai.handwriting.CWrittenToken;
 import me.scai.handwriting.CWrittenTokenSet;
+import me.scai.handwriting.CWrittenTokenSetNoStroke;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -56,6 +57,25 @@ public class CWrittenTokenSetJsonHelper {
     }
 
     public static JsonObject CWrittenTokenSet2JsonObj(CWrittenTokenSet wtSet) {
+        JsonObject obj = new JsonObject();
+        JsonArray jsonTokens = new JsonArray();
+
+        for (int i = 0; i < wtSet.getNumTokens(); ++i) {
+            if ( !(wtSet.tokens.get(i) instanceof CWrittenToken) ) {
+                throw new IllegalStateException("Not implemented yet");
+                // TODO: Implement JSON serialization for NodeToken members
+            }
+
+            jsonTokens.add(CWrittenTokenJsonHelper.CWrittenToken2JsonObjNoStroke((CWrittenToken) wtSet.tokens.get(i)));
+        }
+
+        obj.add("tokens", jsonTokens);
+
+        return obj;
+    }
+
+    // TODO: De-duplicate with the above method
+    public static JsonObject CWrittenTokenSet2JsonObj(CWrittenTokenSetNoStroke wtSet) {
         JsonObject obj = new JsonObject();
         JsonArray jsonTokens = new JsonArray();
 

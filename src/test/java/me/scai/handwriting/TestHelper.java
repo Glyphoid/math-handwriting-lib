@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class TestHelper {
-    private static final String TEST_ROOT_DIR         = "test";
+    public static final String TEST_ROOT_DIR         = "main";
     private static final String RESOURCES_DIR         = "resources";
     private static final String TERMINALS_FILE_NAME   = "terminals.json";
     private static final String PRODUCTIONS_FILE_NAME = "productions.txt";

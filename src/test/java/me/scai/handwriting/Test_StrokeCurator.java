@@ -20,13 +20,13 @@ import static org.junit.Assert.assertArrayEquals;
 public class Test_StrokeCurator {
     private static final String configFilePath  = "C:\\Users\\scai\\Dropbox\\Plato\\test-data\\stroke_curator_config_testCase_1.json";
 
-    private static final String TEST_ROOT_DIR = "test";
+    private static final String TEST_ROOT_DIR = TestHelper.TEST_ROOT_DIR;
     private static final String RESOURCES_DIR = "resources";
     private static final String RESOURCES_CONFIG_DIR = "config";
     private static final String STROKE_CURATOR_CONFIG_FILE = "stroke_curator_config.json";
 
     private static final String RESOURCES_TOKEN_ENGINE_DIR = "token_engine";
-    private static final String TOKEN_ENGINE_FILE_NAME = "token_engine.sdv.sz0_whr0_ns1.ser";
+    private static final String TOKEN_ENGINE_FILE_NAME = "token_engine.sdv.sz0_whr1_ns1.ser";
 
     private StrokeCurator curator;
     private StrokeCurator curatorPrime;
@@ -312,9 +312,9 @@ public class Test_StrokeCurator {
 
         CStroke stroke3 = new CStroke();
         stroke3.addPoint(55.0f, -10.0f);
-        stroke3.addPoint(55.1f, 0.0f);
+        stroke3.addPoint(55.0f, 0.0f);
         stroke3.addPoint(55.0f, 10.0f);
-        stroke3.addPoint(55.1f, 20.1f);
+        stroke3.addPoint(55.0f, 20.0f);
 
         // State stack is empty initially
         assertNull(curator.getLastUserAction());

@@ -276,15 +276,24 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 		return tokens.get(i).tokenTermType;
 	}
 
-//    public int getNumStrokes() {
-//        int nStrokes = 0;
-//
-//        Iterator<AbstractToken> tokenIt = tokens.iterator();
-//
-//        while (tokenIt.hasNext()) {
-//            nStrokes += tokenIt.next().nStrokes();
-//        }
-//
-//        return nStrokes;
-//    }
+
+    public int getNumStrokes() {
+
+        int nStrokes = 0;
+
+        Iterator<AbstractToken> tokenIt = tokens.iterator();
+
+        while (tokenIt.hasNext()) {
+            AbstractToken nextToken = tokenIt.next();
+
+            if (nextToken instanceof CWrittenToken) {
+                nStrokes += ((CWrittenToken) nextToken).nStrokes();
+            } else {
+                throw new IllegalStateException("TODO: Implement nStrokes() method for NodeToken");
+            }
+        }
+
+        return nStrokes;
+    }
+
 }

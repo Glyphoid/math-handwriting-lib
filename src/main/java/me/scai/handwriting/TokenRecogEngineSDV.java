@@ -1,13 +1,13 @@
 package me.scai.handwriting;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.HashSet;
-import java.util.HashMap;
+import java.io.*;
+import java.util.*;
 
+import me.scai.handwriting.ml.DataSet;
+import me.scai.handwriting.ml.DataSetWithStringLabels;
+import me.scai.handwriting.ml.MachineLearningHelper;
+import me.scai.handwriting.tokens.TokenSettings;
+import me.scai.handwriting.utils.DataIOHelper;
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.MLDataSet;
 import org.encog.ml.data.basic.BasicMLData;
@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
 import me.scai.parsetree.MathHelper;
 
 public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	/* Feature settings */
 	private int npPerStroke = 16;
@@ -45,8 +45,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	private transient TokenDegeneracy tokenDegen = null;
 	
 	/* Testing data */
-	ArrayList<float []> sdveDataTest = null;
-	ArrayList<Integer> trueLabelsTest = null;
+	transient List<float []> sdveDataTest = null;
+	transient List<Integer> trueLabelsTest = null;
 	
 	/* Constructors */
 	public TokenRecogEngineSDV() {
@@ -126,189 +126,31 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		}
 		
 	}
-	
-	
-	/* Construct the list of degenerated strings */
-//	private void getDegeneratedTokenName() {
-//		Map<String, String> degens = new HashMap<String, String>();
-//		
-//		degens.put("O", "0");
-//		degens.put("C", "c");
-//		degens.put("S", "s");
-//		degens.put("o", "0");
-//
-//	}
-	
-	public void readDataFromDir(String inDirName, 
-							    int testRatioDenom, int testRatioNumer, 
-					            ArrayList<float []> sdvDataTrain,
-					            ArrayList<float []> sdvDataTest, 
-							    ArrayList<Integer> trueLabelsTrain, 
-							    ArrayList<Integer> trueLabelsTest,
-							    ArrayList<String> aTokenNames) {
-		ArrayList<float []> sdvData = new ArrayList<float []>();
-		ArrayList<Integer> trueLabels = new ArrayList<Integer>();
-		
-		ArrayList<String> trueTokens = new ArrayList<String>();
-		
-		if ( bDebug ) 
-			System.out.println("Input directory: " + inDirName);
-		
-		File inDir = new File(inDirName);
-		
-		/* Test the existence of the input directory */
-		if ( !inDir.isDirectory() ) {
-			System.err.println("Cannot find directory " + inDirName);
-			System.exit(1);
-		}
-		
-		File [] allFiles = inDir.listFiles();
-		/* Recursively retrieve data from sub-directories */
-		for (int i = 0; i < allFiles.length; ++i) {
-			if ( allFiles[i].isDirectory() ) {
-			  System.out.println("Reading data from subdirectory: " + allFiles[i].getPath());
-			  this.readDataFromDir(allFiles[i].getPath(), testRatioDenom, testRatioNumer, 
-			                       sdvDataTrain, sdvDataTest, trueLabelsTrain, trueLabelsTest, aTokenNames);
-			}
-		}
-		
-		/* Get the list of all .wt files */
-		File [] files = inDir.listFiles(new FilenameFilter() {
-		    @Override
-		    public boolean accept(File dir, String name) {
-		        return (name.startsWith(wt_file_prefix) && name.endsWith(wt_file_suffix));
-		    }
-		});
-		
-		if ( bDebug )
-			System.out.println("Found " + files.length + " potentially valid input .im files");
-		
-		sdvData.ensureCapacity(files.length);
-		trueTokens.ensureCapacity(files.length);
-		
-		for (int i = 0; i < files.length; ++i) {
-			
-			float [] sdve = null;
-			try {
-				/* Actual reading */
-				CWrittenToken t_wt = new CWrittenToken(files[i]);
-				
-				String wtPath = files[i].getPath();
-				String imPath = wtPath.substring(0, wtPath.length() - wt_file_suffix.length()) + 
-						        im_file_suffix;
-				File imFile = new File(imPath);
-				CHandWritingTokenImageData t_imData = 
-						CHandWritingTokenImageData.readImFile(imFile, 
-								                              bIncludeTokenSize,
-								                              bIncludeTokenWHRatio, 
-								                              bIncludeTokenNumStrokes);
-				
-				/* Skip exclusion tokens */
-				if ( isTokenHardCoded(t_imData.tokenName) ) {
-					continue;
-				}
-				
-				float [] im_wh = new float[2];
-				im_wh[0] = t_imData.w;
-				im_wh[1] = t_imData.h;
-				
-				/* TODO: Combine into a function */
-				float [] sdv = t_wt.getSDV(npPerStroke, maxNumStrokes, im_wh);
-				float [] sepv = t_wt.getSEPV(maxNumStrokes);
-				sdve = this.addExtraDimsToSDV(sdv, sepv, t_wt);
-				
-				sdvData.add(sdve);
-				trueTokens.add(tokenDegen.getDegenerated(t_imData.tokenName));
-			}
-			catch (Exception e) {
-				System.err.println("WARNING: Failed to read valid data from file: " + files[i].getName());
-			}
-			
-		}
-		
-		/* Get the set of unique token names */
-		HashSet<String> uTokenNames = new HashSet<String>();		
-		uTokenNames.addAll(trueTokens);
-		if ( bDebug ) 
-			System.out.println("Discovered " + uTokenNames.size() + " unique token names.");
-		
-		aTokenNames.ensureCapacity(uTokenNames.size());
-		for (String s : uTokenNames) {
-			if ( !aTokenNames.contains(s) ) {
-				aTokenNames.add(s);
-			}
-			//aTokenNames.add(s);
-		}
-		//Collections.sort(aTokenNames); /* Deactivate sorting so that it does not fall part under recursive calling */
-		
-		/* Generate true labels */
-		trueLabels.ensureCapacity(trueTokens.size());
-		//Integer [] trueLabels = new Integer[trueTokens.size()];
-		for (int i = 0; i < trueTokens.size(); ++i) {
-			trueLabels.add(aTokenNames.indexOf(trueTokens.get(i)));
-		}
-				
-		/* Divide the data set into training and test sets */
-		HashMap<String, Integer> tokenIdxMap = new HashMap<String, Integer>();
-		for (int i = 0; i < aTokenNames.size(); ++i) { 
-			tokenIdxMap.put(aTokenNames.get(i), i);
-		}
-		
-		ArrayList<LinkedList<Integer>> tokenIndices = new ArrayList<LinkedList<Integer>>();
-		ArrayList<LinkedList<Integer>> isTest = new ArrayList<LinkedList<Integer>>();
-		for (int i = 0; i < aTokenNames.size(); ++i) {
-			tokenIndices.add(new LinkedList<Integer>());
-			isTest.add(new LinkedList<Integer>());
-		}
-		
-		for (int i = 0; i < trueTokens.size(); ++i) {
-			String trueToken = trueTokens.get(i);
-			int tokenIndex = tokenIdxMap.get(trueToken);
-			tokenIndices.get(tokenIndex).add(i);
-			
-			int n = tokenIndices.get(tokenIndex).size();
-			int m = n % testRatioDenom;
-			if ( m < testRatioNumer )
-				isTest.get(tokenIndex).add(1);
-			else
-				isTest.get(tokenIndex).add(0);
-		}
-		
-		/* Populate the sdveTrain, sdveTest, trueLabelsTrain and trueLabesTest lists */
-		int nTrainTotal = 0;
-		int nTestTotal = 0;
-		
-		for (int i = 0; i < tokenIndices.size(); ++i) {
-			int nTrainToken = 0; 
-			int nTestToken = 0;
-						
-			for (int j = 0; j < tokenIndices.get(i).size(); ++j) {
-				int idx = tokenIndices.get(i).get(j);
-				
-				if ( isTest.get(i).get(j) == 1 ) {
-					nTestTotal++;
-					nTestToken++;
-					sdvDataTest.add(sdvData.get(idx));
-					trueLabelsTest.add(trueLabels.get(idx));
-				}
-				else {
-					nTrainTotal++;
-					nTrainToken++;
-					sdvDataTrain.add(sdvData.get(idx));
-					trueLabelsTrain.add(trueLabels.get(idx));
-				}
-			}
-			
-			if ( bDebug )
-				System.out.println("Token \"" + aTokenNames.get(i) + "\": " + 
-			                       "nTrainToken = " + nTrainToken + 
-						           "; nTestToken = " + nTestToken);
-		}
-		
-		/* Print summary */
-		if ( bDebug ) {
-			System.out.println("All tokens: nTrainTotal = " + nTrainTotal + "; nTestTotal = " + nTestTotal);
-		}
+
+	public Map<String, DataSet> readDataFromDir(String inDirName, List<String> labels) { //, ArrayList<String> aTokenNames
+        TokenSettings tokenSettings = new TokenSettings(
+                bIncludeTokenSize,
+                bIncludeTokenWHRatio,
+                bIncludeTokenNumStrokes,
+                hardCodedTokens,
+                npPerStroke,
+                maxNumStrokes,
+                tokenDegen
+        );
+
+        DataSetWithStringLabels dataSetWithStringLabels = MachineLearningHelper.readDataFromDir(inDirName, tokenSettings);
+        DataSet dataSet = MachineLearningHelper.convertStringLabelsToIndices(dataSetWithStringLabels);
+
+        assert(labels != null);
+        assert(labels.isEmpty());
+        labels.addAll(dataSet.getLabelNames());
+
+        // Strategy for dividing the data into training and test subsets
+        Map<String, Float> dataDiv = new HashMap<>();
+        dataDiv.put("training", 0.9f);      // TODO: Externalize
+        dataDiv.put("test", 0.1f);
+
+        return MachineLearningHelper.divideIntoSubsetsEvenlyAndRandomly(dataSet, dataDiv);
 	}
 	
 	/* Form MLData with CHandWritingTokenImageData */
@@ -377,8 +219,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 				if ( progBarUpdater != null )
 					progBarUpdater.update();
 			}
-		} 
-		while (nIter <= maxIter);
+		}  while (nIter <= maxIter);
 //		while (nIter <= maxIter && errRate > threshErrorRate);
 		
 		int minErrIter = MathHelper.minIndex(testErrRates);
@@ -398,29 +239,100 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		} else {
 			/* Reset training progress percentage */
 			trainingProgPercent = 0;
-//			if ( trainingProgDialog != null ) {				 
-//				trainingProgDialog.setProgress(trainingProgPercent);
-//			}
+
 			if ( progBarUpdater != null )
 				progBarUpdater.update();
-			
-			int testRatioDenom = 20;
-			int testRatioNumer = 3;
-			ArrayList<float []> sdveDataTrain = new ArrayList<float []>();
-			sdveDataTest = new ArrayList<float []>();
-			/* sdve: SDV + extra dimensions of feature vector (e.g., width and height, width-height ratio, number of strokes) */
-			
-			ArrayList<Integer> trueLabelsTrain = new ArrayList<Integer>();
-			trueLabelsTest = new ArrayList<Integer>();
-			
-			tokenNames = new ArrayList<String>();
-			
-			readDataFromDir(inDirName, 
-					        testRatioDenom, testRatioNumer, 
-					        sdveDataTrain, sdveDataTest, 
-					        trueLabelsTrain, trueLabelsTest, 
-					        tokenNames);
-			
+
+			sdveDataTest = new ArrayList<>();
+
+			trueLabelsTest = new ArrayList<>();
+			tokenNames = new ArrayList<>();
+
+			Map<String, DataSet> divDataSets = readDataFromDir(inDirName, tokenNames);
+
+            List<float[]> sdveDataTrain = divDataSets.get("training").getX();
+            List<Integer> trueLabelsTrain = divDataSets.get("training").getY();
+
+            /* Data sanity checks */
+            assert( !sdveDataTrain.isEmpty() );
+            assert( !trueLabelsTrain.isEmpty() );
+            assert(sdveDataTrain.size() == trueLabelsTrain.size());
+
+            sdveDataTest = divDataSets.get("test").getX();
+            trueLabelsTest = divDataSets.get("test").getY();
+
+            assert( !sdveDataTest.isEmpty() );
+            assert( !trueLabelsTest.isEmpty() );
+            assert(sdveDataTest.size() == trueLabelsTest.size());
+
+            /* Write data to csv files */
+            /* Write training data */
+            DataIOHelper.printFloatDataToCsvFile(sdveDataTrain, new File(inDirName, "sdve_train_data.csv"));
+
+            /* Write test data */
+            DataIOHelper.printFloatDataToCsvFile(sdveDataTest, new File(inDirName, "sdve_test_data.csv"));
+
+            /* Write training labels */
+            /* Determine the range of the label indices */
+            int minLabel = Integer.MAX_VALUE;
+            int maxLabel = Integer.MIN_VALUE;
+            for (int label : trueLabelsTrain) {
+                if (label < minLabel) {
+                    minLabel = label;
+                }
+                if (label > maxLabel) {
+                    maxLabel = label;
+                }
+            }
+
+            assert(minLabel == 0);
+            int nLabels = maxLabel - minLabel + 1;
+
+            assert(nLabels == tokenNames.size());
+
+            /* Get the count stats */
+            int[] countStatsTrain = new int[nLabels];
+            for (int trueLabel : trueLabelsTrain) {
+                countStatsTrain[trueLabel]++;
+            }
+
+            for (int i = 0; i < countStatsTrain.length; ++i) {
+                if (countStatsTrain[i] == 0) {
+                    throw new RuntimeException("No training data is available for token " + tokenNames.get(i));
+                }
+            }
+
+            int[] countStatsTest = new int[nLabels];
+            for (int trueLabel : trueLabelsTest) {
+                countStatsTest[trueLabel]++;
+            }
+
+            for (int i = 0; i < countStatsTest.length; ++i) {
+                if (countStatsTest[i] == 0) {
+                    throw new RuntimeException("No test data is available for token " + tokenNames.get(i));
+                }
+            }
+
+            /* Write train labels */
+            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTrain, nLabels,
+                                                        new File(inDirName, "sdve_train_labels.csv"));
+            /* Write test labels */
+            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTest, nLabels,
+                                                        new File(inDirName, "sdve_test_labels.csv"));
+
+            /* Write token names file */
+            PrintWriter pw = null;
+            try {
+                pw = new PrintWriter(new File(inDirName, "token_names.txt"));
+                for (String tokenName : tokenNames) {
+                    pw.println(tokenName);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage());
+            } finally {
+                pw.close();
+            }
+
 			/* Add dot, if it is not included */
 			for (String hardCodedToken : hardCodedTokens) {
 				if (tokenNames.indexOf(hardCodedToken) == -1) {
@@ -559,53 +471,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		return bnet.winner(getMLData(sdve));
 	}
 	
-	/* The SEPV (Stroke end-points vector) will be appended to the end SDV, 
-	 * before other features are appended. 
-	 * */
-	private float [] addExtraDimsToSDV(float [] sdv, float [] sepv, 
-			                           CWrittenToken wt) {
-		
-		float [] sdve = null;
-		float [] extraDims = new float[4];	
-		/* The size needs to be expanded if more potential options 
-		 * are added in the future */
-		
-		int nExtraDims = 0;
-//		nExtraDims += sepv.length; /* TODO: Make optional */
-		/* Get the extra dimensions */
-		if ( this.bIncludeTokenSize ) {
-			float [] t_bnds = wt.getBounds();
-			
-			extraDims[nExtraDims++] = t_bnds[2] - t_bnds[0];	/* Width */
-			extraDims[nExtraDims++] = t_bnds[3] - t_bnds[1];	/* Height */
-		}
-		if ( this.bIncludeTokenWHRatio ) {
-			float [] t_bnds = wt.getBounds();
-			
-			extraDims[nExtraDims++] = (t_bnds[3] - t_bnds[1]) / (t_bnds[2] - t_bnds[0]);
-		}
-		if ( this.bIncludeTokenNumStrokes ) {
-			extraDims[nExtraDims++] = wt.nStrokes();
-		}
-		
-		/* Include the extra dimensions */
-		if ( nExtraDims == 0 ) {
-			sdve = sdv; 
-		}
-		else {
-			sdve = new float[sdv.length + sepv.length + nExtraDims]; /* TODO: Make SEPV optional */
-			
-			System.arraycopy(sdv, 0, sdve, 0, sdv.length);
-			System.arraycopy(sepv, 0, sdve, sdv.length, sepv.length); 
-			
-			int i0 = sdv.length + sepv.length;
-			for (int j = 0; j < nExtraDims; ++j) {
-				sdve[j + i0] = extraDims[j];
-			}
-		}
-		
-		return sdve;
-	}
+
 	
 	/* Recognize, with CWrittenToken, not image data, as input. 
 	 * This is more general.
@@ -644,8 +510,12 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			
 		float [] sdv = wt.getSDV(npPerStroke, maxNumStrokes, wh);
 		float [] sepv = wt.getSEPV(maxNumStrokes); /* TODO: Make optional */
-		float [] sdve = addExtraDimsToSDV(sdv, sepv, wt);
-		
+
+		float [] sdve = MachineLearningHelper.addExtraDimsToSDV(sdv, sepv, wt.width, wt.height, wt.nStrokes(),
+                bIncludeTokenSize,
+                bIncludeTokenWHRatio,
+                bIncludeTokenNumStrokes);
+
 		return recognize(sdve, outPs);
 	}
 	

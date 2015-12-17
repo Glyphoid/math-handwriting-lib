@@ -172,5 +172,16 @@ public abstract class TokenRecogEngine implements Serializable {
 	public abstract void setFeatures(int [] ivs, boolean [] bvs);
 	
 	public abstract int recognize(CWrittenToken wt, double [] outPs);
-	
+
+    public boolean isIncludeTokenSize() {
+        return bIncludeTokenSize;
+    }
+
+    public boolean isIncludeTokenWHRatio() {
+        return bIncludeTokenWHRatio;
+    }
+
+    public boolean isIncludeTokenNumStrokes() {
+        return bIncludeTokenNumStrokes;
+    }
 }

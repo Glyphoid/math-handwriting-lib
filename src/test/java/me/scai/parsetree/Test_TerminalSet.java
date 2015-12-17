@@ -2,6 +2,7 @@ package me.scai.parsetree;
 
 import static org.junit.Assert.*;
 
+import me.scai.handwriting.TestHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.net.URL;
 
 public class Test_TerminalSet {
-    private static final String TEST_ROOT_DIR        = "test";
+    private static final String TEST_ROOT_DIR        = TestHelper.TEST_ROOT_DIR;
 	private static final String RESOURCES_DIR        = "resources";
 	private static final String RESOURCES_CONFIG_DIR = "config";
 	private static final String TERMINALS_JSON_FILE  = "terminals.json";

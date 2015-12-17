@@ -5,11 +5,16 @@
 package me.scai.plato.helpers;
 
 import com.google.gson.*;
-import me.scai.handwriting.CWrittenToken;
+import me.scai.handwriting.*;
 
 public class CWrittenTokenJsonHelper {
     private static final Gson gson = new Gson();
 
+    /**
+     * Serialize CWrittenToken
+     * @param wt
+     * @return
+     */
     public static JsonObject CWrittenToken2JsonObject(CWrittenToken wt) {
         JsonObject wtObj = new JsonObject();
 
@@ -21,22 +26,31 @@ public class CWrittenTokenJsonHelper {
         JsonObject strokes = new JsonObject();
         for (int i = 0; i < numStrokes; ++i) {
             JsonObject stroke = CStrokeJsonHelper.CStroke2JsonObject(wt.getStroke(i));
-            
-//            JsonObject stroke = new JsonObject();
-//
-//            int numPoints = wt.getStroke(i).nPoints();
-//            stroke.add("numPoints", new JsonPrimitive(numPoints));
-//
-//            JsonElement x = gson.toJsonTree(wt.getStroke(i).getXs()).getAsJsonArray();
-//            JsonElement y = gson.toJsonTree(wt.getStroke(i).getYs()).getAsJsonArray();
-//
-//            stroke.add("x", x);
-//            stroke.add("y", y);
 
             strokes.add(Integer.toString(i), stroke);
         }
 
         wtObj.add("strokes", strokes);
+
+        return wtObj;
+    }
+
+    /**
+     * Serialize NodeTOken
+     * @param token
+     * @return
+     */
+    public static JsonObject CWrittenToken2JsonObject(NodeToken token) {
+        JsonObject wtObj = new JsonObject();
+
+        /* Node */
+        wtObj.add("node", gson.toJsonTree(token.getNode()));
+
+        /* Written token set */
+        CAbstractWrittenTokenSet wtSet = token.getTokenSet();
+        assert(wtSet instanceof CWrittenTokenSetNoStroke);
+
+        wtObj.add("wtSet", CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj((CWrittenTokenSetNoStroke) wtSet)); // TODO
 
         return wtObj;
     }

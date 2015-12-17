@@ -181,8 +181,80 @@ public class Test_MathHelper {
         }
     }
 
+    @Test
+    public void testRangeTwoArgs() {
+        // Edge case
+        int[] r = MathHelper.range(0, 0);
+        assertNotNull(r);
+        assertEquals(0, r.length);
 
+        r = MathHelper.range(0, 1);
+        assertArrayEquals(new int[] {0}, r);
 
+        r = MathHelper.range(0, 2);
+        assertArrayEquals(new int[] {0, 1}, r);
+
+        r = MathHelper.range(1, 2);
+        assertArrayEquals(new int[] {1}, r);
+
+        r = MathHelper.range(-10, -2);
+        assertArrayEquals(new int[] {-10, -9, -8, -7, -6, -5, -4, -3}, r);
+
+        r = MathHelper.range(-10, 2);
+        assertArrayEquals(new int[] {-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1}, r);
+    }
+
+    @Test
+    public void testRangeOneArg() {
+        // Edge case
+        int[] r = MathHelper.range(0);
+        assertNotNull(r);
+        assertEquals(0, r.length);
+
+        r = MathHelper.range(-1);
+        assertNotNull(r);
+        assertEquals(0, r.length);
+
+        r = MathHelper.range(1);
+        assertArrayEquals(new int[] {0}, r);
+
+        r = MathHelper.range(2);
+        assertArrayEquals(new int[] {0, 1}, r);
+    }
+
+    @Test
+    public void testRandomlyAssignToBins() {
+        // Edge case
+        int[] assignment = MathHelper.randomlyAssignToBins(100, new float[] {1.0f});
+
+        assertEquals(100, assignment.length);
+        assertEquals(100, MathHelper.find(assignment, 0).length);
+
+        // Typical case 1
+        assignment = MathHelper.randomlyAssignToBins(10, new float[] {0.8f, 0.2f});
+
+        assertEquals(10, assignment.length);
+        assertEquals(8, MathHelper.find(assignment, 0).length);
+        assertEquals(2, MathHelper.find(assignment, 1).length);
+
+        // Typical case 2
+        assignment = MathHelper.randomlyAssignToBins(20, new float[] {0.4f, 0.2f, 0.4f});
+
+        assertEquals(20, assignment.length);
+        assertEquals(8, MathHelper.find(assignment, 0).length);
+        assertEquals(4, MathHelper.find(assignment, 1).length);
+        assertEquals(8, MathHelper.find(assignment, 2).length);
+
+        // Typical case 3
+        assignment = MathHelper.randomlyAssignToBins(4, new float[] {0.25f, 0.25f, 0.25f, 0.25f});
+
+        assertEquals(4, assignment.length);
+        assertEquals(1, MathHelper.find(assignment, 0).length);
+        assertEquals(1, MathHelper.find(assignment, 1).length);
+        assertEquals(1, MathHelper.find(assignment, 2).length);
+        assertEquals(1, MathHelper.find(assignment, 3).length);
+
+    }
 
 
 }

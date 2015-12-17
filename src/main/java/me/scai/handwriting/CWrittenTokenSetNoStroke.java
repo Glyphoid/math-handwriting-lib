@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.AssertionError;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 import me.scai.parsetree.TerminalSet;
 
@@ -328,4 +329,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
     public boolean hasNodeToken() {
         return hasNodeToken;
     }
+
+
 }

@@ -20,7 +20,10 @@ import static org.junit.Assert.*;
 
 public class Test_StrokeCuratorConfig {
     private static final String configFilePath  = "C:\\Users\\scai\\Dropbox\\Plato\\test-data\\stroke_curator_config_testCase_1.json";
-    private static final String tokenEnginePath = "C:\\Users\\scai\\Dropbox\\Plato\\test-data\\token_engine.sdv.sz0_whr0_ns1.ser";
+
+    //TODO: Fix hard-coded path
+    private static final String tokenEnginePath = "C:\\Users\\scai\\Dropbox\\Plato\\test-data\\token_engine.sdv.sz0_whr1_ns1.ser";
+
     private static final String TOKEN_ENGINE_TYPE = "SDV";
 
     private TokenRecogEngine tokEngine = null;
