@@ -1,7 +1,6 @@
 package me.scai.handwriting;
 
 import com.google.gson.JsonObject;
-import me.scai.parsetree.HandwritingEngineException;
 
 import java.util.List;
 

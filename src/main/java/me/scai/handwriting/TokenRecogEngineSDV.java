@@ -44,9 +44,13 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	private transient ProgBarUpdater progBarUpdater = null;
 	private transient TokenDegeneracy tokenDegen = null;
 	
-	/* Testing data */
-	transient List<float []> sdveDataTest = null;
-	transient List<Integer> trueLabelsTest = null;
+	/* Validation data */
+	transient List<float []> sdveDataValidation = null;
+	transient List<Integer> trueLabelsValidation = null;
+
+    /* Validation data */
+    transient List<float []> sdveDataTest = null;
+    transient List<Integer> trueLabelsTest = null;
 	
 	/* Constructors */
 	public TokenRecogEngineSDV() {
@@ -147,7 +151,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 
         // Strategy for dividing the data into training and test subsets
         Map<String, Float> dataDiv = new HashMap<>();
-        dataDiv.put("training", 0.9f);      // TODO: Externalize
+        dataDiv.put("training", 0.8f);      // TODO: Externalize
+        dataDiv.put("validation", 0.1f);
         dataDiv.put("test", 0.1f);
 
         return MachineLearningHelper.divideIntoSubsetsEvenlyAndRandomly(dataSet, dataDiv);
@@ -183,7 +188,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		int nIter = 0;
 
 		BasicNetwork [] iter_bnets = new BasicNetwork[maxIter + 1];
-		float [] testErrRates = new float[maxIter + 1];
+		float [] validationErrRates = new float[maxIter + 1];
+        float [] testErrRates = new float[maxIter + 1];
 		
 		do {			
 			train.iteration();
@@ -196,7 +202,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 
 			errRate = train.getError();
 			iter_bnets[nIter] = (BasicNetwork) bnet.clone();
-			testErrRates[nIter] = getTestErrRate();
+			validationErrRates[nIter] = getValidationErrorRate();
+            testErrRates[nIter] = getTestErrorRate();
 			
 			nIter++;
 			/* Get the test error rate */
@@ -204,7 +211,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			if ( bVerbose )
 				System.out.println("Iteration #" + Format.formatInteger(iteration)
 						+ " training error rate = " + Format.formatPercent(train.getError())
-						+ "; test error rate = " + Format.formatPercent(testErrRates[nIter - 1])
+						+ "; validation error rate = " + Format.formatPercent(validationErrRates[nIter - 1])
 						+ "; elapsed time = " + Format.formatTimeSpan((int) elapsed));
 
 			double pctIter = (double) nIter / maxIter;
@@ -222,10 +229,10 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		}  while (nIter <= maxIter);
 //		while (nIter <= maxIter && errRate > threshErrorRate);
 		
-		int minErrIter = MathHelper.minIndex(testErrRates);
-		if ( bDebug )
-			System.out.println("minErrIter = " + minErrIter + 
-					           "; minTestErrRate = " + testErrRates[minErrIter]);
+		int minErrIter = MathHelper.minIndex(validationErrRates);
+        System.out.println("minErrIter = " + minErrIter +
+                           "; minValidationErrRate = " + validationErrRates[minErrIter] +
+                           "; minTestErrRate = " + testErrRates[minErrIter]);
 		bnet = (BasicNetwork) iter_bnets[minErrIter].clone();
 		
 		train.finishTraining();
@@ -243,9 +250,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			if ( progBarUpdater != null )
 				progBarUpdater.update();
 
-			sdveDataTest = new ArrayList<>();
+			sdveDataValidation = new ArrayList<>();
 
-			trueLabelsTest = new ArrayList<>();
+			trueLabelsValidation = new ArrayList<>();
 			tokenNames = new ArrayList<>();
 
 			Map<String, DataSet> divDataSets = readDataFromDir(inDirName, tokenNames);
@@ -258,16 +265,22 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
             assert( !trueLabelsTrain.isEmpty() );
             assert(sdveDataTrain.size() == trueLabelsTrain.size());
 
+            sdveDataValidation = divDataSets.get("validation").getX();
+            trueLabelsValidation = divDataSets.get("validation").getY();
+
             sdveDataTest = divDataSets.get("test").getX();
             trueLabelsTest = divDataSets.get("test").getY();
 
-            assert( !sdveDataTest.isEmpty() );
-            assert( !trueLabelsTest.isEmpty() );
-            assert(sdveDataTest.size() == trueLabelsTest.size());
+            assert( !sdveDataValidation.isEmpty() );
+            assert( !trueLabelsValidation.isEmpty() );
+            assert(sdveDataValidation.size() == trueLabelsValidation.size());
 
             /* Write data to csv files */
             /* Write training data */
             DataIOHelper.printFloatDataToCsvFile(sdveDataTrain, new File(inDirName, "sdve_train_data.csv"));
+
+            /* Write validation data */
+            DataIOHelper.printFloatDataToCsvFile(sdveDataValidation, new File(inDirName, "sdve_validation_data.csv"));
 
             /* Write test data */
             DataIOHelper.printFloatDataToCsvFile(sdveDataTest, new File(inDirName, "sdve_test_data.csv"));
@@ -302,23 +315,37 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
                 }
             }
 
+            int[] countStatsValidation = new int[nLabels];
+            for (int trueLabel : trueLabelsValidation) {
+                countStatsValidation[trueLabel]++;
+            }
+
             int[] countStatsTest = new int[nLabels];
             for (int trueLabel : trueLabelsTest) {
                 countStatsTest[trueLabel]++;
             }
 
-            for (int i = 0; i < countStatsTest.length; ++i) {
-                if (countStatsTest[i] == 0) {
+            for (int i = 0; i < countStatsValidation.length; ++i) {
+                if (countStatsValidation[i] == 0) {
                     throw new RuntimeException("No test data is available for token " + tokenNames.get(i));
                 }
+            }
+
+            /* Print count stats for observation */
+            for (int i = 0; i < nLabels; ++i) {
+                System.out.printf("%s:\t(%d + %d + %d) = %d\n", tokenNames.get(i),
+                                  countStatsTrain[i], countStatsValidation[i], countStatsTest[i],
+                                  countStatsTrain[i] + countStatsValidation[i]);
             }
 
             /* Write train labels */
             DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTrain, nLabels,
                                                         new File(inDirName, "sdve_train_labels.csv"));
+            /* Write validation labels */
+            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsValidation, nLabels,
+                                                        new File(inDirName, "sdve_validation_labels.csv"));
             /* Write test labels */
-            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTest, nLabels,
-                                                        new File(inDirName, "sdve_test_labels.csv"));
+            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTest, nLabels, new File(inDirName, "sdve_test_labels.csv"));
 
             /* Write token names file */
             PrintWriter pw = null;
@@ -520,32 +547,47 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	}
 	
 	/* Get error rate on test data set */
-	float getTestErrRate() {
-		if ( sdveDataTest == null || trueLabelsTest == null )
+	float getValidationErrorRate() {
+		if ( sdveDataValidation == null || trueLabelsValidation == null )
 			throw new RuntimeException("Test data have not be generated yet");
 		
 		int nTested = 0;
 		int nErr = 0;
 		double [] ps = new double[tokenNames.size()];
-		for (int i = 0; i < sdveDataTest.size(); ++i) {
-			int recogIdx = recognize(sdveDataTest.get(i), ps);
+		for (int i = 0; i < sdveDataValidation.size(); ++i) {
+			int recogIdx = recognize(sdveDataValidation.get(i), ps);
 			
-			int trueIdx = trueLabelsTest.get(i);
+			int trueIdx = trueLabelsValidation.get(i);
 			
 			nTested++;
 			if (recogIdx != trueIdx)
 				nErr++;
-			
-//			System.out.println("\"" + tokenNames.get(trueIdx) + "\" recognized as \"" +
-//			                   tokenNames.get(recogIdx) + "\"");
+
 		}
-		
-//		System.out.println("Tested = " + nTested + "; nErr = " + nErr + 
-//	                       "; errRate = " + (float) nErr / (float) nTested);
-	                       
+
 		return (float) nErr / (float) nTested;
 	}
 
+    float getTestErrorRate() {
+        if ( sdveDataTest == null || trueLabelsTest == null )
+            throw new RuntimeException("Test data have not be generated yet");
+
+        int nTested = 0;
+        int nErr = 0;
+        double [] ps = new double[tokenNames.size()];
+        for (int i = 0; i < sdveDataTest.size(); ++i) {
+            int recogIdx = recognize(sdveDataTest.get(i), ps);
+
+            int trueIdx = trueLabelsTest.get(i);
+
+            nTested++;
+            if (recogIdx != trueIdx)
+                nErr++;
+
+        }
+
+        return (float) nErr / (float) nTested;
+    }
 
 	
 }

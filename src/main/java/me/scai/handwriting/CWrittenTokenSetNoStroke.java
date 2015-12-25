@@ -60,7 +60,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 
         CWrittenTokenSet wtSet0 = new CWrittenTokenSet();
 
-
         for (AbstractToken writtenToken : writtenTokens) {
             wtSet0.addToken(writtenToken);
         }
@@ -330,5 +329,27 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
         return hasNodeToken;
     }
 
+    /**
+     * Form a new token set from a subset of the tokens
+     * @param tokenIndices  Indices to the tokens to be parsed into a node token (0-based)
+     * @return The new token set
+     */
+    public CWrittenTokenSetNoStroke fromSubset(int[] tokenIndices) {
+        if (tokenIndices == null) {
+            throw new IllegalArgumentException("Null token indices");
+        }
+
+        final int numTokensToParse = tokenIndices.length;
+        if (numTokensToParse == 0) {
+            throw new IllegalArgumentException("Input token indices array is empty");
+        }
+
+        AbstractToken[] tokensToParse = new AbstractToken[numTokensToParse];
+        for (int i = 0; i < tokenIndices.length; ++i) {
+            tokensToParse[i] = tokens.get(tokenIndices[i]); // TODO: Mutability and concurrency?
+        }
+
+        return from(tokensToParse);
+    }
 
 }

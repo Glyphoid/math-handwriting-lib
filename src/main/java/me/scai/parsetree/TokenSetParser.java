@@ -10,9 +10,6 @@ public class TokenSetParser implements ITokenSetParser {
 
 	private TerminalSet termSet = null;
 	private GraphicalProductionSet gpSet = null;
-	// protected ParseTreeStringizer stringizer = null;
-	// protected ParseTreeEvaluator evaluator = null;
-	/* TODO: Separate the stringize and evaluator from the parser */
 
 	/* Properties */
 	private float recursionGeomScoreRatioThresh = 0.90f;
@@ -21,8 +18,6 @@ public class TokenSetParser implements ITokenSetParser {
 													 * No limit on levels of
 													 * recursive drill
 													 */
-	// private int drillDepthLimit = 2; /* Limiting it to a specific number runs
-	// without errors, but may cause wrong parsing */
 	private int currDrillDepth = 0; /* Thread-safe? */
 
 	private boolean bDebug = false;
@@ -32,7 +27,6 @@ public class TokenSetParser implements ITokenSetParser {
     private boolean usingMultiThreads = false;
 
 	private Map<String, int[]> tokenSetLHS2IdxValidProdsMap;
-	// private HashMap<String, int []> tokenSetLHS2IdxValidProdsNoExcludeMap;
 	private Map<String, ArrayList<int[][]>> tokenSetLHS2IdxPossibleHeadsMap;
 	private Map<String, Integer> tokenSetLHS2IdxBestProdMap;
 
@@ -110,6 +104,7 @@ public class TokenSetParser implements ITokenSetParser {
 
 		return n;
 	}
+
 
     /* Side effect input arguments:
      *     nodes,

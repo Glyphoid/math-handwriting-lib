@@ -75,7 +75,7 @@ public class MachineLearningHelper {
 
 				/* TODO: Combine into a function */
                 float [] sdv = t_wt.getSDV(tokenSettings.getNpPerStroke(), tokenSettings.getMaxNumStrokes(), im_wh);
-                float [] sepv = t_wt.getSEPV(tokenSettings.getMaxNumStrokes());
+                float [] sepv = t_wt.getSEPV(tokenSettings.getMaxNumStrokes()); // Stroke endpoint vector
                 x = addExtraDimsToSDV(sdv, sepv, t_imData.w, t_imData.h, t_imData.nStrokes,
                                       tokenSettings.isIncludeTokenSize(),
                                       tokenSettings.isIncludeTokenWHRatio(),

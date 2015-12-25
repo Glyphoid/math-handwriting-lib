@@ -17,6 +17,7 @@ public class NodeToken extends AbstractToken {
 
     private List<Integer> matchingGraphicalProductionIndices;
 
+    private String parsingResult;
 
     /* Constructors */
     public NodeToken(Node node, CAbstractWrittenTokenSet wtSet) {
@@ -66,17 +67,12 @@ public class NodeToken extends AbstractToken {
 
     @Override
     public String getRecogResult() {
-//        throw new IllegalStateException("Not implemented yet");
-        return null;
-
-        // TODO: Implement: Get stringizer result of the node
+        return parsingResult;
     }
 
     @Override
-    public void setRecogResult(String rr) {
-        throw new IllegalStateException("Not implemented yet");
-
-        // TODO: Implement: Set stringizer result of the node
+    public void setRecogResult(String pr) {
+        parsingResult = pr;
     }
 
     public Node getNode() {

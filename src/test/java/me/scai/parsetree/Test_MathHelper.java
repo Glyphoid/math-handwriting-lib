@@ -10,6 +10,27 @@ import static org.junit.Assert.assertEquals;
 public class Test_MathHelper {
 
     @Test
+    public void testFind() {
+        // Edge case
+        int[] A = {1, 2, 3};
+        int x = 0;
+
+        assertArrayEquals(new int[0], MathHelper.find(A, x));
+
+        // Typical case: One occurrence
+        int[] B = {1, 1, 2, 3};
+        x = 2;
+
+        assertArrayEquals(new int[] {2}, MathHelper.find(B, x));
+
+        // Typical case: Two occurrences
+        int[] C = {1, -3, 2, 1};
+        x = 1;
+
+        assertArrayEquals(new int[] {0, 3}, MathHelper.find(C, x));
+    }
+
+    @Test
     public void testGetMaxNIndices() {
         double[] xs0 = {100.0, 200.0, 300.0, -100.0, 1.0, 400.0};
         int[] maxIndices0 = MathHelper.getMaxNIndices(xs0, 3);

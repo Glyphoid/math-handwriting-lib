@@ -1,7 +1,8 @@
 package me.scai.handwriting;
 
+import me.scai.parsetree.TokenSet2NodeTokenParser;
 import me.scai.parsetree.*;
-import me.scai.parsetree.evaluation.ParseTreeEvaluator;
+import me.scai.plato.helpers.CWrittenTokenSetJsonHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -11,38 +12,38 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
 public class Test_NodeToken {
-
+    // Member variables
     private static TokenSetParser tokenSetParser;
     private static ParseTreeStringizer stringizer;
-    private static ParseTreeEvaluator evaluator;
 
     private static GraphicalProductionSet gpSet;
-    private static TerminalSet termSet;
+    private static TokenSet2NodeTokenParser tokenSet2NodeTokenParser;
 
-
+    // Methods
     @BeforeClass
     public static void beforeClass() {
         TestHelper.WorkerTuple workerTuple = TestHelper.getTestWorkerTuple();
 
         gpSet          = workerTuple.gpSet;
-        termSet        = workerTuple.termSet;
 
         tokenSetParser = workerTuple.tokenSetParser;
         stringizer     = workerTuple.stringizer;
-        evaluator      = workerTuple.evaluator;
+
+        tokenSet2NodeTokenParser = new TokenSet2NodeTokenParser(tokenSetParser, stringizer);
     }
 
-    private Node parseTokenSet(CWrittenTokenSetNoStroke wtSet) {
-        Node node = null;
+    private NodeToken parseTokenSet2NodeToken(CWrittenTokenSetNoStroke wtSet) {
+        NodeToken nodeToken = null;
         try {
-            node = tokenSetParser.parse(wtSet);
+            nodeToken = tokenSet2NodeTokenParser.parse2NodeToken(wtSet);
         } catch (TokenSetParserException e) {
             fail("Parsing failed due to TokenSetParserException: " + e.getMessage());
         } catch (InterruptedException e) {
             fail("Parsing failed due to InterruptedException: " + e.getMessage());
         }
 
-        return node;
+
+        return nodeToken;
     }
 
     @Test
@@ -57,17 +58,10 @@ public class Test_NodeToken {
                 new String[] {"1", "+", "2"}
         );
 
-        assertFalse(wtSet.hasNodeToken());
-        assertEquals(3, wtSet.getNumTokens());
-
-        Node node = parseTokenSet(wtSet);
-
-        assertNotNull(node);
-
-        NodeToken nodeToken = new NodeToken(node, wtSet);
+        NodeToken nodeToken = parseTokenSet2NodeToken(wtSet);
+        assertEquals("(1 + 2)", nodeToken.getRecogResult());
 
         List<Integer> gpIndices = nodeToken.getMatchingGraphicalProductionIndices(gpSet);
-
         assertNotNull(gpIndices);
         assertFalse(gpIndices.isEmpty());
 
@@ -93,6 +87,8 @@ public class Test_NodeToken {
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(2, wtSetComposite.getNumTokens());
 
+        // Test serialize the composite token set
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
 
         Node node2 = null;
         String stringized2 = null;
@@ -122,11 +118,8 @@ public class Test_NodeToken {
         assertFalse(wtSet.hasNodeToken());
         assertEquals(3, wtSet.getNumTokens());
 
-        Node node = parseTokenSet(wtSet);
-
-        assertNotNull(node);
-
-        NodeToken nodeToken = new NodeToken(node, wtSet);
+        NodeToken nodeToken = parseTokenSet2NodeToken(wtSet);
+        assertEquals("(1 + 2)", nodeToken.getRecogResult());
 
         List<Integer> gpIndices = nodeToken.getMatchingGraphicalProductionIndices(gpSet);
 
@@ -159,6 +152,8 @@ public class Test_NodeToken {
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(3, wtSetComposite.getNumTokens());
 
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
+
         Node node2 = null;
         String stringized2 = null;
         try {
@@ -187,12 +182,8 @@ public class Test_NodeToken {
         assertFalse(wtSetNum0.hasNodeToken());
         assertEquals(2, wtSetNum0.getNumTokens());
 
-        Node nodeNum0 = parseTokenSet(wtSetNum0);
-
-        assertNotNull(nodeNum0);
-        assertEquals("12", stringizer.stringize(nodeNum0));
-
-        NodeToken nodeTokenNum0 = new NodeToken(nodeNum0, wtSetNum0);
+        NodeToken nodeTokenNum0 = parseTokenSet2NodeToken(wtSetNum0);
+        assertEquals("12", nodeTokenNum0.getRecogResult());
 
         // 2nd number in the addition
         CWrittenTokenSetNoStroke wtSetNum1 = TestHelper.getMockTokenSet(
@@ -206,12 +197,8 @@ public class Test_NodeToken {
         assertFalse(wtSetNum1.hasNodeToken());
         assertEquals(2, wtSetNum1.getNumTokens());
 
-        Node nodeNum1 = parseTokenSet(wtSetNum1);
-
-        assertNotNull(nodeNum1);
-        assertEquals("34", stringizer.stringize(nodeNum1));
-
-        NodeToken nodeTokenNum1 = new NodeToken(nodeNum1, wtSetNum1);
+        NodeToken nodeTokenNum1 = parseTokenSet2NodeToken(wtSetNum1);
+        assertEquals("34", nodeTokenNum1.getRecogResult());
 
         // Combined denominator
         AbstractToken[] writtenTokensDenom = new AbstractToken[3];
@@ -257,11 +244,7 @@ public class Test_NodeToken {
         assertFalse(wtSetNumer.hasNodeToken());
         assertEquals(3, wtSetNumer.getNumTokens());
 
-        Node nodeNumer = parseTokenSet(wtSetNumer);
-
-        assertNotNull(nodeNumer);
-
-        NodeToken nodeTokenNumer = new NodeToken(nodeNumer, wtSetNumer);
+        NodeToken nodeTokenNumer = parseTokenSet2NodeToken(wtSetNumer);
 
         List<Integer> gpIndices = nodeTokenNumer.getMatchingGraphicalProductionIndices(gpSet);
         List<String> gpSumStrings = TestHelper.getGraphicalProductionSumStrings(gpSet, gpIndices);
@@ -286,11 +269,7 @@ public class Test_NodeToken {
         assertFalse(wtSetDenom.hasNodeToken());
         assertEquals(3, wtSetDenom.getNumTokens());
 
-        Node nodeDenom = parseTokenSet(wtSetDenom);
-
-        assertNotNull(nodeDenom);
-
-        NodeToken nodeTokenDenom = new NodeToken(nodeDenom, wtSetDenom);
+        NodeToken nodeTokenDenom = parseTokenSet2NodeToken(wtSetDenom);
 
         gpIndices = nodeTokenDenom.getMatchingGraphicalProductionIndices(gpSet);
         gpSumStrings = TestHelper.getGraphicalProductionSumStrings(gpSet, gpIndices);
@@ -315,6 +294,8 @@ public class Test_NodeToken {
         CWrittenTokenSetNoStroke wtSetComposite = CWrittenTokenSetNoStroke.from(writtenTokensComposite);
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(3, wtSetComposite.getNumTokens());
+
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
 
         // Parse the composite token
         Node node2 = null;
@@ -345,13 +326,8 @@ public class Test_NodeToken {
         assertFalse(wtSetSymbol.hasNodeToken());
         assertEquals(1, wtSetSymbol.getNumTokens());
 
-        Node nodeSymbol = parseTokenSet(wtSetSymbol);
-        String stringizedSymbol = stringizer.stringize(nodeSymbol);
-
-        assertNotNull(nodeSymbol);
-        assertEquals("A", stringizedSymbol);
-
-        NodeToken nodeTokenSymbol = new NodeToken(nodeSymbol, wtSetSymbol);
+        NodeToken nodeTokenSymbol = parseTokenSet2NodeToken(wtSetSymbol);
+        assertEquals("A", nodeTokenSymbol.getRecogResult());
 
         List<Integer> gpIndices = nodeTokenSymbol.getMatchingGraphicalProductionIndices(gpSet);
 
@@ -370,13 +346,9 @@ public class Test_NodeToken {
         assertFalse(wtSetValue.hasNodeToken());
         assertEquals(2, wtSetValue.getNumTokens());
 
-        Node nodeValue = parseTokenSet(wtSetValue);
-        String stringizedValue = stringizer.stringize(nodeValue);
 
-        assertNotNull(nodeValue);
-        assertEquals("34", stringizedValue);
-
-        NodeToken nodeTokenValue = new NodeToken(nodeValue, wtSetValue);
+        NodeToken nodeTokenValue =  parseTokenSet2NodeToken(wtSetValue);
+        assertEquals("34", nodeTokenValue.getRecogResult());
 
         gpIndices = nodeTokenValue.getMatchingGraphicalProductionIndices(gpSet);
 
@@ -396,6 +368,8 @@ public class Test_NodeToken {
         CWrittenTokenSetNoStroke wtSetComposite = CWrittenTokenSetNoStroke.from(writtenTokensComposite);
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(3, wtSetComposite.getNumTokens());
+
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
 
         Node node2 = null;
         String stringized2 = null;
@@ -433,13 +407,8 @@ public class Test_NodeToken {
         assertFalse(wtSetSummed.hasNodeToken());
         assertEquals(1, wtSetSummed.getNumTokens());
 
-        Node nodeSummed = parseTokenSet(wtSetSummed);
-        String stringizedSummed = stringizer.stringize(nodeSummed);
-
-        assertNotNull(nodeSummed);
-        assertEquals("x", stringizedSummed);
-
-        NodeToken nodeTokenSummed = new NodeToken(nodeSummed, wtSetSummed);
+        NodeToken nodeTokenSummed = parseTokenSet2NodeToken(wtSetSummed);
+        assertEquals("x", nodeTokenSummed.getRecogResult());
 
         // Construct lower-bound node: x = 1 + 2
         CWrittenTokenSetNoStroke wtSetLB = TestHelper.getMockTokenSet(
@@ -454,13 +423,8 @@ public class Test_NodeToken {
         assertFalse(wtSetLB.hasNodeToken());
         assertEquals(3, wtSetLB.getNumTokens());
 
-        Node nodeLB = parseTokenSet(wtSetLB);
-        String stringizedLB = stringizer.stringize(nodeLB);
-
-        assertNotNull(nodeLB);
-        assertEquals("(x = 1)", stringizedLB);
-
-        NodeToken nodeTokenLB = new NodeToken(nodeLB, wtSetLB);
+        NodeToken nodeTokenLB = parseTokenSet2NodeToken(wtSetLB);
+        assertEquals("(x = 1)", nodeTokenLB.getRecogResult());
 
         // Construct upper-bound node: x = 3 + 4
         CWrittenTokenSetNoStroke wtSetUB = TestHelper.getMockTokenSet(
@@ -473,20 +437,15 @@ public class Test_NodeToken {
         assertFalse(wtSetUB.hasNodeToken());
         assertEquals(1, wtSetUB.getNumTokens());
 
-        Node nodeUB = parseTokenSet(wtSetUB);
-        String stringizedUB = stringizer.stringize(nodeUB);
-
-        assertNotNull(nodeUB);
-        assertEquals("3", stringizedUB);
-
-        NodeToken nodeTokenUB = new NodeToken(nodeUB, wtSetUB);
+        NodeToken nodeTokenUB = parseTokenSet2NodeToken(wtSetUB);
+        assertEquals("3", nodeTokenUB.getRecogResult());
 
         // Construct the composite token
         AbstractToken[] writtenTokensComposite = new AbstractToken[4];
 
         // The fraction line: "-"
         writtenTokensComposite[0] = new CWrittenToken();
-        writtenTokensComposite[0].setBounds(new float[] {1f, 1f, 2f, 2f});
+        writtenTokensComposite[0].setBounds(new float[]{1f, 1f, 2f, 2f});
         writtenTokensComposite[0].setRecogResult("gr_Si");
 
         writtenTokensComposite[1] = nodeTokenLB;     // LB node
@@ -496,6 +455,8 @@ public class Test_NodeToken {
         CWrittenTokenSetNoStroke wtSetComposite = CWrittenTokenSetNoStroke.from(writtenTokensComposite);
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(4, wtSetComposite.getNumTokens());
+
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
 
         // Parse the composite token
         Node node2 = null;
@@ -528,13 +489,8 @@ public class Test_NodeToken {
         assertFalse(wtSetSummed.hasNodeToken());
         assertEquals(2, wtSetSummed.getNumTokens());
 
-        Node nodeSummed = parseTokenSet(wtSetSummed);
-        String stringizedSummed = stringizer.stringize(nodeSummed);
-
-        assertNotNull(nodeSummed);
-        assertEquals("(x ^ 5)", stringizedSummed);
-
-        NodeToken nodeTokenSummed = new NodeToken(nodeSummed, wtSetSummed);
+        NodeToken nodeTokenSummed = parseTokenSet2NodeToken(wtSetSummed);
+        assertEquals("(x ^ 5)", nodeTokenSummed.getRecogResult());
 
         // Construct lower-bound node: x = 1 + 2
         CWrittenTokenSetNoStroke wtSetLB = TestHelper.getMockTokenSet(
@@ -551,13 +507,8 @@ public class Test_NodeToken {
         assertFalse(wtSetLB.hasNodeToken());
         assertEquals(5, wtSetLB.getNumTokens());
 
-        Node nodeLB = parseTokenSet(wtSetLB);
-        String stringizedLB = stringizer.stringize(nodeLB);
-
-        assertNotNull(nodeLB);
-        assertEquals("(x = (1 + 2))", stringizedLB);
-
-        NodeToken nodeTokenLB = new NodeToken(nodeLB, wtSetLB);
+        NodeToken nodeTokenLB = parseTokenSet2NodeToken(wtSetLB);
+        assertEquals("(x = (1 + 2))", nodeTokenLB.getRecogResult());
 
         // Construct upper-bound node: x = 3 + 4
         CWrittenTokenSetNoStroke wtSetUB = TestHelper.getMockTokenSet(
@@ -572,13 +523,8 @@ public class Test_NodeToken {
         assertFalse(wtSetUB.hasNodeToken());
         assertEquals(3, wtSetUB.getNumTokens());
 
-        Node nodeUB = parseTokenSet(wtSetUB);
-        String stringizedUB = stringizer.stringize(nodeUB);
-
-        assertNotNull(nodeUB);
-        assertEquals("(3 + 4)", stringizedUB);
-
-        NodeToken nodeTokenUB = new NodeToken(nodeUB, wtSetUB);
+        NodeToken nodeTokenUB = parseTokenSet2NodeToken(wtSetUB);
+        assertEquals("(3 + 4)", nodeTokenUB.getRecogResult());
 
         // Construct the composite token
         AbstractToken[] writtenTokensComposite = new AbstractToken[4];
@@ -595,6 +541,8 @@ public class Test_NodeToken {
         CWrittenTokenSetNoStroke wtSetComposite = CWrittenTokenSetNoStroke.from(writtenTokensComposite);
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(4, wtSetComposite.getNumTokens());
+
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
 
         // Parse the composite token
         Node node2 = null;
@@ -627,12 +575,8 @@ public class Test_NodeToken {
         assertFalse(wtSetDenom1.hasNodeToken());
         assertEquals(2, wtSetDenom1.getNumTokens());
 
-        Node nodeDenom1 = parseTokenSet(wtSetDenom1);
-
-        assertNotNull(nodeDenom1);
-        assertEquals("12", stringizer.stringize(nodeDenom1));
-
-        NodeToken nodeTokenDenom1 = new NodeToken(nodeDenom1, wtSetDenom1);
+        NodeToken nodeTokenDenom1 = parseTokenSet2NodeToken(wtSetDenom1);
+        assertEquals("12", nodeTokenDenom1.getRecogResult());
 
         // 2nd number in the denominator
         CWrittenTokenSetNoStroke wtSetDenom2 = TestHelper.getMockTokenSet(
@@ -646,12 +590,8 @@ public class Test_NodeToken {
         assertFalse(wtSetDenom2.hasNodeToken());
         assertEquals(2, wtSetDenom2.getNumTokens());
 
-        Node nodeDenom2 = parseTokenSet(wtSetDenom2);
-
-        assertNotNull(nodeDenom2);
-        assertEquals("34", stringizer.stringize(nodeDenom2));
-
-        NodeToken nodeTokenDenom2 = new NodeToken(nodeDenom2, wtSetDenom2);
+        NodeToken nodeTokenDenom2 = parseTokenSet2NodeToken(wtSetDenom2);
+        assertEquals("34", nodeTokenDenom2.getRecogResult());
 
         // Combined denominator
         AbstractToken[] writtenTokensDenom = new AbstractToken[3];
@@ -692,12 +632,8 @@ public class Test_NodeToken {
         assertFalse(wtSetNumer1.hasNodeToken());
         assertEquals(2, wtSetNumer1.getNumTokens());
 
-        Node nodeNumer1 = parseTokenSet(wtSetNumer1);
-
-        assertNotNull(nodeNumer1);
-        assertEquals("56", stringizer.stringize(nodeNumer1));
-
-        NodeToken nodeTokenNumer1 = new NodeToken(nodeNumer1, wtSetNumer1);
+        NodeToken nodeTokenNumer1 = parseTokenSet2NodeToken(wtSetNumer1);
+        assertEquals("56", nodeTokenNumer1.getRecogResult());
 
         // 2nd number in the denominator
         CWrittenTokenSetNoStroke wtSetNumer2 = TestHelper.getMockTokenSet(
@@ -711,12 +647,8 @@ public class Test_NodeToken {
         assertFalse(wtSetNumer2.hasNodeToken());
         assertEquals(2, wtSetNumer2.getNumTokens());
 
-        Node nodeNumer2 = parseTokenSet(wtSetNumer2);
-
-        assertNotNull(nodeNumer2);
-        assertEquals("78", stringizer.stringize(nodeNumer2));
-
-        NodeToken nodeTokenNumer2 = new NodeToken(nodeNumer2, wtSetNumer2);
+        NodeToken nodeTokenNumer2 = parseTokenSet2NodeToken(wtSetNumer2);
+        assertEquals("78", nodeTokenNumer2.getRecogResult());
 
         // Combined denominator
         AbstractToken[] writtenTokensNumer = new AbstractToken[3];
@@ -777,5 +709,74 @@ public class Test_NodeToken {
 
     }
 
+
+    @Test
+    public void test_parseSubsetOfTokenSet() throws TokenSetParserException {
+
+        CWrittenTokenSetNoStroke wtSet = TestHelper.getMockTokenSet(
+                new float[][]{
+                        {0f, 0f, 1f, 1f},
+                        {2f, 0f, 3f, 1f},
+                        {4f, 0f, 5f, 1f},
+                        {6f, 0f, 7f, 1f},
+                        {8f, 0f, 9f, 1f}
+
+                },
+                new String[]{"1", "2", "+", "3", "4"}
+        );
+        assertEquals(5, wtSet.getNumTokens());
+
+        // 1. Parse tokens {0, 1} as "12"
+        CWrittenTokenSetNoStroke wtSet2 = null;
+        try {
+            wtSet2 = tokenSet2NodeTokenParser.parseAsNodeToken(wtSet, new int[]{0, 1});
+        } catch (TokenSetParserException e) {
+            fail("");
+        } catch (InterruptedException e) {
+            fail("");
+        }
+
+        assertNotNull(wtSet2);
+        assertEquals(4, wtSet2.getNumTokens());
+        assertEquals("12", wtSet2.tokens.get(0).getRecogResult());
+
+        assertTrue(wtSet2.tokens.get(0) instanceof NodeToken);
+        for (int i = 1; i < 4; ++i) {
+            assertFalse(wtSet2.tokens.get(i) instanceof NodeToken);
+        }
+
+        // 2. Parse tokens {2, 3} (originally {3, 4}) as "34"
+        CWrittenTokenSetNoStroke wtSet3 = null;
+        try {
+            wtSet3 = tokenSet2NodeTokenParser.parseAsNodeToken(wtSet2, new int[]{2, 3});
+        } catch (TokenSetParserException e) {
+            fail("");
+        } catch (InterruptedException e) {
+            fail("");
+        }
+
+        assertNotNull(wtSet3);
+        assertEquals(3, wtSet3.getNumTokens());
+        assertEquals("34", wtSet3.tokens.get(0).getRecogResult());
+        assertEquals("12", wtSet3.tokens.get(1).getRecogResult());
+
+        assertTrue(wtSet3.tokens.get(0) instanceof NodeToken);
+        assertTrue(wtSet3.tokens.get(1) instanceof NodeToken);
+        assertFalse(wtSet3.tokens.get(2) instanceof NodeToken);
+
+        Node finalParsedNode = null;
+        String finalStringized = null;
+        try {
+            finalParsedNode = tokenSetParser.parse(wtSet3);
+            finalStringized = stringizer.stringize(finalParsedNode);
+        } catch (TokenSetParserException e) {
+            fail("");
+        } catch (InterruptedException e) {
+            fail("");
+        }
+
+        assertNotNull(finalParsedNode);
+        assertEquals("(12 + 34)", finalStringized);
+    }
 
 }

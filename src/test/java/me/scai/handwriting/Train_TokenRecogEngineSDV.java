@@ -18,9 +18,9 @@ public class Train_TokenRecogEngineSDV {
 		/* Token engine settings */
         final boolean bLoadEngineFromDisk = false; /* false: train; true: test */
 
-        final int hiddenLayerSize1 = 300;
+        final int hiddenLayerSize1 = 350;
         final int hiddenLayerSize2 = 0;
-        final int trainMaxIter = 400;
+        final int trainMaxIter = 500;
         final double trainThreshErr = 0.001;
 
         final int t_npPerStroke = 16;
@@ -91,10 +91,7 @@ public class Train_TokenRecogEngineSDV {
             tokEngine.setFeatures(ivs, bvs);
             tokEngine.train(letterDir);
 
-			/* Test run on all the previous data */
-			/* Get the list of all .wt files */
-            float errRate = tokEngine.getTestErrRate();
-            System.out.println("Final test error rate = " + errRate);
+            System.out.println("Final test error rate = " + tokEngine.getTestErrorRate());
 
 			/* Serialize to file */
             ObjectOutputStream objOutStream = null;

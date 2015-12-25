@@ -9,6 +9,7 @@ import com.google.gson.*;
 import me.scai.handwriting.CWrittenToken;
 import me.scai.handwriting.CWrittenTokenSet;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
+import me.scai.handwriting.NodeToken;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -80,12 +81,24 @@ public class CWrittenTokenSetJsonHelper {
         JsonArray jsonTokens = new JsonArray();
 
         for (int i = 0; i < wtSet.getNumTokens(); ++i) {
-            if ( !(wtSet.tokens.get(i) instanceof CWrittenToken) ) {
-                throw new IllegalStateException("Not implemented yet");
-                // TODO: Implement JSON serialization for NodeToken members
-            }
+            if ( wtSet.tokens.get(i) instanceof NodeToken) {
+                // Serialize the note token
+                NodeToken nodeToken = (NodeToken) wtSet.tokens.get(i);
 
-            jsonTokens.add(CWrittenTokenJsonHelper.CWrittenToken2JsonObjNoStroke((CWrittenToken) wtSet.tokens.get(i)));
+                JsonObject nodeTokenJson = (JsonObject) gson.toJsonTree(nodeToken);
+
+                if (nodeToken.getTokenSet() instanceof CWrittenTokenSetNoStroke) {
+                    nodeTokenJson.add("wtSet", CWrittenTokenSet2JsonObj((CWrittenTokenSetNoStroke) nodeToken.getTokenSet()));
+                } else {
+                    throw new IllegalStateException("Unexpected subtype of written token set in node token");
+                }
+//                nodeTokenJson.add("");
+
+                jsonTokens.add(nodeTokenJson);
+                // TODO: Implement JSON serialization for NodeToken members
+            } else if (wtSet.tokens.get(i) instanceof CWrittenToken) {
+                jsonTokens.add(CWrittenTokenJsonHelper.CWrittenToken2JsonObjNoStroke((CWrittenToken) wtSet.tokens.get(i)));
+            }
         }
 
         obj.add("tokens", jsonTokens);

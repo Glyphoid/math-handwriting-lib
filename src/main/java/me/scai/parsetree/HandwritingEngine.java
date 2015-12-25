@@ -1,7 +1,6 @@
 package me.scai.parsetree;
 
 import java.util.List;
-import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -48,9 +47,13 @@ public interface HandwritingEngine {
     /* Get the constituent strokes of tokens, respectively */
     public List<int []> getTokenConstStrokeIndices();
     
-    /* Perform token set parsing */
+    /* Perform parsing on the entire token set */
     public TokenSetParserOutput parseTokenSet()
         throws HandwritingEngineException;
+
+    /* Perform parsing on selected tokens, causing the creation of a NodeToken (if successful) */
+    public TokenSetParserOutput parseTokenSet(int[] tokenIndices)
+            throws HandwritingEngineException;
 
     /* Get the graphical production set */
     public JsonArray getGraphicalProductions();
