@@ -213,15 +213,6 @@ public class Test_StrokeCurator {
         strokesToAdd[2] = stroke2;
         strokesToAdd[3] = stroke3;
 
-        URL configFileUrl = null;
-        try {
-            configFileUrl = new File(configFilePath).toURI().toURL();
-        } catch (MalformedURLException exc) {
-            fail();
-        }
-
-//        StrokeCurator curator = new StrokeCuratorConfigurable(configFileUrl, tokEngine);
-
         for (CStroke strokeToAdd : strokesToAdd) {
             curator.addStroke(strokeToAdd);
         }

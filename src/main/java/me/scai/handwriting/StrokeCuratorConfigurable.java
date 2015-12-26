@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.ArrayList;
 import java.net.URL;
+import java.util.logging.Logger;
 
 import com.google.gson.*;
 import me.scai.plato.helpers.CStrokeJsonHelper;
@@ -13,7 +14,6 @@ import org.apache.commons.lang.ArrayUtils;
 
 import me.scai.parsetree.geometry.GeometryHelper;
 import me.scai.parsetree.MathHelper;
-import me.scai.parsetree.TerminalSet;
 
 public class StrokeCuratorConfigurable implements StrokeCurator {
         /* Enum types */
@@ -23,6 +23,8 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
     //	};
 
         /* Constants */
+        private static final Logger logger = Logger.getLogger(StrokeCuratorConfigurable.class.getName());
+
         private static final Gson gson = new Gson();
 
         private static final String SERIALIZATION_STROKES_KEY              = "strokes";
@@ -59,24 +61,20 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
         private TokenRecogEngine tokenEngine = null;
         private CWrittenTokenSet wtSet = new CWrittenTokenSet();
-        private List<CStroke> strokes = new LinkedList<CStroke>();
-        private List<CStroke> strokesUN = new LinkedList<CStroke>(); 	/* Unnormalized */
+        private List<CStroke> strokes = new LinkedList<>();
+        private List<CStroke> strokesUN = new LinkedList<>(); 	/* Unnormalized */
 
-        private List<Integer> strokeState = new LinkedList<Integer>();  /* Stroke status */
+        private List<Integer> strokeState = new LinkedList<>();  /* Stroke status */
 
-        TerminalSet termSet;
         /* -1: unincorporated (unprocessed); >= 0: index to the containing token */
+        private List<Float> wtCtrXs = new LinkedList<>(); 	/* Central X coordinate of the written tokens */
+        private List<Float> wtCtrYs = new LinkedList<>(); 	/* Central X coordinate of the written tokens */
 
-    //	private List<Float> ctrXs = new LinkedList<Float>();	/* Central X coordinate of the strokes */
-    //	private List<Float> ctrYs = new LinkedList<Float>();	/* Central Y coordinate of the strokes */
-        private List<Float> wtCtrXs = new LinkedList<Float>(); 	/* Central X coordinate of the written tokens */
-        private List<Float> wtCtrYs = new LinkedList<Float>(); 	/* Central X coordinate of the written tokens */
+        private List<String> wtRecogWinners = new LinkedList<>();
+        private List<double []> wtRecogPs = new LinkedList<>();
+        private List<Double> wtRecogMaxPs = new LinkedList<>();
 
-        private List<String> wtRecogWinners = new LinkedList<String>();
-        private List<double []> wtRecogPs = new LinkedList<double []>();
-        private List<Double> wtRecogMaxPs = new LinkedList<Double>();
-
-        private List<int []> wtConstStrokeIdx = new LinkedList<int []>();	/* Indices to constituents stroke indices */
+        private List<int []> wtConstStrokeIdx = new LinkedList<>();	/* Indices to constituents stroke indices */
 
         private float mergePValueRatioThresh = 0.5F;
 
@@ -758,7 +756,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
         @Override
         public String getSerializedTokenSet() {
-            return gson.toJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSet));
+            return gson.toJson(CWrittenTokenSetJsonHelper.CAbstractWrittenTokenSet2JsonObj(wtSet));
         }
 
         @Override
@@ -804,7 +802,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             stateData.add(SERIALIZATION_TOKEN_BOUNDS_KEY, tokenBounds);
 
             /* Token set */
-            stateData.add(SERIALIZATION_WRITTEN_TOKEN_SET_KEY, CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSet));
+            stateData.add(SERIALIZATION_WRITTEN_TOKEN_SET_KEY, CWrittenTokenSetJsonHelper.CAbstractWrittenTokenSet2JsonObj(wtSet));
 
             /* Constituent stroke indices */
             stateData.add(SERIALIZATION_CONST_STROKE_INDICES_KEY, gson.toJsonTree(wtConstStrokeIdx));
@@ -845,6 +843,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
             JsonArray jsonStrokes = state.get(SERIALIZATION_STROKES_KEY).getAsJsonArray();
             strokes = new LinkedList<>();
+
+            logger.info("jsonStrokes.size() = " + jsonStrokes.size()); //DEBUG
+
             for (int i = 0; i < jsonStrokes.size(); ++i) {
                 try {
                     CStroke stroke = CStrokeJsonHelper.json2CStroke(gson.toJson(jsonStrokes.get(i)));
@@ -865,6 +866,8 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
                 throw new RuntimeException("jsonWtConstStrokeIdx");
             }
 
+            logger.info("jsonWtConstStrokeIdx.size() = " + jsonWtConstStrokeIdx.size());
+
             for (int i = 0; i < jsonWtConstStrokeIdx.size(); ++i) {
                 if (!jsonWtConstStrokeIdx.get(i).isJsonArray()) {
                     throw new RuntimeException("Unexpectedly encountered non-JSON array element at index-" + i);
@@ -882,6 +885,8 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
             /* Force set token bounds: For actions such as MoveToken */
             JsonArray tokenBounds = state.get(SERIALIZATION_TOKEN_BOUNDS_KEY).getAsJsonArray();
+            logger.info("tokenBounds.size() = " + tokenBounds.size());
+
             for (int i = 0; i < tokenBounds.size(); ++i) {
                 JsonArray thisTokenBounds = tokenBounds.get(i).getAsJsonArray();
                 float[] tb = new float[thisTokenBounds.size()];
@@ -905,6 +910,8 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 //            JsonArray jsonWtRecogPs = state.get(SERIALIZATION_WT_RECOG_PS_KEY).getAsJsonArray();
 
             List<String> currRecogWinners = getWrittenTokenRecogWinners();
+            logger.info("jsonRecogWinners.size() = " + jsonRecogWinners.size());
+
             for (int i = 0; i < jsonRecogWinners.size(); ++i) {
                 if ( !currRecogWinners.get(i).equals(jsonRecogWinners.get(i).getAsString()) ) {
                     forceSetRecogWinner(i, jsonRecogWinners.get(i).getAsString(), true);

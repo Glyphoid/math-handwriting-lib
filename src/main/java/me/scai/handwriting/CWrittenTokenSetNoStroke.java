@@ -48,6 +48,10 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 			addToken(wts.tokens.get(i));
 			tokenIDs.add(i);
 		}
+
+//        if (wts instanceof CWrittenTokenSetNoStroke) {
+//            this.hasNodeToken = ((CWrittenTokenSetNoStroke) wts).hasNodeToken;
+//        }
 		
 		calcBounds();
 	}

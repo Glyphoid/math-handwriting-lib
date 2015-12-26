@@ -6,10 +6,7 @@ package me.scai.plato.helpers;
 
 import com.google.gson.*;
 
-import me.scai.handwriting.CWrittenToken;
-import me.scai.handwriting.CWrittenTokenSet;
-import me.scai.handwriting.CWrittenTokenSetNoStroke;
-import me.scai.handwriting.NodeToken;
+import me.scai.handwriting.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -55,6 +52,16 @@ public class CWrittenTokenSetJsonHelper {
         }
         
         return constStrokeIndices;
+    }
+
+    public static JsonObject CAbstractWrittenTokenSet2JsonObj(CAbstractWrittenTokenSet wtSet) {
+        if (wtSet instanceof CWrittenTokenSet) {
+            return CWrittenTokenSet2JsonObj((CWrittenTokenSet) wtSet);
+        } else if (wtSet instanceof CWrittenTokenSetNoStroke) {
+            return CWrittenTokenSet2JsonObj((CWrittenTokenSetNoStroke) wtSet);
+        } else {
+            throw new IllegalArgumentException("Unrecognized subtype of token set: " + wtSet);
+        }
     }
 
     public static JsonObject CWrittenTokenSet2JsonObj(CWrittenTokenSet wtSet) {
