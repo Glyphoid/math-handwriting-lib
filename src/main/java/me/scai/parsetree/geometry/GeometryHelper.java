@@ -110,11 +110,13 @@ public class GeometryHelper {
 	}
 
 	public static float pctMove(float [] lesserBnds, float [] greaterBnds) {
-		if ( lesserBnds.length != 2 || greaterBnds.length != 2 )
-			throw new IllegalArgumentException("Input bounds are not all of length 2");
+		if ( lesserBnds.length != 2 || greaterBnds.length != 2 ) {
+            throw new IllegalArgumentException("Input bounds are not all of length 2");
+        }
 		
-		if ( lesserBnds[1] < lesserBnds[0] || greaterBnds[1] < greaterBnds[0] )
-			throw new IllegalArgumentException("Input bounds are not all in the ascending order");
+		if ( lesserBnds[1] < lesserBnds[0] || greaterBnds[1] < greaterBnds[0] ) {
+            throw new IllegalArgumentException("Input bounds are not all in the ascending order");
+        }
 		
 		float pm = (greaterBnds[0] - lesserBnds[0]) / (lesserBnds[1] - lesserBnds[0]);
 //		if ( pm < 1.0f )

@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class TestHelper {
-    public static final String TEST_ROOT_DIR         = "main";
+    public static final String TEST_ROOT_DIR          = "main";
     private static final String RESOURCES_DIR         = "resources";
     private static final String TERMINALS_FILE_NAME   = "terminals.json";
     private static final String PRODUCTIONS_FILE_NAME = "productions.txt";
@@ -83,6 +83,16 @@ public class TestHelper {
         return r;
     }
 
+    public static CWrittenToken getMockWrittenToken(float[] bounds, String recogResult) {
+        CWrittenToken writtenToken = new CWrittenToken();
+
+        writtenToken.bNormalized = true;
+        writtenToken.setBounds(bounds);
+        writtenToken.setRecogResult(recogResult);
+
+        return writtenToken;
+    }
+
     public static CWrittenTokenSetNoStroke getMockTokenSet(float[][] boundsArray, String[] tokenNames) {
         int nTokens = boundsArray.length;
         if (tokenNames.length != nTokens) {
@@ -98,9 +108,13 @@ public class TestHelper {
                 throw new IllegalArgumentException("Illegal bounds at index " + i);
             }
 
-            writtenTokens[i] = new CWrittenToken();
-            writtenTokens[i].setBounds(bounds);
-            writtenTokens[i].setRecogResult(tokenNames[i]);
+            CWrittenToken newToken = new CWrittenToken();
+
+            newToken.setBounds(bounds);
+            newToken.setRecogResult(tokenNames[i]);
+            newToken.bNormalized = true;
+
+            writtenTokens[i] = newToken;
 
         }
 

@@ -8,13 +8,15 @@ import java.io.IOException;
 import java.lang.AssertionError;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.util.Iterator;
+import java.util.List;
 
 import me.scai.parsetree.TerminalSet;
 
 public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	/* Member variables */
 	public ArrayList<AbstractToken> tokens = new ArrayList<>();
+    public transient List<List<String>> tokenUuids = new ArrayList<>(); // Keeps track of the constituent written tokens
+
 	public ArrayList<Integer> tokenIDs = new ArrayList<>();
 
     private boolean hasNodeToken = false;
@@ -23,29 +25,33 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	
 	/* ************ Methods ************ */
 	/* Default constructor */
-	public CWrittenTokenSetNoStroke() { }
+	public CWrittenTokenSetNoStroke() {}
 	
 	/* Constructor: taking a CWrittenTokenSetNoStroke, extract a subset of the
 	 * tokens and used them to form a new CWrittenTokenSetNoStroke. 
 	 * Information about strokes is discarded in this construction process.
 	 */
-	public CWrittenTokenSetNoStroke(CWrittenTokenSetNoStroke owts, int [] indices) {
+	public CWrittenTokenSetNoStroke(CWrittenTokenSetNoStroke owts, int[] indices) {
 		setTokenNames(owts.tokenNames);
 		
 		for (int i = 0; i < indices.length; ++i) {
-			addToken(owts.tokens.get(indices[i]));
+			addToken(owts.tokens.get(indices[i]), owts.getConstituentTokenUuids(indices[i]));
+
 			tokenIDs.add(owts.tokenIDs.get(indices[i]));
 		}
-		
+
 		calcBounds();
 	}
 	
 	/* Constructor: convert a CWrittenTokenSet into a CWrittenTokenSetNoStroke */
-	public CWrittenTokenSetNoStroke(CWrittenTokenSet wts) {
+	public CWrittenTokenSetNoStroke(CWrittenTokenSet wts, List<String> wtUuids) {
 		setTokenNames(wts.tokenNames);
 		
 		for (int i = 0; i < wts.nTokens(); ++i) {
-			addToken(wts.tokens.get(i));
+            List<String> constituentUuids = new ArrayList<>();
+            constituentUuids.add(wtUuids.get(i)); // Length-1 list
+
+			addToken(wts.tokens.get(i), constituentUuids);
 			tokenIDs.add(i);
 		}
 
@@ -57,27 +63,92 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	}
 
     /* Factory method: From an array of written tokens */
-    public static CWrittenTokenSetNoStroke from(AbstractToken[] writtenTokens) {
+//    public static CWrittenTokenSetNoStroke from(AbstractToken[] writtenTokens) {
+    public static CWrittenTokenSetNoStroke from(CWrittenToken[] writtenTokens) {
         if (writtenTokens == null) {
             throw new IllegalArgumentException("Null writtenTokens array");
         }
 
         CWrittenTokenSet wtSet0 = new CWrittenTokenSet();
 
-        for (AbstractToken writtenToken : writtenTokens) {
+        for (CWrittenToken writtenToken : writtenTokens) {
             wtSet0.addToken(writtenToken);
         }
 
-        return new CWrittenTokenSetNoStroke(wtSet0);
+        return new CWrittenTokenSetNoStroke(wtSet0, TokenUuidUtils.getRandomTokenUuids(writtenTokens.length));
 
     }
+
+    /* Factory method from Abstract Tokens */
+    public static CWrittenTokenSetNoStroke from(AbstractToken[] abstractTokens) {
+        // Generate random UUID lists
+        List<List<String>> randomUuids = new ArrayList<>();
+        ((ArrayList) randomUuids).ensureCapacity(abstractTokens.length);
+
+        for (AbstractToken token : abstractTokens) {
+            if (token instanceof NodeToken) {
+                final int numTokens = ((NodeToken) token).getTokenSet().getNumTokens();
+
+                randomUuids.add(TokenUuidUtils.getRandomTokenUuids(numTokens));
+            } else {
+                randomUuids.add(TokenUuidUtils.getRandomTokenUuids(1));
+            }
+        }
+
+        return from(abstractTokens, randomUuids);
+    }
+
+    /* Factory method from Abstract Tokens */
+    public static CWrittenTokenSetNoStroke from(AbstractToken[] abstractTokens,
+                                                List<List<String>> constituentTokenUuids) {
+        if (abstractTokens == null) {
+            throw new IllegalArgumentException("Null abstract token array");
+        }
+
+        CWrittenTokenSetNoStroke r = new CWrittenTokenSetNoStroke();
+
+        for (int i = 0; i < abstractTokens.length; ++i) {
+            AbstractToken abstractToken = abstractTokens[i];
+
+            r.addToken(abstractToken, constituentTokenUuids.get(i));
+            r.tokenIDs.add(i); // TODO: Is this kosher??
+
+            if (abstractToken instanceof NodeToken) {
+                r.hasNodeToken = true;
+            }
+
+        }
+
+        r.calcBounds();
+
+        return r;
+    }
+
+    /**
+     * The token UUIDs will be omitted for performance.
+     * @param token
+     */
+    public void addTokenWithoutUuids(AbstractToken token) {
+
+        List<String> constituentUuids = null;
+
+        addToken(token, constituentUuids);
+    }
+
+    public void addToken(AbstractToken token, String wtUuid) {
+        List<String> constituentUuids = new ArrayList<>();
+        constituentUuids.add(wtUuid);
+
+        addToken(token, constituentUuids);
+    }
 	
-	public void addToken(AbstractToken wt) {
-        if (wt instanceof NodeToken) {
+	private void addToken(AbstractToken token, List<String> wtUuids) {
+        if (token instanceof NodeToken) {
             hasNodeToken = true;
         }
 
-		tokens.add(wt);
+		tokens.add(token);
+        tokenUuids.add(wtUuids);
 
 		addOneToken();
 	}
@@ -202,8 +273,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 //				addToken(bnds, t_recogWinner, t_recogPs);
 				CWrittenToken wt = new CWrittenToken(bnds, t_recogWinner, t_recogPs);
 				wt.bNormalized = true;
-				
-				addToken(wt);
+
+				addToken(wt, TokenUuidUtils.getRandomTokenUuid()); // TODO: De-dupe
 				tokenIDs.add(k++);
 			}
 			
@@ -343,17 +414,26 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
             throw new IllegalArgumentException("Null token indices");
         }
 
-        final int numTokensToParse = tokenIndices.length;
-        if (numTokensToParse == 0) {
-            throw new IllegalArgumentException("Input token indices array is empty");
-        }
+        AbstractToken[] tokens = new AbstractToken[tokenIndices.length];
+        List<List<String>> UUIDs = new ArrayList<>();
 
-        AbstractToken[] tokensToParse = new AbstractToken[numTokensToParse];
         for (int i = 0; i < tokenIndices.length; ++i) {
-            tokensToParse[i] = tokens.get(tokenIndices[i]); // TODO: Mutability and concurrency?
+            final int tokenIndex = tokenIndices[i];
+
+            tokens[i] = this.tokens.get(tokenIndex);
+            UUIDs.add(this.tokenUuids.get(tokenIndex));
         }
 
-        return from(tokensToParse);
+        return from(tokens, UUIDs);
+
+    }
+
+    public List<List<String>> getConstituentTokenUuids() {
+        return tokenUuids;
+    }
+
+    public List<String> getConstituentTokenUuids(int idxToken) {
+        return tokenUuids.get(idxToken);
     }
 
 }

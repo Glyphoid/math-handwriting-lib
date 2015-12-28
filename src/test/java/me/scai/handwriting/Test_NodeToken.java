@@ -77,10 +77,7 @@ public class Test_NodeToken {
 
         AbstractToken[] writtenTokensComposite = new AbstractToken[2];
 
-        writtenTokensComposite[0] = new CWrittenToken();
-        writtenTokensComposite[0].setBounds(new float[] {-0.1f, -0.2f, 5f, 1.2f});
-        writtenTokensComposite[0].setRecogResult("root");
-
+        writtenTokensComposite[0] = TestHelper.getMockWrittenToken(new float[] {-0.1f, -0.2f, 5f, 1.2f}, "root");
         writtenTokensComposite[1] = nodeToken;
 
         CWrittenTokenSetNoStroke wtSetComposite = CWrittenTokenSetNoStroke.from(writtenTokensComposite);
@@ -96,6 +93,7 @@ public class Test_NodeToken {
             node2 = tokenSetParser.parse(wtSetComposite);
             stringized2 = stringizer.stringize(node2);
         } catch (Exception e) {
+            e.printStackTrace();
             fail("Failed due to Exception: " + e.getMessage());
         }
 
@@ -138,14 +136,8 @@ public class Test_NodeToken {
 
         AbstractToken[] writtenTokensComposite = new AbstractToken[3];
 
-        writtenTokensComposite[0] = new CWrittenToken();
-        writtenTokensComposite[0].setBounds(new float[] {-0.2f, 1.2f, 5.2f, 1.2f});
-        writtenTokensComposite[0].setRecogResult("-");
-
-        writtenTokensComposite[1] = new CWrittenToken();
-        writtenTokensComposite[1].setBounds(new float[] {2f, 1.4f, 3f, 2.4f});
-        writtenTokensComposite[1].setRecogResult("3");
-
+        writtenTokensComposite[0] = TestHelper.getMockWrittenToken(new float[] {-0.2f, 1.2f, 5.2f, 1.2f}, "-");
+        writtenTokensComposite[1] = TestHelper.getMockWrittenToken(new float[] {2f, 1.4f, 3f, 2.4f}, "3");
         writtenTokensComposite[2] = nodeToken;
 
         CWrittenTokenSetNoStroke wtSetComposite = CWrittenTokenSetNoStroke.from(writtenTokensComposite);
@@ -203,9 +195,7 @@ public class Test_NodeToken {
         // Combined denominator
         AbstractToken[] writtenTokensDenom = new AbstractToken[3];
 
-        writtenTokensDenom[1] = new CWrittenToken();
-        writtenTokensDenom[1].setBounds(new float[]{2f, 0f, 3f, 1f});
-        writtenTokensDenom[1].setRecogResult("+");
+        writtenTokensDenom[1] = TestHelper.getMockWrittenToken(new float[]{2f, 0f, 3f, 1f}, "+");
 
         writtenTokensDenom[0] = nodeTokenNum0;
         writtenTokensDenom[2] = nodeTokenNum1;
@@ -284,9 +274,7 @@ public class Test_NodeToken {
         AbstractToken[] writtenTokensComposite = new AbstractToken[3];
 
         // The fraction line: "-"
-        writtenTokensComposite[0] = new CWrittenToken();
-        writtenTokensComposite[0].setBounds(new float[] {-0.2f, 1.5f, 5.2f, 1.5f});
-        writtenTokensComposite[0].setRecogResult("-");
+        writtenTokensComposite[0] = TestHelper.getMockWrittenToken(new float[] {-0.2f, 1.5f, 5.2f, 1.5f}, "-");
 
         writtenTokensComposite[1] = nodeTokenNumer;     // Numerator node
         writtenTokensComposite[2] = nodeTokenDenom;     // Denominator node
@@ -358,9 +346,7 @@ public class Test_NodeToken {
         // Construct the composite token set
         AbstractToken[] writtenTokensComposite = new AbstractToken[3];
 
-        writtenTokensComposite[0] = new CWrittenToken();
-        writtenTokensComposite[0].setBounds(new float[] {2f, 0f, 3f, 1f});
-        writtenTokensComposite[0].setRecogResult("=");
+        writtenTokensComposite[0] = TestHelper.getMockWrittenToken(new float[] {2f, 0f, 3f, 1f}, "=");
 
         writtenTokensComposite[1] = nodeTokenSymbol;
         writtenTokensComposite[2] = nodeTokenValue;
@@ -444,9 +430,7 @@ public class Test_NodeToken {
         AbstractToken[] writtenTokensComposite = new AbstractToken[4];
 
         // The fraction line: "-"
-        writtenTokensComposite[0] = new CWrittenToken();
-        writtenTokensComposite[0].setBounds(new float[]{1f, 1f, 2f, 2f});
-        writtenTokensComposite[0].setRecogResult("gr_Si");
+        writtenTokensComposite[0] = TestHelper.getMockWrittenToken(new float[]{1f, 1f, 2f, 2f}, "gr_Si");
 
         writtenTokensComposite[1] = nodeTokenLB;     // LB node
         writtenTokensComposite[2] = nodeTokenUB;     // UB node
@@ -530,9 +514,7 @@ public class Test_NodeToken {
         AbstractToken[] writtenTokensComposite = new AbstractToken[4];
 
         // The fraction line: "-"
-        writtenTokensComposite[0] = new CWrittenToken();
-        writtenTokensComposite[0].setBounds(new float[] {1f, 1f, 2f, 2f});
-        writtenTokensComposite[0].setRecogResult("gr_Si");
+        writtenTokensComposite[0] = TestHelper.getMockWrittenToken(new float[] {1f, 1f, 2f, 2f}, "gr_Si");
 
         writtenTokensComposite[1] = nodeTokenLB;     // LB node
         writtenTokensComposite[2] = nodeTokenUB;     // UB node
@@ -596,9 +578,7 @@ public class Test_NodeToken {
         // Combined denominator
         AbstractToken[] writtenTokensDenom = new AbstractToken[3];
 
-        writtenTokensDenom[1] = new CWrittenToken();
-        writtenTokensDenom[1].setBounds(new float[]{2f, 0f, 3f, 1f});
-        writtenTokensDenom[1].setRecogResult("-");
+        writtenTokensDenom[1] = TestHelper.getMockWrittenToken(new float[]{2f, 0f, 3f, 1f}, "-");
 
         writtenTokensDenom[0] = nodeTokenDenom1;
         writtenTokensDenom[2] = nodeTokenDenom2;
@@ -653,9 +633,7 @@ public class Test_NodeToken {
         // Combined denominator
         AbstractToken[] writtenTokensNumer = new AbstractToken[3];
 
-        writtenTokensNumer[1] = new CWrittenToken();
-        writtenTokensNumer[1].setBounds(new float[]{2f, -2f, 3f, -1f});
-        writtenTokensNumer[1].setRecogResult("+");
+        writtenTokensNumer[1] = TestHelper.getMockWrittenToken(new float[]{2f, -2f, 3f, -1f}, "+");
 
         writtenTokensNumer[0] = nodeTokenNumer1;
         writtenTokensNumer[2] = nodeTokenNumer2;
@@ -683,9 +661,7 @@ public class Test_NodeToken {
 
         AbstractToken[] writtenTokensL2 = new AbstractToken[3];
 
-        writtenTokensL2[1] = new CWrittenToken();
-        writtenTokensL2[1].setBounds(new float[]{-0.2f, -0.5f, 5.2f, -0.4f});
-        writtenTokensL2[1].setRecogResult("-");
+        writtenTokensL2[1] = TestHelper.getMockWrittenToken(new float[]{-0.2f, -0.5f, 5.2f, -0.4f}, "-");
 
         writtenTokensL2[0] = nodeTokenDenom;
         writtenTokensL2[2] = nodeTokenNumer;
@@ -731,9 +707,9 @@ public class Test_NodeToken {
         try {
             wtSet2 = tokenSet2NodeTokenParser.parseAsNodeToken(wtSet, new int[]{0, 1});
         } catch (TokenSetParserException e) {
-            fail("");
+            fail(e.getMessage());
         } catch (InterruptedException e) {
-            fail("");
+            fail(e.getMessage());
         }
 
         assertNotNull(wtSet2);

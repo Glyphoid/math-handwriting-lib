@@ -40,6 +40,10 @@ public interface StrokeCurator {
 	/* Get the set of written tokens (CWrittenTokenSet) */
 	CWrittenTokenSet getTokenSet();
 
+    List<String> getTokenUuids();
+
+    String getTokenUuid(int tokenIdx);
+
 	/* Get the number of strokes that have been added */
 	int getNumStrokes();
 

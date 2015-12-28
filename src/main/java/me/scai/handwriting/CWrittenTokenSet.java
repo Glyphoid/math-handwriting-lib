@@ -4,17 +4,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
-	public ArrayList<String> recogWinners = new ArrayList<String>();
-	public ArrayList<double []> recogPs = new ArrayList<double []>();
+	public ArrayList<String> recogWinners = new ArrayList<>();
+	public ArrayList<double []> recogPs = new ArrayList<>();
 	
-	public ArrayList<AbstractToken> tokens = new ArrayList<AbstractToken>();
+	public ArrayList<CWrittenToken> tokens = new ArrayList<>();
 	
 	/* Constructor */
 	public CWrittenTokenSet() {
 	}
 	
 	/* Add a token at the end: without any recognition results */
-	public void addToken(AbstractToken wt) {
+//	public void addToken(AbstractToken wt) {
+    public void addToken(CWrittenToken wt) {
 		/* TODO: Merge into addToken(int i, CWrittenToken wt) */
 		if ( wt instanceof CWrittenToken && !((CWrittenToken) wt).bNormalized ) {
             ((CWrittenToken) wt).normalizeAxes();
@@ -65,7 +66,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	}
 	
 	/* Add a token at the end: with recognition results */
-	public void addToken(AbstractToken wt, String t_recogWinner, double [] t_recogP) {
+	public void addToken(CWrittenToken wt, String t_recogWinner, double [] t_recogP) {
 		addToken(wt);
 		addTokenRecogRes(t_recogWinner, t_recogP);
 	}
@@ -281,7 +282,7 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 
         int nStrokes = 0;
 
-        Iterator<AbstractToken> tokenIt = tokens.iterator();
+        Iterator<CWrittenToken> tokenIt = tokens.iterator();
 
         while (tokenIt.hasNext()) {
             AbstractToken nextToken = tokenIt.next();
