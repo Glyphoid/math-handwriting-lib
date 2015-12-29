@@ -35,9 +35,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		setTokenNames(owts.tokenNames);
 		
 		for (int i = 0; i < indices.length; ++i) {
-			addToken(owts.tokens.get(indices[i]), owts.getConstituentTokenUuids(indices[i]));
-
-			tokenIDs.add(owts.tokenIDs.get(indices[i]));
+			addToken(owts.tokens.get(indices[i]), owts.getConstituentTokenUuids(indices[i]), owts.tokenIDs.get(indices[i]));
+//			tokenIDs.add(owts.tokenIDs.get(indices[i])); //ISSUE_ID
 		}
 
 		calcBounds();
@@ -51,8 +50,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
             List<String> constituentUuids = new ArrayList<>();
             constituentUuids.add(wtUuids.get(i)); // Length-1 list
 
-			addToken(wts.tokens.get(i), constituentUuids);
-			tokenIDs.add(i);
+			addToken(wts.tokens.get(i), constituentUuids, i);
+//			tokenIDs.add(i); //ISSUE_ID
 		}
 
 //        if (wts instanceof CWrittenTokenSetNoStroke) {
@@ -110,8 +109,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
         for (int i = 0; i < abstractTokens.length; ++i) {
             AbstractToken abstractToken = abstractTokens[i];
 
-            r.addToken(abstractToken, constituentTokenUuids.get(i));
-            r.tokenIDs.add(i); // TODO: Is this kosher??
+            r.addToken(abstractToken, constituentTokenUuids.get(i), i);
+//            r.tokenIDs.add(i); // TODO: Is this kosher?? //ISSUE_ID
 
             if (abstractToken instanceof NodeToken) {
                 r.hasNodeToken = true;
@@ -128,32 +127,53 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
      * The token UUIDs will be omitted for performance.
      * @param token
      */
-    public void addTokenWithoutUuids(AbstractToken token) {
-
+    public void addTokenWithoutUuids(AbstractToken token, int tokenID) {
         List<String> constituentUuids = null;
 
-        addToken(token, constituentUuids);
+        addToken(token, constituentUuids, tokenID);
     }
 
-    public void addToken(AbstractToken token, String wtUuid) {
+    public void addToken(AbstractToken token, String wtUuid, int tokenID) {
         List<String> constituentUuids = new ArrayList<>();
         constituentUuids.add(wtUuid);
 
-        addToken(token, constituentUuids);
+        addToken(token, constituentUuids, tokenID);
     }
 	
-	private void addToken(AbstractToken token, List<String> wtUuids) {
+	private void addToken(AbstractToken token, List<String> wtUuids, int tokenID) {
         if (token instanceof NodeToken) {
             hasNodeToken = true;
         }
 
 		tokens.add(token);
         tokenUuids.add(wtUuids);
+        tokenIDs.add(tokenID);
 
 		addOneToken();
+
+        assert(tokens.size() == nt);
+        assert(tokenUuids.size() == nt);
+        assert(tokenIDs.size() == nt);
+
 	}
 
-		
+    // TODO: Test coverage
+    public void addTokenWithAutoTokenID(AbstractToken token, String wtUuid) {
+        addToken(token, wtUuid, getAutoTokenID());
+    }
+
+    // Get a token ID that is not duplicate with any existing ones.
+    private int getAutoTokenID() {
+        int maxID = Integer.MIN_VALUE;
+        for (int tokenID : tokenIDs) {
+            if (tokenID > maxID) {
+                maxID = tokenID;
+            }
+        }
+
+        return maxID == Integer.MIN_VALUE ? 0 : (maxID + 1); //ISSUE_ID
+    }
+
 	@Override
 	public void calcBounds() {
 		min_x = min_y = Float.POSITIVE_INFINITY;
@@ -274,8 +294,16 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 				CWrittenToken wt = new CWrittenToken(bnds, t_recogWinner, t_recogPs);
 				wt.bNormalized = true;
 
-				addToken(wt, TokenUuidUtils.getRandomTokenUuid()); // TODO: De-dupe
-				tokenIDs.add(k++);
+                if (tokenUuids.size() != nt) {
+                    int iii = 222; //DEBUG //ISSUE_ID
+                }
+				addToken(wt, TokenUuidUtils.getRandomTokenUuid(), k); // TODO: De-dupe
+                if (tokenUuids.size() != nt) {
+                    int iii = 111; //DEBUG //ISSUE_ID
+                }
+
+                k++;
+//				tokenIDs.add(k++); //ISSUE_ID
 			}
 			
 		}
@@ -318,6 +346,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 //		recogWinners.clear();
 //		recogPs.clear();
 		tokens.clear();
+        tokenUuids.clear();
 		tokenIDs.clear();
 		
 		min_x = min_y = Float.POSITIVE_INFINITY;
@@ -428,6 +457,38 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 
     }
 
+    // TODO: Test coverage
+    public void removeToken(int i) {
+        if ( i < 0 ) {
+            throw new IllegalArgumentException("Deletion index is negative");
+        }
+
+        if ( i >= nTokens() ) {
+            throw new IllegalArgumentException("Deletion index exceeds number of tokens");
+        }
+
+        tokens.remove(i);
+        tokenUuids.remove(i);
+        tokenIDs.remove(i); // Is this okay?
+
+        calcBounds();
+
+        // Update hasNodeToken
+        hasNodeToken = false;
+        for (AbstractToken token : tokens) {
+            if (token instanceof NodeToken) {
+                hasNodeToken = true;
+                break;
+            }
+        }
+
+        deleteOneToken();
+
+        assert(tokens.size() == nt);
+        assert(tokenUuids.size() == nt);
+        assert(tokenIDs.size() == nt);
+    }
+
     public List<List<String>> getConstituentTokenUuids() {
         return tokenUuids;
     }
@@ -435,5 +496,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
     public List<String> getConstituentTokenUuids(int idxToken) {
         return tokenUuids.get(idxToken);
     }
+
+
 
 }

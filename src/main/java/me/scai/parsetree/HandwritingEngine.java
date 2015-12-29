@@ -102,7 +102,17 @@ public interface HandwritingEngine {
     List<String> getAllTokenNames()
         throws HandwritingEngineException;
 
+    /**
+     * Obtain the UUIDs of the written tokens in the stroke curator
+     * @return   UUIDs of the written tokens
+     */
+    List<String> getWrittenTokenUUIDs();
 
+    /**
+     * Obtain the UUIDs of the tokens that comprise each abstract token
+     * @return List of UUID lists
+     */
+    List<List<String>> getConstituentWrittenTokenUUIDs();
 
 }
 

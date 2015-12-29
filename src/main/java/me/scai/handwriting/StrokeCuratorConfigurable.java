@@ -479,19 +479,19 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
     /* Remove tokens, without removing the constituent strokes */
     private void removeTokens(int [] removedTokenIndices) {
-//		System.out.println("removeTokens: Removing " + removedTokenIndices.length + " token(s)"); //DEBUG
         if (removedTokenIndices.length == 0) {
             return;
         }
 
-        for (int i = 0; i < removedTokenIndices.length; ++i) { //DEBUG
-//			System.out.println("  " + removedTokenIndices[i]); //DEBUG
-        }                                                      //DEBUG
 
-        boolean [] toPreserve = new boolean[getNumTokens()];
+        boolean[] toPreserve = new boolean[getNumTokens()];
+        LinkedList<String> preservedTokenUuids = new LinkedList<>();
+
         for (int k = 0; k < toPreserve.length; ++k) {
             toPreserve[k] = ! ( ArrayUtils.contains(removedTokenIndices, k) );
-//			System.out.println("removeTokens: toPreserve[" + k + "] = " + toPreserve[k]); //DEBUG
+            if (toPreserve[k]) {
+                preservedTokenUuids.add(tokenUuids.get(k));
+            }
         }
 
         /* Copies of old data */
@@ -505,12 +505,14 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         List<Double> new_wtRecogMaxPs = new LinkedList<>();
         List<int[]> new_wtConstStrokeIdx = new LinkedList<>();	/* Indices to constituents stroke indices */
 
+        Iterator<String> preservedTokenUuidIter = preservedTokenUuids.iterator();
         for (int k = 0; k < toPreserve.length; ++k) {
             if (toPreserve[k]) {
                 new_wtSet.addToken(wtSet.tokens.get(k),
                                    wtRecogWinners.get(k),
                                    wtRecogPs.get(k));
-                new_tokenUuids.add(TokenUuidUtils.getRandomTokenUuid());
+
+                new_tokenUuids.add(preservedTokenUuidIter.next());
 
                 new_wtCtrXs.add(wtCtrXs.get(k));
                 new_wtCtrYs.add(wtCtrYs.get(k));
@@ -571,7 +573,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             tmpWT.setRecogPs(newPs);
 
             wtSet.replaceToken(tokenIdx, tmpWT, newWinnerTokenName, newPs);
-            tokenUuids.set(tokenIdx, TokenUuidUtils.getRandomTokenUuid());
+            replaceTokenUuidWithNew(tokenIdx);
 
             wtCtrXs.set(tokenIdx, tmpWT.getCentralX());
             wtCtrYs.set(tokenIdx, tmpWT.getCentralY());
@@ -580,6 +582,10 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             wtRecogMaxPs.set(tokenIdx, newMaxP);
             wtConstStrokeIdx.set(tokenIdx, MathHelper.listOfIntegers2ArrayOfInts(constIndices));
         }
+    }
+
+    private void replaceTokenUuidWithNew(int tokenIdx) {
+        tokenUuids.set(tokenIdx, TokenUuidUtils.getRandomTokenUuid());
     }
 
     /* Force setting the recognition winner */
@@ -600,7 +606,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
 //	    System.out.println("Calling setTokenRecogRes with tokenIdx=" + tokenIdx + " and recogWinner=" + recogWinner);
         wtSet.setTokenRecogRes(tokenIdx, recogWinner, null);
-        // TODO: Does this require token UUID replacement?
+
+        // Replace the token UUID; TODO: Test coverage
+        replaceTokenUuidWithNew(tokenIdx);
 
         if (!internal) {
             pushStateStack(StrokeCuratorUserAction.ForceSetTokenName);
@@ -978,6 +986,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
         float[] oldBounds = wtSet.getTokenBounds(tokenIdx);
         wtSet.tokens.get(tokenIdx).setBounds(newBounds);
+
+        // TODO: Test coverage
+        replaceTokenUuidWithNew(tokenIdx);
 
         if (!internal) {
             pushStateStack(StrokeCuratorUserAction.MoveToken);

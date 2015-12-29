@@ -82,6 +82,68 @@ public class Test_StrokeCurator {
     }
 
     @Test
+    public void testMergeStrokes() {
+        /* Add 1st stroke: "-" */
+        CStroke stroke0 = new CStroke(0.0f, 0.0f);
+        stroke0.addPoint(10f, 0.0f);
+        stroke0.addPoint(20f, 0.0f);
+        stroke0.addPoint(30f, 0.0f);
+        stroke0.addPoint(40f, 0.0f);
+
+        curator.addStroke(stroke0);
+
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals(1, curator.getTokenUuids().size());
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(0));
+
+
+        /* Add 2nd stroke: "-": 1st stroke of T */
+        CStroke stroke1 = new CStroke(50f, -10f);
+        stroke1.addPoint(60f, -10f);
+        stroke1.addPoint(70f, -10f);
+        stroke1.addPoint(80f, -10f);
+
+        curator.addStroke(stroke1);
+
+        assertEquals(2, curator.getWrittenTokenRecogWinners().size());
+        assertEquals(2, curator.getTokenUuids().size());
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(1));
+
+        /* Add 3rd stroke: "1": 2nd stroke of T */
+        CStroke stroke2 = new CStroke(65.1f, -5f);
+        stroke2.addPoint(65.2f, 5f);
+        stroke2.addPoint(65.3f, 15f);
+        stroke2.addPoint(65.4f, 25f);
+
+        curator.addStroke(stroke2);
+
+        assertEquals(3, curator.getWrittenTokenRecogWinners().size());
+        assertEquals(3, curator.getTokenUuids().size());
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(1));
+        assertEquals("1", curator.getWrittenTokenRecogWinners().get(2));
+
+        List<String> uuidsBefore = curator.getTokenUuids();
+
+        /* Merge the last two strokes as "T" */
+        curator.mergeStrokesAsToken(new int[] {1, 2});
+
+        assertEquals(2, curator.getWrittenTokenRecogWinners().size());
+        assertEquals(2, curator.getTokenUuids().size());
+        assertEquals("-", curator.getWrittenTokenRecogWinners().get(0));
+        assertEquals("T", curator.getWrittenTokenRecogWinners().get(1));
+
+        List<String> uuidsAfter = curator.getTokenUuids();
+
+        // The first token ("-") is not affected by the merger, so its UUID should not change
+        assertEquals(uuidsBefore.get(0), uuidsAfter.get(0));
+
+        // The 2nd tokens should now be different due to the merging
+        assertNotEquals(uuidsBefore.get(1), uuidsAfter.get(1));
+    }
+
+    @Test
     public void testUnmergeStroke1() {
         /* Add 1st stroke of "=" */
         CStroke stroke0 = new CStroke(0.0f, 0.0f);

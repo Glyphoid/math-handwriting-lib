@@ -47,13 +47,17 @@ public class TokenSet2NodeTokenParser {
      * tokens that already exist.
      * @param tokenSet      Input token set. It is not meant to be modified. Instead, a new token set will be returned.
      * @param tokenIndices  Indices to the tokens to be parsed into a node token (0-based)
-     * //@param nodeTokenConstituentUuids UUIDs of the tokens the make up the new resultant NodeToken (if subset parsing is successful)
-     * //                                 Passed as reference
+     * @param nodeTokenConstituentUuids UUIDs of the tokens the make up the new resultant NodeToken (if subset parsing is successful)
+     *                                  and the rest of the returned token set.
+     *                                  Optional (can be null). Passed as reference if not null.
      * @return              Token set with the NodeToken and the un-parsed tokens included
      */
     public CWrittenTokenSetNoStroke parseAsNodeToken(CWrittenTokenSetNoStroke tokenSet,
-                                                     int[] tokenIndices)
+                                                     int[] tokenIndices,
+                                                     List<List<String>> nodeTokenConstituentUuids)
             throws TokenSetParserException, InterruptedException{
+
+
 
         CWrittenTokenSetNoStroke subsetToParse = tokenSet.fromSubset(tokenIndices);
 
@@ -86,10 +90,30 @@ public class TokenSet2NodeTokenParser {
 
             assert (counter == newNumTokens);
 
+            if (nodeTokenConstituentUuids != null) {
+                assert(nodeTokenConstituentUuids.isEmpty());
+                nodeTokenConstituentUuids.addAll(constituentTokenUuids);
+            }
+
             return CWrittenTokenSetNoStroke.from(newTokens, constituentTokenUuids);
 
         } else {
             throw new TokenSetParserException("Subset parsing failed");
         }
+    }
+
+    /**
+     * Convenience form of three-arg parseAsNodeToken
+     * @param tokenSet
+     * @param tokenIndices
+     * @return
+     * @throws TokenSetParserException
+     * @throws InterruptedException
+     */
+    public CWrittenTokenSetNoStroke parseAsNodeToken(CWrittenTokenSetNoStroke tokenSet,
+                                                     int[] tokenIndices)
+        throws TokenSetParserException, InterruptedException {
+
+        return parseAsNodeToken(tokenSet, tokenIndices, null);
     }
 }

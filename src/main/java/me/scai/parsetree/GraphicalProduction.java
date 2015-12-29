@@ -246,8 +246,7 @@ public class GraphicalProduction {
     			/* The last input argument sets bCheck to false for speed */
     			/* Is this a dangerous action? */
                 // Omit token UUIDs for performance
-    			a_rems[i][inode].addTokenWithoutUuids(tokenSet.tokens.get(irt));
-    			a_rems[i][inode].tokenIDs.add(tokenSet.tokenIDs.get(irt));
+    			a_rems[i][inode].addTokenWithoutUuids(tokenSet.tokens.get(irt), tokenSet.tokenIDs.get(irt));
     			
     			remsFilled[inode] = true;
     		}
