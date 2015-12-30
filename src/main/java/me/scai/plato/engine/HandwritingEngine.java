@@ -24,6 +24,8 @@ public interface HandwritingEngine {
         throws HandwritingEngineException;
 
     /* Move a token
+     * @param tokenIdx  Index to the abstract token (not written token) to be moved
+     * @param newBounds Length-4 float array to describe the new bounds
      * @returns  old bounds
      */
     float[] moveToken(int tokenIdx, float [] newBounds)

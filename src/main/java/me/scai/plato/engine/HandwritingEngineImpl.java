@@ -94,13 +94,27 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         updateCurrentTokenSet();
     }
 
+    /**
+     * Move an abstract token
+     * @param tokenIdx  Index to the abstract token
+     * @param newBounds
+     * @return
+     * @throws HandwritingEngineException
+     */
     @Override
     public float[] moveToken(int tokenIdx, float [] newBounds)
             throws HandwritingEngineException {
+        // Translate the abstract token index into written token index
+        List<Integer> wtIndices = abstract2writtenTokenIndex(tokenIdx);
+
+        if (wtIndices.size() > 1) {
+            throw new HandwritingEngineException("Moving abstract token is not implemented yet");
+        }
+        assert(wtIndices.size() == 1); // TODO: Implement moving of abstract tokens
 
         float[] bounds = null;
         try {
-            bounds = strokeCurator.moveToken(tokenIdx, newBounds);
+            bounds = strokeCurator.moveToken(wtIndices.get(0), newBounds);
         } catch (IllegalArgumentException exc) {
             throw new HandwritingEngineException(exc.getMessage());
         }

@@ -487,6 +487,10 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
         return tokenUuids.get(idxToken);
     }
 
+    @Override
+    public String getTokenName(int i) {
+        return tokens.get(i).getRecogResult();
+    }
 
 
 }
