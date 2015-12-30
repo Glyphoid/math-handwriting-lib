@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.scai.plato</groupId>
     <artifactId>math-handwriting-lib</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.3-SNAPSHOT</version>
     <build>
         <!--<sourceDirectory>src</sourceDirectory>-->
         <resources>
@@ -42,6 +42,12 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>me.scai.utilities</groupId>
+            <artifactId>worker-pool</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>org.encog</groupId>
             <artifactId>encog-core</artifactId>

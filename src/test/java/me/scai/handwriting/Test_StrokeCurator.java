@@ -47,7 +47,7 @@ public class Test_StrokeCurator {
 
         TokenRecogEngine tokenRecogEngine = null;
         try {
-            tokenRecogEngine = readTokenEngine(tokenEngineFileUrl);
+            tokenRecogEngine = TestHelper.readTokenEngine();
         } catch (Exception exc) {
             fail("Failed to read token engine");
         }
@@ -56,29 +56,6 @@ public class Test_StrokeCurator {
 
         // For state injection test
         curatorPrime = new StrokeCuratorConfigurable(strokeCuratorConfigUrl, tokenRecogEngine);
-    }
-
-    //TODO : refactor, avoid duplication
-    private TokenRecogEngine readTokenEngine(final URL tokenEngineFileUrl)
-            throws IOException, ClassNotFoundException{
-        ObjectInputStream objInStream = null;
-        boolean readSuccessful = false;
-        TokenRecogEngine tokEngine = null;
-        try {
-            objInStream = new ObjectInputStream(new BufferedInputStream(tokenEngineFileUrl.openStream()));
-
-            tokEngine = (TokenRecogEngineSDV) objInStream.readObject();
-
-            readSuccessful = true;
-        } finally {
-            try {
-                objInStream.close();
-            } catch (IOException e) {
-                //TODO
-            }
-        }
-
-        return tokEngine;
     }
 
     @Test

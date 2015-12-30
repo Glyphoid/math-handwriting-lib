@@ -323,7 +323,7 @@ public class TokenSetParser implements ITokenSetParser {
 
                                 for (int k = 0; k < nrhs; ++k) {
                                     /* Iterate through all rhs items, including the head and the non-heads. */
-                                    ArrayList<int[][]> d_idxPossibleHead = new ArrayList<int[][]>();
+                                    ArrayList<int[][]> d_idxPossibleHead = new ArrayList<>();
 
                                     String d_lhs;
                                     d_lhs = gpSet.prods.get(idxValidProds[i]).rhs[k];
@@ -380,7 +380,12 @@ public class TokenSetParser implements ITokenSetParser {
                                         int[] d_idxValidProds_noExclude = null;
 
                                         hashKey1[0] = d_tokenSet.toString() + "@" + d_lhs;
-                                        if (!existsInTokenSetLHS2IdxValidProdsMap(hashKey1[0])) {
+
+                                        if (!existsInTokenSetLHS2IdxValidProdsMap(hashKey1[0]) || singleNodeToken) {
+                                            // WARNING: The "|| singleNodeToken" is added to deal with a bug in the test case
+                                            // Test_HandwritingEngineImpl.testSubsetParsingFollowedByRemoveTokenThenAddTokens
+                                            // TODO: The logic here need to be thought and tested more carefully to avoid unnecessary performance degradation.
+                                            // In particular, what do we do to cache node token results?
 
                                             if (singleNodeToken) {
 
@@ -435,6 +440,7 @@ public class TokenSetParser implements ITokenSetParser {
                                         /* Store results in hash maps */
                                             putInTokenSetLHS2IdxValidProdsMap(hashKey1[0], d_idxValidProds);
                                             // tokenSetLHS2IdxValidProdsNoExcludeMap.put(hashKey1[0], d_idxValidProds_wwoe[1]);
+
                                             putInTokenSetLHS2IdxPossibleHeadsMap(hashKey1[0], d_idxPossibleHead);
                                         } else {
                                             if (bDebug) {
@@ -461,7 +467,7 @@ public class TokenSetParser implements ITokenSetParser {
                                         /************************************/
                                         /*          Recursive call          */
                                         float d_maxGeomScore = evalGeometry(d_tokenSet, d_idxValidProds, d_idxValidProds_noExclude,
-                                                d_idxPossibleHead, d_nodes, d_c_maxGeomScores, d_aRemainingSets);
+                                                                            d_idxPossibleHead, d_nodes, d_c_maxGeomScores, d_aRemainingSets);
                                         /************************************/
 
                                         currDrillDepth--;

@@ -1,13 +1,12 @@
-package me.scai.parsetree;
+package me.scai.plato.engine;
 
 import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import me.scai.handwriting.CAbstractWrittenTokenSet;
-import me.scai.handwriting.CStroke;
-import me.scai.handwriting.CWrittenTokenSet;
-import me.scai.handwriting.StrokeCuratorUserAction;
+import me.scai.handwriting.*;
+import me.scai.parsetree.HandwritingEngineException;
+import me.scai.parsetree.TokenSetParserOutput;
 import me.scai.parsetree.evaluation.PlatoVarMap;
 import me.scai.parsetree.evaluation.ValueUnion;
 
@@ -47,7 +46,7 @@ public interface HandwritingEngine {
 
     /* Get the entire written token set.: Never contain node tokens. All are the base-level written tokens */
     CWrittenTokenSet getWrittenTokenSet();
-    
+
     /* Get the constituent strokes of tokens, respectively */
     List<int []> getTokenConstStrokeIndices();
     
@@ -113,6 +112,8 @@ public interface HandwritingEngine {
      * @return List of UUID lists
      */
     List<List<String>> getConstituentWrittenTokenUUIDs();
+
+
 
 }
 

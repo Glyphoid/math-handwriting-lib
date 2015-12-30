@@ -36,7 +36,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		
 		for (int i = 0; i < indices.length; ++i) {
 			addToken(owts.tokens.get(indices[i]), owts.getConstituentTokenUuids(indices[i]), owts.tokenIDs.get(indices[i]));
-//			tokenIDs.add(owts.tokenIDs.get(indices[i])); //ISSUE_ID
 		}
 
 		calcBounds();
@@ -51,7 +50,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
             constituentUuids.add(wtUuids.get(i)); // Length-1 list
 
 			addToken(wts.tokens.get(i), constituentUuids, i);
-//			tokenIDs.add(i); //ISSUE_ID
 		}
 
 //        if (wts instanceof CWrittenTokenSetNoStroke) {
@@ -110,7 +108,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
             AbstractToken abstractToken = abstractTokens[i];
 
             r.addToken(abstractToken, constituentTokenUuids.get(i), i);
-//            r.tokenIDs.add(i); // TODO: Is this kosher?? //ISSUE_ID
 
             if (abstractToken instanceof NodeToken) {
                 r.hasNodeToken = true;
@@ -171,7 +168,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
             }
         }
 
-        return maxID == Integer.MIN_VALUE ? 0 : (maxID + 1); //ISSUE_ID
+        return maxID == Integer.MIN_VALUE ? 0 : (maxID + 1);
     }
 
 	@Override
@@ -294,16 +291,9 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 				CWrittenToken wt = new CWrittenToken(bnds, t_recogWinner, t_recogPs);
 				wt.bNormalized = true;
 
-                if (tokenUuids.size() != nt) {
-                    int iii = 222; //DEBUG //ISSUE_ID
-                }
 				addToken(wt, TokenUuidUtils.getRandomTokenUuid(), k); // TODO: De-dupe
-                if (tokenUuids.size() != nt) {
-                    int iii = 111; //DEBUG //ISSUE_ID
-                }
 
                 k++;
-//				tokenIDs.add(k++); //ISSUE_ID
 			}
 			
 		}

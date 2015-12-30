@@ -3,9 +3,7 @@ package me.scai.handwriting;
 import me.scai.parsetree.*;
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -119,5 +117,48 @@ public class TestHelper {
         }
 
         return CWrittenTokenSetNoStroke.from(writtenTokens);
+    }
+
+    public static TokenRecogEngine readTokenEngine() throws IOException, ClassNotFoundException{
+
+        final String RESOURCES_TOKEN_ENGINE_DIR = "token_engine";
+        final String TOKEN_ENGINE_FILE_NAME = "token_engine.sdv.sz0_whr1_ns1.ser";
+
+        URL tokenEngineFileUrl = TestHelper.class.getClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+                File.separator + RESOURCES_DIR +
+                File.separator + RESOURCES_TOKEN_ENGINE_DIR +
+                File.separator + TOKEN_ENGINE_FILE_NAME);
+
+        ObjectInputStream objInStream = null;
+        boolean readSuccessful = false;
+        TokenRecogEngine tokEngine = null;
+        try {
+            objInStream = new ObjectInputStream(new BufferedInputStream(tokenEngineFileUrl.openStream()));
+
+            tokEngine = (TokenRecogEngineSDV) objInStream.readObject();
+
+            readSuccessful = true;
+        } finally {
+            try {
+                objInStream.close();
+            } catch (IOException e) {
+                //TODO
+            }
+        }
+
+        return tokEngine;
+    }
+
+    public static CStroke getMockStroke(float[] xs, float[] ys) {
+        assert(xs.length == ys.length);
+        assert(xs.length > 0);
+
+        CStroke stroke = new CStroke(xs[0], ys[0]);
+
+        for (int i = 1; i < xs.length; ++i) {
+            stroke.addPoint(xs[i], ys[i]);
+        }
+
+        return stroke;
     }
 }

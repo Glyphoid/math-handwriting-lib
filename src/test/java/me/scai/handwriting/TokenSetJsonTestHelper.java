@@ -35,11 +35,6 @@ public class TokenSetJsonTestHelper {
     public static void verifyNodeTokenJson(JsonObject tokenJson) {
         assertTrue(tokenJson.get("node").isJsonObject());
 
-//        assertTrue(tokenJson.get("matchingGraphicalProductionIndices").isJsonArray()); //TODO: Is this necessary?
-//        if ( !tokenJson.has("matchingGraphicalProductionIndices") )  {
-//            int iii = 888;
-//        }
-
         assertTrue(tokenJson.get("tokenBounds").isJsonArray());
         assertTrue(tokenJson.get("width").isJsonPrimitive());
         assertTrue(tokenJson.get("height").isJsonPrimitive());
