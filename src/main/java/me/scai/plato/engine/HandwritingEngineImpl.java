@@ -1,9 +1,6 @@
 package me.scai.plato.engine;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -17,6 +14,7 @@ import me.scai.parsetree.evaluation.ParseTreeEvaluatorException;
 import me.scai.parsetree.evaluation.PlatoVarMap;
 import me.scai.parsetree.evaluation.ValueUnion;
 import me.scai.utilities.PooledWorker;
+import org.apache.commons.lang.ArrayUtils;
 
 public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     private static final Gson gson = new Gson();
@@ -94,34 +92,93 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         updateCurrentTokenSet();
     }
 
+    @Override
+    public void removeTokens(int[] tokenIndices) throws HandwritingEngineException {
+        List<Integer> writtenTokenIndices = new ArrayList<>();
+        for (int tokenIndex : tokenIndices) {
+            writtenTokenIndices.addAll(abstract2writtenTokenIndex(tokenIndex));
+        }
+
+        Integer[] sortedWrittenTokenIndices = new Integer[writtenTokenIndices.size()];
+        writtenTokenIndices.toArray(sortedWrittenTokenIndices);
+        Arrays.sort(sortedWrittenTokenIndices);
+
+        try {
+            // Remove the written tokens in the reverse (descending-index) order, to avoid out-of-date indices
+            for (int i = sortedWrittenTokenIndices.length - 1; i >= 0; --i) {
+                this.strokeCurator.removeToken(sortedWrittenTokenIndices[i]);
+            }
+        } catch (IllegalArgumentException exc) {
+            throw new HandwritingEngineException("removeToken() failed due to: " + exc.getMessage());
+        }
+
+        updateCurrentTokenSet();
+    }
+
     /**
      * Move an abstract token
      * @param tokenIdx  Index to the abstract token
      * @param newBounds
-     * @return
      * @throws HandwritingEngineException
      */
     @Override
-    public float[] moveToken(int tokenIdx, float [] newBounds)
+    public void moveToken(int tokenIdx, float[] newBounds)
             throws HandwritingEngineException {
-        // Translate the abstract token index into written token index
-        List<Integer> wtIndices = abstract2writtenTokenIndex(tokenIdx);
+        moveTokens(new int[] {tokenIdx}, new float[][] {newBounds});
+    }
 
-        if (wtIndices.size() > 1) {
-            throw new HandwritingEngineException("Moving abstract token is not implemented yet");
-        }
-        assert(wtIndices.size() == 1); // TODO: Implement moving of abstract tokens
+    @Override
+    public void moveTokens(int[] tokenIndices, float[][] newBoundsArray) throws HandwritingEngineException {
+        // Input sanity check
+        assert(tokenIndices.length == newBoundsArray.length);
 
-        float[] bounds = null;
-        try {
-            bounds = strokeCurator.moveToken(wtIndices.get(0), newBounds);
-        } catch (IllegalArgumentException exc) {
-            throw new HandwritingEngineException(exc.getMessage());
+        for (int n = 0; n < tokenIndices.length; ++n) {
+            final int tokenIdx = tokenIndices[n];
+            final float[] newBounds = newBoundsArray[n];
+
+            // Translate the abstract token index into written token index
+            List<Integer> wtIndices = abstract2writtenTokenIndex(tokenIdx);
+
+            if (wtIndices.size() > 1) {
+                // Moving an abstract bound. Need to explicitly calculate the displacement vector
+                float[] dispVec = new float[2]; // X and Y displacements
+
+                float[] origBounds = getTokenBounds(tokenIdx);
+
+                dispVec[0] = newBounds[0] - origBounds[0]; // X displacement
+                dispVec[1] = newBounds[1] - origBounds[1]; // Y displacement
+
+                for (int i = 0; i < wtIndices.size(); ++i) {
+                    final int wtIndex = wtIndices.get(i);
+
+                    float[] origWrittenTokenBound = strokeCurator.getTokenSet().getTokenBounds(wtIndex);
+                    float[] newWrittenTokenBound = ArrayUtils.clone(origWrittenTokenBound);
+
+                    newWrittenTokenBound[0] += dispVec[0]; // Apply X displacement
+                    newWrittenTokenBound[2] += dispVec[0];
+                    newWrittenTokenBound[1] += dispVec[1]; // Apply X displacement
+                    newWrittenTokenBound[3] += dispVec[1];
+
+                    try {
+                        strokeCurator.moveToken(wtIndex, newWrittenTokenBound);
+                    } catch (IllegalArgumentException exc) {
+                        throw new HandwritingEngineException(exc.getMessage());
+                    }
+
+                }
+
+            } else {
+                assert (wtIndices.size() == 1); // TODO: Implement moving of abstract tokens
+
+                try {
+                    strokeCurator.moveToken(wtIndices.get(0), newBounds);
+                } catch (IllegalArgumentException exc) {
+                    throw new HandwritingEngineException(exc.getMessage());
+                }
+            }
         }
 
         updateCurrentTokenSet();
-
-        return bounds;
     }
 
     @Override
@@ -325,31 +382,31 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     }
 
     @Override
-    public StrokeCuratorUserAction getLastStrokeCuratorUserAction() {
+    public StrokeCuratorUserAction getLastUserAction() {
         return strokeCurator.getLastUserAction();
     }
 
     @Override
-    public void undoStrokeCuratorUserAction() {
+    public void undoUserAction() {
         strokeCurator.undoUserAction();
 
         updateCurrentTokenSet();
     }
 
     @Override
-    public void redoStrokeCuratorUserAction() {
+    public void redoUserAction() {
         strokeCurator.redoUserAction();
 
         updateCurrentTokenSet();
     }
 
     @Override
-    public boolean canUndoStrokeCuratorUserAction() {
+    public boolean canUndoUserAction() {
         return strokeCurator.canUndoUserAction();
     }
 
     @Override
-    public boolean canRedoStrokeCuratorUserAction() {
+    public boolean canRedoUserAction() {
         return strokeCurator.canRedoUserAction();
     }
 

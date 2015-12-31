@@ -2,12 +2,12 @@ package me.scai.handwriting;
 
 import com.google.gson.JsonObject;
 
-public class StrokeCuratorState {
+public class HandwritingEngineState {
     private StrokeCuratorUserAction userAction;
     private JsonObject state;
 
     /* Constructors */
-    public StrokeCuratorState(StrokeCuratorUserAction userAction, JsonObject state) {
+    public HandwritingEngineState(StrokeCuratorUserAction userAction, JsonObject state) {
         this.userAction = userAction;
         this.state = state;
     }

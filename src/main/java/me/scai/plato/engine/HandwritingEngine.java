@@ -19,17 +19,33 @@ public interface HandwritingEngine {
     void removeLastToken()
         throws HandwritingEngineException;
 
-    /* Remove i-th token */
+    /**
+     * Remove i-th token
+     * @param idxToken   Index to the abstract token to be removed
+     **/
     void removeToken(int idxToken)
         throws HandwritingEngineException;
+
+    /**
+     * Remove an array of tokens by indices
+     * @param tokenIndices   Indices to the abstract token to be removed. Order doesn't matter.
+     **/
+    void removeTokens(int[] tokenIndices)
+            throws HandwritingEngineException;
 
     /* Move a token
      * @param tokenIdx  Index to the abstract token (not written token) to be moved
      * @param newBounds Length-4 float array to describe the new bounds
-     * @returns  old bounds
      */
-    float[] moveToken(int tokenIdx, float [] newBounds)
+    void moveToken(int tokenIdx, float [] newBounds)
         throws HandwritingEngineException;
+
+    /* Move an array of tokens
+     * @param tokenIndices    Indices to the abstract token (not written token) to be moved
+     * @param newBoundsArray  An array of length-4 float array to describe the new bounds
+     */
+    void moveTokens(int[] tokenIndices, float[][] newBoundsArray)
+            throws HandwritingEngineException;
     
     /* Merge strokes with specified indices as a single token */
     void mergeStrokesAsToken(int [] strokeInds)
@@ -87,12 +103,12 @@ public interface HandwritingEngine {
         throws HandwritingEngineException;
 
     /* Undo and redo */
-    StrokeCuratorUserAction getLastStrokeCuratorUserAction();
-    void undoStrokeCuratorUserAction();
-    void redoStrokeCuratorUserAction();
+    StrokeCuratorUserAction getLastUserAction();
+    void undoUserAction();
+    void redoUserAction();
 
-    boolean canUndoStrokeCuratorUserAction();
-    boolean canRedoStrokeCuratorUserAction();
+    boolean canUndoUserAction();
+    boolean canRedoUserAction();
 
     public void removeEngine()
         throws HandwritingEngineException;
@@ -115,7 +131,11 @@ public interface HandwritingEngine {
      */
     List<List<String>> getConstituentWrittenTokenUUIDs();
 
+//    /* Injection of serialized state */
+//    void injectSerializedState(JsonObject json); //TODO: Implement
 
-
+//    /* State and stack */
+//    JsonObject getStateSerialization();
+//    String getStateSerializationString();
 }
 

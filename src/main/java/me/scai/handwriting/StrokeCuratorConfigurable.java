@@ -11,7 +11,6 @@ import org.apache.commons.lang.ArrayUtils;
 
 import me.scai.parsetree.geometry.GeometryHelper;
 import me.scai.parsetree.MathHelper;
-import org.apache.commons.lang.RandomStringUtils;
 
 public class StrokeCuratorConfigurable implements StrokeCurator {
     /* Enum types */
@@ -1047,7 +1046,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
     }
 
     private void pushStateStack(StrokeCuratorUserAction action) {
-        stateStack.push(new StrokeCuratorState(action, getStateSerialization()));
+        stateStack.push(new HandwritingEngineState(action, getStateSerialization()));
     }
 
     private void addNewTokenUuid() {

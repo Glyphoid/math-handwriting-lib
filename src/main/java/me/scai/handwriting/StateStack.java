@@ -1,15 +1,13 @@
 package me.scai.handwriting;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import me.scai.handwriting.StrokeCuratorState;
 import me.scai.handwriting.utils.LimitedStack;
 
 public class StateStack {
     /* Constants */
 
     /* Member variables */
-    private LimitedStack<StrokeCuratorState> limitedStack;
+    private LimitedStack<HandwritingEngineState> limitedStack;
 
     private int capacity;
     private int stackPointer;
@@ -22,7 +20,7 @@ public class StateStack {
         this.stackPointer = 0;
     }
 
-    public void push(StrokeCuratorState state) {
+    public void push(HandwritingEngineState state) {
         /* Pop out all the states above the stack pointer */
         int nToPop = stackPointer;
 
@@ -77,7 +75,7 @@ public class StateStack {
         }
     }
 
-    public StrokeCuratorState getLastState() {
+    public HandwritingEngineState getLastState() {
         if ( stackPointer < limitedStack.size() ) {
             return limitedStack.get(stackPointer);
         } else {
