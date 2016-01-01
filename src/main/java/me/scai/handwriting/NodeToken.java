@@ -15,7 +15,7 @@ public class NodeToken extends AbstractToken {
     private Node node;
     private CAbstractWrittenTokenSet wtSet;
 
-    private List<Integer> matchingGraphicalProductionIndices;
+    private List<Integer> matchingGraphicalProductionIndices; // TODO: Do not make public just for the sake of serialization/desrialization
 
     private String parsingResult;
 
@@ -146,4 +146,11 @@ public class NodeToken extends AbstractToken {
         return null;
     }
 
+    public List<Integer> getMatchingGraphicalProductionIndices() {
+        return matchingGraphicalProductionIndices;
+    }
+
+    public void setMatchingGraphicalProductionIndices(List<Integer> matchingGraphicalProductionIndices) {
+        this.matchingGraphicalProductionIndices = matchingGraphicalProductionIndices;
+    }
 }

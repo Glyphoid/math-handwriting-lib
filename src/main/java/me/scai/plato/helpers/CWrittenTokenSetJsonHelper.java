@@ -1,12 +1,10 @@
-/**
- * Created by scai on 3/25/2015.
- */
-
 package me.scai.plato.helpers;
 
 import com.google.gson.*;
 
+import com.google.gson.reflect.TypeToken;
 import me.scai.handwriting.*;
+import me.scai.parsetree.Node;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -22,20 +20,64 @@ public class CWrittenTokenSetJsonHelper {
     
     public static CWrittenTokenSet jsonObj2CWrittenTokenSet(JsonObject jsonObj) {
         CWrittenTokenSet wtSet = new CWrittenTokenSet();
-        
+
         JsonArray tokens = jsonObj.get("tokens").getAsJsonArray();
-        
-        for (int i = 0; i < tokens.size(); ++i) {            
+
+        for (int i = 0; i < tokens.size(); ++i) {
             CWrittenToken wt = CWrittenTokenJsonHelper.jsonObj2CWrittenTokenNoStroke(tokens.get(i).getAsJsonObject());
             wtSet.addToken(wt);
-                        
+
             wtSet.recogWinners.add(wt.getRecogResult());
             wtSet.recogPs.add(wt.getRecogPs());
         }
-        
+
         return wtSet;
     }
-    
+
+    public static CWrittenTokenSetNoStroke jsonObj2CWrittenTokenSetNoStroke(JsonObject jsonObj) {
+        CWrittenTokenSetNoStroke wtSet = new CWrittenTokenSetNoStroke();
+
+        JsonArray tokens = jsonObj.get("tokens").getAsJsonArray();
+        JsonArray tokenUuidsArray = jsonObj.get("tokenUuids").getAsJsonArray();
+        JsonArray tokenIDsArray = jsonObj.get("tokenIDs").getAsJsonArray();
+
+        for (int i = 0; i < tokens.size(); ++i) {
+            JsonObject tokenObj = tokens.get(i).getAsJsonObject();
+            List<String> tokenUuids = gson.fromJson(tokenUuidsArray.get(i).getAsJsonArray(), new TypeToken<ArrayList<String>>() {}.getType());
+            int tokenID = tokenIDsArray.get(i).getAsInt();
+
+            if (tokenObj.has("node")) {     // This is a node token
+//                NodeToken nodeToken = gson.fromJson(tokens.get(i).getAsJsonObject(), NodeToken.class);
+                JsonObject nodeTokenJson = tokens.get(i).getAsJsonObject();
+
+                Node node = gson.fromJson(nodeTokenJson.get("node").getAsJsonObject(), Node.class);
+
+                CWrittenTokenSetNoStroke wtSetInner = jsonObj2CWrittenTokenSetNoStroke(tokens.get(i).getAsJsonObject().get("wtSet").getAsJsonObject());
+
+                NodeToken nodeToken = new NodeToken(node, wtSetInner);
+
+                nodeToken.setRecogResult(nodeTokenJson.get("parsingResult").getAsString());
+
+                if ( !nodeTokenJson.get("matchingGraphicalProductionIndices").isJsonNull() ) { //TODO: De-uglify
+                    List<Integer> matchingGraphicalProductionIndices = gson.fromJson(nodeTokenJson.get("matchingGraphicalProductionIndices").getAsJsonArray(),
+                            new TypeToken<List<Integer>>() {
+                            }.getType());
+                    nodeToken.setMatchingGraphicalProductionIndices(matchingGraphicalProductionIndices);
+                }
+
+                wtSet.addToken(nodeToken, tokenUuids, tokenID);
+
+
+            } else { // This is a written token
+                wtSet.addToken(CWrittenTokenJsonHelper.jsonObj2CWrittenTokenNoStroke(tokens.get(i).getAsJsonObject()), tokenUuids.get(0), tokenID);
+            }
+        }
+
+        wtSet.calcBounds();
+
+        return wtSet;
+    }
+
     public static List<int []> jsonArray2ConstituentStrokeIndices(JsonArray jsConstIndices) {
         List<int []> constStrokeIndices = new ArrayList<int []>();
                 
@@ -58,7 +100,7 @@ public class CWrittenTokenSetJsonHelper {
         if (wtSet instanceof CWrittenTokenSet) {
             return CWrittenTokenSet2JsonObj((CWrittenTokenSet) wtSet);
         } else if (wtSet instanceof CWrittenTokenSetNoStroke) {
-            return CWrittenTokenSet2JsonObj((CWrittenTokenSetNoStroke) wtSet);
+            return CWrittenTokenSetNoStroke2JsonObj((CWrittenTokenSetNoStroke) wtSet);
         } else {
             throw new IllegalArgumentException("Unrecognized subtype of token set: " + wtSet);
         }
@@ -83,7 +125,7 @@ public class CWrittenTokenSetJsonHelper {
     }
 
     // TODO: De-duplicate with the above method
-    public static JsonObject CWrittenTokenSet2JsonObj(CWrittenTokenSetNoStroke wtSet) {
+    public static JsonObject CWrittenTokenSetNoStroke2JsonObj(CWrittenTokenSetNoStroke wtSet) {
         JsonObject obj = new JsonObject();
         JsonArray jsonTokens = new JsonArray();
 
@@ -95,7 +137,11 @@ public class CWrittenTokenSetJsonHelper {
                 JsonObject nodeTokenJson = (JsonObject) gson.toJsonTree(nodeToken);
 
                 if (nodeToken.getTokenSet() instanceof CWrittenTokenSetNoStroke) {
-                    nodeTokenJson.add("wtSet", CWrittenTokenSet2JsonObj((CWrittenTokenSetNoStroke) nodeToken.getTokenSet()));
+                    nodeTokenJson.add("wtSet", CWrittenTokenSetNoStroke2JsonObj((CWrittenTokenSetNoStroke) nodeToken.getTokenSet()));
+
+                    // TODO: Refactor and de-duplicate
+                    nodeTokenJson.add("matchingGraphicalProductionIndices", gson.toJsonTree(nodeToken.getMatchingGraphicalProductionIndices()));
+
                 } else {
                     throw new IllegalStateException("Unexpected subtype of written token set in node token");
                 }
@@ -109,6 +155,13 @@ public class CWrittenTokenSetJsonHelper {
         }
 
         obj.add("tokens", jsonTokens);
+        obj.add("tokenUuids", gson.toJsonTree(wtSet.tokenUuids));
+        obj.add("tokenIDs", gson.toJsonTree(wtSet.tokenIDs));
+        obj.add("hasNodeToken", gson.toJsonTree(wtSet.hasNodeToken()));
+
+        // Base class
+        obj.add("nt", gson.toJsonTree(wtSet.getNumTokens())); // Is this correct?
+        obj.add("tokenNames", gson.toJsonTree(wtSet.getTokenNames()));
 
         return obj;
     }

@@ -2,12 +2,13 @@ package me.scai.handwriting;
 
 import com.google.gson.JsonObject;
 import me.scai.handwriting.utils.LimitedStack;
+import me.scai.plato.state.PlatoState;
 
-public class StateStack {
+public class StateStack<T extends PlatoState> {
     /* Constants */
 
     /* Member variables */
-    private LimitedStack<HandwritingEngineState> limitedStack;
+    private LimitedStack<T> limitedStack;
 
     private int capacity;
     private int stackPointer;
@@ -20,7 +21,7 @@ public class StateStack {
         this.stackPointer = 0;
     }
 
-    public void push(HandwritingEngineState state) {
+    public void push(T state) {
         /* Pop out all the states above the stack pointer */
         int nToPop = stackPointer;
 
@@ -59,7 +60,8 @@ public class StateStack {
         return stackPointer > 0;
     }
 
-    public StrokeCuratorUserAction getLastUserAction() {
+//    public StrokeCuratorUserAction getLastUserAction() {
+    public String getLastUserAction() {
         if ( stackPointer < limitedStack.size() ) {
             return limitedStack.get(stackPointer).getUserAction();
         } else {
@@ -75,7 +77,7 @@ public class StateStack {
         }
     }
 
-    public HandwritingEngineState getLastState() {
+    public T getLastState() {
         if ( stackPointer < limitedStack.size() ) {
             return limitedStack.get(stackPointer);
         } else {

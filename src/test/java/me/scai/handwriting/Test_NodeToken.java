@@ -85,7 +85,7 @@ public class Test_NodeToken {
         assertEquals(2, wtSetComposite.getNumTokens());
 
         // Test serialize the composite token set
-        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSetNoStroke2JsonObj(wtSetComposite));
 
         Node node2 = null;
         String stringized2 = null;
@@ -144,7 +144,7 @@ public class Test_NodeToken {
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(3, wtSetComposite.getNumTokens());
 
-        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSetNoStroke2JsonObj(wtSetComposite));
 
         Node node2 = null;
         String stringized2 = null;
@@ -283,7 +283,7 @@ public class Test_NodeToken {
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(3, wtSetComposite.getNumTokens());
 
-        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSetNoStroke2JsonObj(wtSetComposite));
 
         // Parse the composite token
         Node node2 = null;
@@ -355,7 +355,7 @@ public class Test_NodeToken {
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(3, wtSetComposite.getNumTokens());
 
-        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSetNoStroke2JsonObj(wtSetComposite));
 
         Node node2 = null;
         String stringized2 = null;
@@ -440,7 +440,7 @@ public class Test_NodeToken {
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(4, wtSetComposite.getNumTokens());
 
-        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSetNoStroke2JsonObj(wtSetComposite));
 
         // Parse the composite token
         Node node2 = null;
@@ -524,7 +524,7 @@ public class Test_NodeToken {
         assertTrue(wtSetComposite.hasNodeToken());
         assertEquals(4, wtSetComposite.getNumTokens());
 
-        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj(wtSetComposite));
+        TokenSetJsonTestHelper.verifyTokenSetJson(CWrittenTokenSetJsonHelper.CWrittenTokenSetNoStroke2JsonObj(wtSetComposite));
 
         // Parse the composite token
         Node node2 = null;

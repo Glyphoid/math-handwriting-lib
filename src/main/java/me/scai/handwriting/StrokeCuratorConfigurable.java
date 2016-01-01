@@ -37,7 +37,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
     private static final String SERIALIZATION_WT_CTR_YS_KEY            = "wtCtrYs";
     private static final String SERIALIZATION_TOKEN_UUIDS_KEY          = "tokenUuids";
 
-    private static final int STATE_STACK_CAPACITY = 16;
+    private static final int STATE_STACK_CAPACITY = 20;
 
     /* Member variables */
     /* Parameters */
@@ -45,7 +45,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
     /* State stack, for undo/redo */
 
-    private StateStack stateStack = new StateStack(STATE_STACK_CAPACITY);
+    private StateStack<StrokeCuratorState> stateStack = new StateStack<>(STATE_STACK_CAPACITY);
 
 //	private List<String> noMergeTokens = new ArrayList<String>();
     private StrokeCuratorConfig config;
@@ -998,7 +998,12 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
     @Override
     public StrokeCuratorUserAction getLastUserAction() {
-        return stateStack.getLastUserAction();
+        StrokeCuratorUserAction userAction = null;
+        if (stateStack.getLastUserAction() != null) {
+            userAction = StrokeCuratorUserAction.valueOf(stateStack.getLastUserAction());
+        }
+
+        return userAction;
     }
 
     @Override
@@ -1046,7 +1051,7 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
     }
 
     private void pushStateStack(StrokeCuratorUserAction action) {
-        stateStack.push(new HandwritingEngineState(action, getStateSerialization()));
+        stateStack.push(new StrokeCuratorState(action, getStateSerialization()));
     }
 
     private void addNewTokenUuid() {

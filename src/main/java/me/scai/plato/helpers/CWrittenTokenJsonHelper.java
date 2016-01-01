@@ -31,12 +31,13 @@ public class CWrittenTokenJsonHelper {
         }
 
         wtObj.add("strokes", strokes);
+        wtObj.add("bNormalized", new JsonPrimitive(wt.bNormalized));
 
         return wtObj;
     }
 
     /**
-     * Serialize NodeTOken
+     * Serialize NodeToken
      * @param token
      * @return
      */
@@ -50,7 +51,8 @@ public class CWrittenTokenJsonHelper {
         CAbstractWrittenTokenSet wtSet = token.getTokenSet();
         assert(wtSet instanceof CWrittenTokenSetNoStroke);
 
-        wtObj.add("wtSet", CWrittenTokenSetJsonHelper.CWrittenTokenSet2JsonObj((CWrittenTokenSetNoStroke) wtSet)); // TODO
+        wtObj.add("wtSet", CWrittenTokenSetJsonHelper.CWrittenTokenSetNoStroke2JsonObj((CWrittenTokenSetNoStroke) wtSet)); // TODO
+        wtObj.add("matchingGraphicalProductionIndices", gson.toJsonTree(token.getMatchingGraphicalProductionIndices()));
 
         return wtObj;
     }
@@ -137,7 +139,9 @@ public class CWrittenTokenJsonHelper {
             }
             wt.setRecogPs(recogPs);
         }
- 
+
+//        wt.bNormalized = jsonObj.get("bNormalized").getAsBoolean();
+        wt.normalizeAxes();
         
         return wt;
     }

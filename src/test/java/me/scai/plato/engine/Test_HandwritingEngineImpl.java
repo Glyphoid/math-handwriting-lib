@@ -1,5 +1,6 @@
 package me.scai.plato.engine;
 
+import com.google.gson.JsonObject;
 import me.scai.handwriting.*;
 import me.scai.parsetree.*;
 import org.junit.Test;
@@ -79,7 +80,7 @@ public class Test_HandwritingEngineImpl {
         verifyTokenSet(hwEng, new boolean[] {false, false, false, false}, new String[] {"7", "2", "-", "1"});
 
         /* Subset parsing "72" */
-        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSet(new int[] {0, 1});
+        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSubset(new int[]{0, 1});
         assertEquals("72", subsetParseRes.getStringizerOutput());
 
         verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-", "1"});
@@ -141,7 +142,7 @@ public class Test_HandwritingEngineImpl {
         verifyTokenSet(hwEng, new boolean[] {false, false, false, false, false}, new String[] {"7", "2", "-", "1", "7"});
 
         /* Subset parsing "72" */
-        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSet(new int[] {0, 1});
+        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSubset(new int[]{0, 1});
         assertEquals("72", subsetParseRes.getStringizerOutput());
 
         verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-", "1", "7"});
@@ -215,7 +216,7 @@ public class Test_HandwritingEngineImpl {
         verifyTokenSet(hwEng, new boolean[] {false, false, false, false, false}, new String[] {"7", "2", "-", "1", "7"});
 
         /* Subset parsing "72" */
-        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSet(new int[] {0, 1});
+        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSubset(new int[]{0, 1});
         assertEquals("72", subsetParseRes.getStringizerOutput());
 
         verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-", "1", "7"});
@@ -231,7 +232,7 @@ public class Test_HandwritingEngineImpl {
         final float[] newBounds_7 = new float[] {11f, 5f, 15f, 15f}; // New position for "7"
 
         // Token indices are to abstract tokens
-        hwEng.moveTokens(new int[] {2, 3}, new float[][] {newBounds_1, newBounds_7});
+        hwEng.moveTokens(new int[]{2, 3}, new float[][]{newBounds_1, newBounds_7});
 
         verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-", "1", "7"});
 
@@ -283,7 +284,7 @@ public class Test_HandwritingEngineImpl {
         verifyTokenSet(hwEng, new boolean[]{false, false, false, false}, new String[]{"7", "2", "-", "1"});
 
         /* Subset parsing "72" */
-        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSet(new int[]{0, 1});
+        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSubset(new int[]{0, 1});
         assertEquals("72", subsetParseRes.getStringizerOutput());
 
         verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
@@ -291,7 +292,7 @@ public class Test_HandwritingEngineImpl {
 
         /* Remove the tokens "72" (node token) and "-" (written token) with one function call */
         // The index is to the abstract token, not written token
-        hwEng.removeTokens(new int[] {0, 1});
+        hwEng.removeTokens(new int[]{0, 1});
 
         verifyWrittenTokenSet(hwEng, new String[]{"1"});
         verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"1"});
@@ -326,13 +327,13 @@ public class Test_HandwritingEngineImpl {
         verifyTokenSet(hwEng, new boolean[]{false, false, false, false}, new String[]{"7", "2", "-", "1"});
 
         /* Subset parsing "72" */
-        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSet(new int[]{0, 1});
+        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSubset(new int[]{0, 1});
         assertEquals("72", subsetParseRes.getStringizerOutput());
 
         verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
         verifyTokenSet(hwEng, new boolean[]{true, false, false}, new String[]{"72", "-", "1"});
 
-        assertArrayEquals(new float[] {5, 30, 30, 50}, hwEng.getTokenBounds(0), floatTol); // Index is for abstract token
+        assertArrayEquals(new float[]{5, 30, 30, 50}, hwEng.getTokenBounds(0), floatTol); // Index is for abstract token
         assertArrayEquals(new float[] {20, 0, 20.4f, 20}, hwEng.getTokenBounds(2), floatTol); // Index is for abstract token
 
         /* Move the abstract token "72" */
@@ -361,7 +362,99 @@ public class Test_HandwritingEngineImpl {
         assertEquals("(72 / 1)", parseRes.getStringizerOutput());
     }
 
+    @Test
+    public void testSerializeAndInjectState() throws HandwritingEngineException {
+        /* Add 1st token "7" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[]{5, 7, 9, 8, 7},
+                new float[]{30, 30, 30, 40, 50}));
+        verifyWrittenTokenSet(hwEng, new String[]{"7"});
+        verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"7"});
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+
+        /* Add 2nd stroke: "2" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[]{15, 30, 30, 15, 15, 30},
+                new float[]{30, 30, 40, 40, 50, 50}));
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2"});
+        verifyTokenSet(hwEng, new boolean[]{false, false}, new String[]{"7", "2"});
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+
+        /* Add 3rd stroke: "-" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[]{0, 10, 20, 30, 40},
+                new float[]{25, 25, 25, 25, 25}));
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-"});
+        verifyTokenSet(hwEng, new boolean[]{false, false, false}, new String[]{"7", "2", "-"});
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+
+        /* Add 4th stroke: "1" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[]{20, 20.1f, 20.2f, 20.3f, 20.4f},
+                new float[]{0, 5, 10, 15, 20}));
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
+        verifyTokenSet(hwEng, new boolean[]{false, false, false, false}, new String[]{"7", "2", "-", "1"});
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+
+        /* Subset parsing "72" */
+        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSubset(new int[]{0, 1});
+        assertEquals("72", subsetParseRes.getStringizerOutput());
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
+        verifyTokenSet(hwEng, new boolean[]{true, false, false}, new String[]{"72", "-", "1"});
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+
+        /* Remove the token "1" */
+        // The index is to the abstract token, not written token
+        hwEng.removeToken(2);
+
+        verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-"});
+        verifyTokenSet(hwEng, new boolean[] {true, false}, new String[] {"72", "-"});
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+
+        /* Add two tokens: "11" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[] {20, 20.1f, 20.2f, 20.3f, 20.4f},
+                new float[] {0, 5, 10, 15, 20}));
+        hwEng.addStroke(TestHelper.getMockStroke(new float[] {22, 22.1f, 22.2f, 22.3f, 22.4f},
+                new float[] {0, 5, 10, 15, 20}));
+
+        verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-", "1", "1"});
+        verifyTokenSet(hwEng, new boolean[] {true, false, false, false}, new String[] {"72", "-", "1", "1"});
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+
+        /* Parse the entire token set, which contains a node token */
+        TokenSetParserOutput parseRes = hwEng.parseTokenSet();
+
+        assertEquals("(11 / 72)", parseRes.getStringizerOutput());
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+    }
+
     /* Test helper methods */
+    // Round-trip verification of the JSON serialization and deserialization of handwriting engine state through
+    // the extraction and injection of serialized state
+    private void roundTripVerifyStateSerializationThruInjection(HandwritingEngine hwEng) {
+        JsonObject stateJson0 = hwEng.getStateSerialization();
+        String stateJsonStr0 = hwEng.getStateSerializationString();
+
+        hwEng.injectSerializedState(stateJson0);
+
+        String stateJsonStr1 = hwEng.getStateSerializationString();
+
+        assertEquals(stateJsonStr0, stateJsonStr1);
+    }
+
     private int findLastAbstractTokenByName(CAbstractWrittenTokenSet wtSet, String tokenName) {
         int tokenIdx = -1;
 

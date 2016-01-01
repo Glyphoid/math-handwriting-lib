@@ -15,7 +15,7 @@ import me.scai.parsetree.TerminalSet;
 public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	/* Member variables */
 	public ArrayList<AbstractToken> tokens = new ArrayList<>();
-    public transient List<List<String>> tokenUuids = new ArrayList<>(); // Keeps track of the constituent written tokens
+    public List<List<String>> tokenUuids = new ArrayList<>(); // Keeps track of the constituent written tokens
 
 	public ArrayList<Integer> tokenIDs = new ArrayList<>();
 
@@ -137,7 +137,7 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
         addToken(token, constituentUuids, tokenID);
     }
 	
-	private void addToken(AbstractToken token, List<String> wtUuids, int tokenID) {
+	public void addToken(AbstractToken token, List<String> wtUuids, int tokenID) {
         if (token instanceof NodeToken) {
             hasNodeToken = true;
         }

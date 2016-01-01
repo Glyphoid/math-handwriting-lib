@@ -1,10 +1,13 @@
 package me.scai.plato.engine;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import me.scai.handwriting.*;
 
 import me.scai.parsetree.*;
@@ -13,12 +16,22 @@ import me.scai.parsetree.evaluation.ParseTreeEvaluatorException;
 
 import me.scai.parsetree.evaluation.PlatoVarMap;
 import me.scai.parsetree.evaluation.ValueUnion;
+import me.scai.plato.helpers.CWrittenTokenSetJsonHelper;
 import me.scai.utilities.PooledWorker;
 import org.apache.commons.lang.ArrayUtils;
 
 public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
+    /* Constants */
     private static final Gson gson = new Gson();
 
+    private static final String STROKE_CURATOR_STATE_JSON_KEY = "strokeCuratorState";
+    private static final String CURRENT_TOKEN_SET_JSON_KEY    = "currentTokenSet";
+    private static final String ABSTRACT_2_WRITTEN_TOKEN_UUIDS_JSON_KEY = "abstract2WrittenTokenUuids";
+
+
+    private static final int STATE_STACK_CAPACITY = 20;
+
+    /* Member variables */
     public StrokeCurator strokeCurator;
     public TokenSetParser tokenSetParser;
     public TokenSet2NodeTokenParser tokenSet2NodeTokenParser;
@@ -33,6 +46,11 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     // Keeps track of which written tokens make up of the node tokens
     // Only the node tokens are tracked by this variable
     private LinkedList<List<String>> abstract2WrittenTokenUuids;
+
+
+    // State stack for undo/redo
+    private StateStack<HandwritingEngineState> stateStack = new StateStack<>(STATE_STACK_CAPACITY);
+    private JsonObject initialState;
 
     /* Constructor */
     public HandwritingEngineImpl(StrokeCurator tStrokeCurator,
@@ -50,6 +68,8 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
 
         currentTokenSet = new CWrittenTokenSetNoStroke();
         abstract2WrittenTokenUuids = new LinkedList<>();
+
+        initialState = getStateSerialization();
     }
 
     /* Mehtods */
@@ -58,6 +78,7 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         this.strokeCurator.addStroke(stroke);
 
         updateCurrentTokenSet();
+        pushStateStack(HandwritingEngineUserAction.AddStroke);
     }
 
     @Override
@@ -65,6 +86,7 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         this.strokeCurator.removeLastToken();
 
         updateCurrentTokenSet();
+        pushStateStack(HandwritingEngineUserAction.RemoveLastToken);
     }
 
     @Override
@@ -90,6 +112,7 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         }
 
         updateCurrentTokenSet();
+        pushStateStack(HandwritingEngineUserAction.RemoveToken);
     }
 
     @Override
@@ -113,6 +136,7 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         }
 
         updateCurrentTokenSet();
+        pushStateStack(HandwritingEngineUserAction.RemoveTokens);
     }
 
     /**
@@ -124,11 +148,21 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     @Override
     public void moveToken(int tokenIdx, float[] newBounds)
             throws HandwritingEngineException {
-        moveTokens(new int[] {tokenIdx}, new float[][] {newBounds});
+        moveTokensInternal(new int[] {tokenIdx}, new float[][] {newBounds});
+
+        pushStateStack(HandwritingEngineUserAction.MoveToken);
     }
 
     @Override
-    public void moveTokens(int[] tokenIndices, float[][] newBoundsArray) throws HandwritingEngineException {
+    public void moveTokens(int[] tokenIndices, float[][] newBoundsArray)
+            throws HandwritingEngineException {
+        moveTokensInternal(tokenIndices, newBoundsArray);
+
+        pushStateStack(HandwritingEngineUserAction.MoveTokens);
+    }
+
+    private void moveTokensInternal(int[] tokenIndices, float[][] newBoundsArray)
+            throws HandwritingEngineException {
         // Input sanity check
         assert(tokenIndices.length == newBoundsArray.length);
 
@@ -186,6 +220,7 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         this.strokeCurator.mergeStrokesAsToken(strokeInds);
 
         updateCurrentTokenSet();
+        pushStateStack(HandwritingEngineUserAction.MergeStrokesAsToken);
     }
 
     // tokenIdx is for the written tokens (stroke curator), instead of the abstract token set.
@@ -200,6 +235,7 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         this.strokeCurator.forceSetRecogWinner(wtIndices.get(0), tokenName);
 
         updateCurrentTokenSet();
+        pushStateStack(HandwritingEngineUserAction.ForceSetTokenName);
     }
 
     @Override
@@ -207,6 +243,7 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         this.strokeCurator.clear();
 
         updateCurrentTokenSet();
+        pushStateStack(HandwritingEngineUserAction.ClearStrokes);
     }
 
     /**
@@ -244,8 +281,11 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     }
 
     @Override
-    public TokenSetParserOutput parseTokenSet(int[] tokenIndices) throws HandwritingEngineException {
-        return parseTokenSet(true, tokenIndices);
+    public TokenSetParserOutput parseTokenSubset(int[] tokenIndices) throws HandwritingEngineException {
+        TokenSetParserOutput parserOutput = parseTokenSet(true, tokenIndices);
+
+        pushStateStack(HandwritingEngineUserAction.ParseTokenSubset);
+        return parserOutput;
     }
 
     private TokenSetParserOutput parseTokenSet(boolean isSubsetParsing, int[] tokenIndices) throws HandwritingEngineException {
@@ -382,32 +422,46 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     }
 
     @Override
-    public StrokeCuratorUserAction getLastUserAction() {
-        return strokeCurator.getLastUserAction();
+    public HandwritingEngineUserAction getLastUserAction() {
+//        return strokeCurator.getLastUserAction();
+        HandwritingEngineUserAction userAction = null;
+        if (stateStack.getLastUserAction() != null) {
+            userAction = HandwritingEngineUserAction.valueOf(stateStack.getLastUserAction());
+        }
+
+        return userAction;
     }
 
     @Override
     public void undoUserAction() {
-        strokeCurator.undoUserAction();
+        stateStack.undo();
 
-        updateCurrentTokenSet();
+        injectSerializedState(stateStack.getLastSerializedState() == null ?
+                              initialState : stateStack.getLastSerializedState());
+
+//        strokeCurator.undoUserAction();
+//        updateCurrentTokenSet();
     }
 
     @Override
     public void redoUserAction() {
-        strokeCurator.redoUserAction();
+        stateStack.redo();
 
-        updateCurrentTokenSet();
+        injectSerializedState(stateStack.getLastSerializedState());
+//        strokeCurator.redoUserAction();
+//        updateCurrentTokenSet();
     }
 
     @Override
     public boolean canUndoUserAction() {
-        return strokeCurator.canUndoUserAction();
+        return stateStack.canUndo();
+//        return strokeCurator.canUndoUserAction();
     }
 
     @Override
     public boolean canRedoUserAction() {
-        return strokeCurator.canRedoUserAction();
+        return stateStack.canRedo();
+//        return strokeCurator.canRedoUserAction();
     }
 
     @Override
@@ -576,6 +630,55 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     @Override
     public List<List<String>> getConstituentWrittenTokenUUIDs() {
         return abstract2WrittenTokenUuids;
+    }
+
+    @Override
+    public JsonObject getStateSerialization() {
+
+        JsonObject currentTokenSetJson = CWrittenTokenSetJsonHelper.CAbstractWrittenTokenSet2JsonObj(currentTokenSet);
+        JsonElement abstract2WrittenTokenUuidsJson = gson.toJsonTree(abstract2WrittenTokenUuids);
+
+        JsonObject stateJson = new JsonObject();
+
+        stateJson.add(STROKE_CURATOR_STATE_JSON_KEY, strokeCurator.getStateSerialization());
+        stateJson.add(CURRENT_TOKEN_SET_JSON_KEY, currentTokenSetJson);
+        stateJson.add(ABSTRACT_2_WRITTEN_TOKEN_UUIDS_JSON_KEY, abstract2WrittenTokenUuidsJson);
+
+        return stateJson;
+    }
+
+    @Override
+    public String getStateSerializationString() {
+        return gson.toJson(getStateSerialization());
+    }
+
+    @Override
+    public void injectSerializedState(JsonObject json) {
+        // Inject state to stroke curator
+        if ( !(json.has(STROKE_CURATOR_STATE_JSON_KEY) && json.get(STROKE_CURATOR_STATE_JSON_KEY).isJsonObject()) ) {
+            throw new RuntimeException("Serialized state is missing field: " + STROKE_CURATOR_STATE_JSON_KEY);
+        }
+        strokeCurator.injectSerializedState(json.get(STROKE_CURATOR_STATE_JSON_KEY).getAsJsonObject());
+
+        // Inject state to current token set
+        if ( !(json.has(CURRENT_TOKEN_SET_JSON_KEY) && json.get(CURRENT_TOKEN_SET_JSON_KEY).isJsonObject()) ) {
+            throw new RuntimeException("Serialized state is missing field: " + CURRENT_TOKEN_SET_JSON_KEY);
+        }
+//        currentTokenSet = gson.fromJson(json.get(CURRENT_TOKEN_SET_JSON_KEY).getAsJsonObject(), CWrittenTokenSetNoStroke.class);
+        currentTokenSet = CWrittenTokenSetJsonHelper.jsonObj2CWrittenTokenSetNoStroke(json.get(CURRENT_TOKEN_SET_JSON_KEY).getAsJsonObject());
+
+        // Inject state to abstract2WrittenTokenUuids
+        if ( !(json.has(ABSTRACT_2_WRITTEN_TOKEN_UUIDS_JSON_KEY) && json.get(ABSTRACT_2_WRITTEN_TOKEN_UUIDS_JSON_KEY).isJsonArray()) ) {
+            throw new RuntimeException("Serialized state is missing field: " + ABSTRACT_2_WRITTEN_TOKEN_UUIDS_JSON_KEY);
+        }
+        abstract2WrittenTokenUuids = gson.fromJson(json.get(ABSTRACT_2_WRITTEN_TOKEN_UUIDS_JSON_KEY).getAsJsonArray(),
+                new TypeToken<LinkedList<List<String>>>() {}.getType());
+
+
+    }
+
+    private void pushStateStack(HandwritingEngineUserAction action) {
+        stateStack.push(new HandwritingEngineState(action, getStateSerialization()));
     }
 
 }

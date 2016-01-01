@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public abstract class CAbstractWrittenTokenSet {
+    /* Member variables */
 	protected int nt = 0; /* Number of tokens */
 	protected String [] tokenNames = null;
 	
@@ -13,6 +14,9 @@ public abstract class CAbstractWrittenTokenSet {
 	protected float min_y = Float.POSITIVE_INFINITY;
 	protected float max_x = Float.NEGATIVE_INFINITY;
 	protected float max_y = Float.NEGATIVE_INFINITY;
+
+    /* Constructor */
+    public CAbstractWrittenTokenSet() {} // For deserialization
 	
 //	public ArrayList<String> recogWinners = new ArrayList<String>();
 //	public ArrayList<double []> recogPs = new ArrayList<double []>();

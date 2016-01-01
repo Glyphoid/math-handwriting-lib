@@ -73,7 +73,7 @@ public interface HandwritingEngine {
         throws HandwritingEngineException;
 
     /* Perform parsing on selected tokens, causing the creation of a NodeToken (if successful) */
-    TokenSetParserOutput parseTokenSet(int[] tokenIndices)
+    TokenSetParserOutput parseTokenSubset(int[] tokenIndices)
             throws HandwritingEngineException;
 
     /* Get the graphical production set */
@@ -103,7 +103,7 @@ public interface HandwritingEngine {
         throws HandwritingEngineException;
 
     /* Undo and redo */
-    StrokeCuratorUserAction getLastUserAction();
+    HandwritingEngineUserAction getLastUserAction();
     void undoUserAction();
     void redoUserAction();
 
@@ -131,11 +131,11 @@ public interface HandwritingEngine {
      */
     List<List<String>> getConstituentWrittenTokenUUIDs();
 
-//    /* Injection of serialized state */
-//    void injectSerializedState(JsonObject json); //TODO: Implement
+    /* Injection of serialized state */
+    void injectSerializedState(JsonObject json);
 
-//    /* State and stack */
-//    JsonObject getStateSerialization();
-//    String getStateSerializationString();
+    /* State and stack */
+    JsonObject getStateSerialization();
+    String getStateSerializationString();
 }
 

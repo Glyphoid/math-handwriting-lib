@@ -10,14 +10,14 @@ import static org.junit.Assert.assertTrue;
 public class Test_StateStack {
     @Test
     public void testStateStack() {
-        StateStack stack = new StateStack(3);
+        StateStack<StrokeCuratorState> stack = new StateStack<>(3);
 
         assertEquals(3, stack.getCapacity());
         assertTrue(stack.isEmpty());
 
         // Push one action
-        stack.push(new HandwritingEngineState(StrokeCuratorUserAction.AddStroke, new JsonObject()));
-        assertEquals(StrokeCuratorUserAction.AddStroke, stack.getLastUserAction());
+        stack.push(new StrokeCuratorState(StrokeCuratorUserAction.AddStroke, new JsonObject()));
+        assertEquals(StrokeCuratorUserAction.AddStroke.toString(), stack.getLastUserAction());
         assertEquals(1, stack.getSize());
         assertEquals(0, stack.getUndoneSize());
 
@@ -31,27 +31,27 @@ public class Test_StateStack {
         stack.redo();
         assertEquals(1, stack.getSize());
         assertEquals(0, stack.getUndoneSize());
-        assertEquals(StrokeCuratorUserAction.AddStroke, stack.getLastUserAction());
+        assertEquals(StrokeCuratorUserAction.AddStroke.toString(), stack.getLastUserAction());
 
         // Push two more actions
-        stack.push(new HandwritingEngineState(StrokeCuratorUserAction.ForceSetTokenName, new JsonObject()));
-        stack.push(new HandwritingEngineState(StrokeCuratorUserAction.RemoveLastToken, new JsonObject()));
+        stack.push(new StrokeCuratorState(StrokeCuratorUserAction.ForceSetTokenName, new JsonObject()));
+        stack.push(new StrokeCuratorState(StrokeCuratorUserAction.RemoveLastToken, new JsonObject()));
 
         assertEquals(3, stack.getSize());
         assertEquals(0, stack.getUndoneSize());
-        assertEquals(StrokeCuratorUserAction.RemoveLastToken, stack.getLastUserAction());
+        assertEquals(StrokeCuratorUserAction.RemoveLastToken.toString(), stack.getLastUserAction());
 
         // Undo
         stack.undo();
         assertEquals(3, stack.getSize());
         assertEquals(1, stack.getUndoneSize());
-        assertEquals(StrokeCuratorUserAction.ForceSetTokenName, stack.getLastUserAction());
+        assertEquals(StrokeCuratorUserAction.ForceSetTokenName.toString(), stack.getLastUserAction());
 
         // Redo
         stack.redo();
         assertEquals(3, stack.getSize());
         assertEquals(0, stack.getUndoneSize());
-        assertEquals(StrokeCuratorUserAction.RemoveLastToken, stack.getLastUserAction());
+        assertEquals(StrokeCuratorUserAction.RemoveLastToken.toString(), stack.getLastUserAction());
 
         // Redo twice
         for (int i = 0; i < 2; ++i) {
@@ -63,12 +63,12 @@ public class Test_StateStack {
         assertEquals(2, stack.getUndoneSize());
 
         // Push a new action, that should have reset the stack pointer to 0
-        stack.push(new HandwritingEngineState(StrokeCuratorUserAction.ClearStrokes, new JsonObject()));
+        stack.push(new StrokeCuratorState(StrokeCuratorUserAction.ClearStrokes, new JsonObject()));
 
         assertEquals(3, stack.getCapacity());
         assertEquals(2, stack.getSize());
         assertEquals(0, stack.getUndoneSize());
-        assertEquals(StrokeCuratorUserAction.ClearStrokes, stack.getLastUserAction());
+        assertEquals(StrokeCuratorUserAction.ClearStrokes.toString(), stack.getLastUserAction());
     }
 
 }
