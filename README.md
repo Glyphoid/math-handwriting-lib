@@ -24,4 +24,4 @@ See:
 
     `mvn clean install -DtokenSetPathPrefix=${TOKENSETS_DATA_DIR}\TS_`
 
-The environment variable tokenSetPathPrefix tells the unit tests in math-handwriting-lib the location of the test token set files. 
+The environment variable `tokenSetPathPrefix` tells the unit tests in math-handwriting-lib the location of the test token set files. 
