@@ -40,8 +40,7 @@ public class Test_TerminalSet {
 		TerminalSet ts = new TerminalSet();
 
 		final URL tsJsonFileUrl = Test_TerminalSet.class.getClassLoader().getResource(
-                File.separator + TEST_ROOT_DIR +
-				File.separator + RESOURCES_DIR +
+                TEST_ROOT_DIR + File.separator + RESOURCES_DIR +
 				File.separator + RESOURCES_CONFIG_DIR + 
 				File.separator + TERMINALS_JSON_FILE);
 		try {
@@ -59,8 +58,7 @@ public class Test_TerminalSet {
 	@Test
 	public void testFactoryMethod() {
 		final URL tsJsonFileUrl = Test_TerminalSet.class.getClassLoader().getResource(
-                File.separator + TEST_ROOT_DIR +
-				File.separator + RESOURCES_DIR +
+				TEST_ROOT_DIR + File.separator + RESOURCES_DIR +
 				File.separator + RESOURCES_CONFIG_DIR + 
 				File.separator + TERMINALS_JSON_FILE);
 		

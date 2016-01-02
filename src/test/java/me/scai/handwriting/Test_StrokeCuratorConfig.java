@@ -24,7 +24,7 @@ public class Test_StrokeCuratorConfig {
 	@Before
 	public void setUp() throws Exception {
 
-        final String testResourcesPath = File.separator + "test" + File.separator + "resources";
+        final String testResourcesPath = "test" + File.separator + "resources";
 
         final URL strokeCuratorConfigUrl = this.getClass().getClassLoader().getResource(testResourcesPath +
                 File.separator + "config" + File.separator + "stroke_curator_config_test_1.json");

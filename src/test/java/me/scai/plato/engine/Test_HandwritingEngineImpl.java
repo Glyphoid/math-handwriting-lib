@@ -38,7 +38,7 @@ public class Test_HandwritingEngineImpl {
         }
 
         // Create stroke curator
-        URL strokeCuratorConfigUrl = this.getClass().getClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+        URL strokeCuratorConfigUrl = this.getClass().getClassLoader().getResource(TEST_ROOT_DIR +
                 File.separator + RESOURCES_DIR +
                 File.separator + RESOURCES_CONFIG_DIR +
                 File.separator + STROKE_CURATOR_CONFIG_FILE);

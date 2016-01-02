@@ -28,11 +28,11 @@ public class TestHelper {
     }
 
     public static WorkerTuple getTestWorkerTuple() {
-        final URL prodSetFN = Thread.currentThread().getContextClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+        final URL prodSetFN = Thread.currentThread().getContextClassLoader().getResource(TEST_ROOT_DIR +
                 File.separator + RESOURCES_DIR +
                 File.separator + RESOURCES_CONFIG_DIR +
                 File.separator + PRODUCTIONS_FILE_NAME);
-        final URL termSetFN = Thread.currentThread().getContextClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+        final URL termSetFN = Thread.currentThread().getContextClassLoader().getResource(TEST_ROOT_DIR +
                 File.separator + RESOURCES_DIR +
                 File.separator + RESOURCES_CONFIG_DIR +
                 File.separator + TERMINALS_FILE_NAME);
@@ -124,7 +124,7 @@ public class TestHelper {
         final String RESOURCES_TOKEN_ENGINE_DIR = "token_engine";
         final String TOKEN_ENGINE_FILE_NAME = "token_engine.sdv.sz0_whr1_ns1.ser";
 
-        URL tokenEngineFileUrl = TestHelper.class.getClassLoader().getResource(File.separator + TEST_ROOT_DIR +
+        URL tokenEngineFileUrl = TestHelper.class.getClassLoader().getResource(TEST_ROOT_DIR +
                 File.separator + RESOURCES_DIR +
                 File.separator + RESOURCES_TOKEN_ENGINE_DIR +
                 File.separator + TOKEN_ENGINE_FILE_NAME);
