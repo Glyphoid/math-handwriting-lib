@@ -538,6 +538,20 @@ public class Test_QADataSet {
         };
         QADataSuites.put("predefinedConstants", new QADataSuite(entries_predefinedConstants, false));
 
+        /* Comparisons */
+        QADataEntry[] entries_comparisons = {
+            new QADataEntry("sim_242", "(2 > 1)").withMathTex("{2}>{1}").withEvalRes(true),
+            new QADataEntry("sim_243", "(-1 < 4)").withMathTex("{-{1}}<{4}").withEvalRes(true),
+            new QADataEntry("sim_244", "((2 + 1) > 0)").withMathTex("{{2}+{1}}>{0}").withEvalRes(true),
+            new QADataEntry("sim_245", "((3 + 4) >= 7)").withMathTex("{{3}+{4}}\\geq{7}").withEvalRes(true),
+            new QADataEntry("sim_246", "(1 < (5 + 6))").withMathTex("{1}<{{5}+{6}}").withEvalRes(true),
+            new QADataEntry("sim_247", "(1 <= (3 - 2))").withMathTex("{1}\\leq{{3}-{2}}").withEvalRes(true),
+            new QADataEntry("sim_248", "((1 / 2) > (3 / 4))").withMathTex("{\\frac{1}{2}}>{\\frac{3}{4}}").withEvalRes(false),
+            new QADataEntry("sim_249", "((a ^ 2) <= 3)").withMathTex("{{a}^{2}}\\leq{3}").withEvalRes(true),
+            new QADataEntry("sim_250", "((5 - 7) <= (0 - 2))").withMathTex("{{5}-{7}}\\leq{{0}-{2}}").withEvalRes(true)
+        };
+        QADataSuites.put("comparisons", new QADataSuite(entries_comparisons, false));
+
         /* Token sets with incorrect syntax */
         QADataEntry[] entries_incorrectSyntax = {
            new QADataEntry("sim_167", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(ParseTreeEvaluator.EVAL_FAILED_STRING).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),

@@ -306,6 +306,15 @@ _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_MINUS_OP(n0) { n2 }
 _EVAL_			SUBTRACT(n1, n2)
 
+---
+COMPARISON
+COMPARATOR
+EXPR_LV4 : {AlignMiddle(0), PositionWest(0)} # Left expression
+EXPR_LV4 : {AlignMiddle(0), PositionEast(0)} # Right expression
+_STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
+_MATH_TEX_      { n1 } GET_TEX_COMPARATOR_OP(n0) { n2 }
+_EVAL_			COMPARE(n0, n1, n2) # TODO: Replace with proper comparison function
+
 --- # 27
 EXPR_LV3
 ADDITION
@@ -688,6 +697,13 @@ _EVAL_			n0
 --- # 
 ROOT
 USER_FUNCTION_DEF
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+---
+ROOT
+COMPARISON
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0

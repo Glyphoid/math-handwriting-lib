@@ -143,21 +143,26 @@ public class Test_TokenSetParser {
 
             } else if (tokenSetTrueEvalResRange != null || tokenSetTrueEvalRes != null) {
                 /* Check type match */
-                assertTrue(evalRes.getClass().equals(Double.class) || evalRes.getClass().equals(String.class));
+                assertTrue(evalRes.getClass().equals(Double.class) ||
+                           evalRes.getClass().equals(String.class) ||
+                           evalRes.getClass().equals(Boolean.class));
 
-                double evalResDbl;
-                if (evalRes.getClass().equals(String.class)) {
-                    evalResDbl = Double.parseDouble((String) evalRes);
-                }
-                else {
-                    evalResDbl = (Double) evalRes;
-                }
-
-                if (tokenSetTrueEvalResRange != null) {
-                    assertTrue(evalResDbl >= tokenSetTrueEvalResRange[0]);
-                    assertTrue(evalResDbl <= tokenSetTrueEvalResRange[1]);
+                if (evalRes.getClass().equals(Boolean.class)) {
+                    assertEquals((Boolean) tokenSetTrueEvalRes, evalRes);
                 } else {
-                    assertTrue(MathHelper.equalsTol((Double) tokenSetTrueEvalRes, evalResDbl, evalResEqualityAbsTol));
+                    double evalResDbl;
+                    if (evalRes.getClass().equals(String.class)) {
+                        evalResDbl = Double.parseDouble((String) evalRes);
+                    } else {
+                        evalResDbl = (Double) evalRes;
+                    }
+
+                    if (tokenSetTrueEvalResRange != null) {
+                        assertTrue(evalResDbl >= tokenSetTrueEvalResRange[0]);
+                        assertTrue(evalResDbl <= tokenSetTrueEvalResRange[1]);
+                    } else {
+                        assertTrue(MathHelper.equalsTol((Double) tokenSetTrueEvalRes, evalResDbl, evalResEqualityAbsTol));
+                    }
                 }
 
             }
@@ -303,6 +308,11 @@ public class Test_TokenSetParser {
     @Test
     public void testParser_predefinedConstants() {
         testParser("predefinedConstants");
+    }
+
+    @Test
+    public void testParser_comparisons() {
+        testParser("comparisons");
     }
 
     @Test

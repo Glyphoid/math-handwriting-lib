@@ -5,6 +5,7 @@ import org.jscience.physics.amount.Amount;
 
 public class ValueUnion {
 	public enum ValueType {
+		Boolean,
 		Double,
         Matrix,
         UserFunction,
@@ -16,6 +17,14 @@ public class ValueUnion {
     private String description = "";
 
 	/* Constructors */
+
+    /* Constructor for Boolean type */
+    public ValueUnion(boolean bv) {
+        valueType = ValueType.Boolean;
+        value = bv;
+    }
+
+    /* Constructor for double type */
 	public ValueUnion(double dv) {
 		valueType = ValueType.Double;
 		value = dv;
@@ -52,6 +61,14 @@ public class ValueUnion {
 	public Object get() {
 		return value;
 	}
+
+    public boolean getBoolean() {
+        if (valueType == ValueType.Boolean) {
+            return (Boolean) value;
+        } else {
+            throw new RuntimeException("Incorrect value type for getDouble(): " + ValueType.Double.toString());
+        }
+    }
 
 	public double getDouble() {
 		if (valueType == ValueType.Double) {

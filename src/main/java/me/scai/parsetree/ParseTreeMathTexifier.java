@@ -106,6 +106,9 @@ public class ParseTreeMathTexifier {
 				case "GET_TEX_ASSIGN_OP":
 					s += getTexAssignOp(n.ch[chIdx].termName);
 					break;
+                case "GET_TEX_COMPARATOR_OP":
+                    s += getTexComparatorOP(n.ch[chIdx].termName);
+                    break;
 				default:
 					throw new RuntimeException("Unrecognized function name for TeXification: \"" + texFunctionName + "\"");					
 				}
@@ -146,11 +149,11 @@ public class ParseTreeMathTexifier {
 			return term;
 		}
 	}
-	
+
 	private String getTexVarNotation(String term) {
 		return getTexNotation(term);
 	}
-	
+
 	private String getTexMultiplyOp(String term) {
 		if (term.equals("*")) {
 			return "\\ast";
@@ -162,16 +165,39 @@ public class ParseTreeMathTexifier {
 			return term;
 		}
 	}
-	
+
 	private String getTexPlusOp(String term) {
 		return term;
 	}
-	
+
 	private String getTexMinusOp(String term) {
 		return term;
 	}
-	
+
 	private String getTexAssignOp(String term) {
 		return term;
+	}
+
+	private String getTexComparatorOP(String term) {
+        String texOp = null;
+
+		switch (term) {
+            case "lt":
+                texOp = "<";
+                break;
+            case "gt":
+                texOp = ">";
+                break;
+            case "lte":
+                texOp = "\\leq";
+                break;
+            case "gte":
+                texOp = "\\geq";
+                break;
+            default:
+                throw new IllegalArgumentException("Unrecognized comparator: \"" + term + "\"");
+        }
+
+        return texOp;
 	}
 }

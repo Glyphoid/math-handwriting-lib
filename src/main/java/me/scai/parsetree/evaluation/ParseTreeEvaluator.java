@@ -387,6 +387,52 @@ public class ParseTreeEvaluator {
 		}
 	}
 
+	public Object compare(Object op, Object x, Object y) throws ParseTreeEvaluatorException {
+		boolean xIsNum = x.getClass().equals(Double.class)
+				|| x.getClass().equals(String.class);
+		boolean yIsNum = y.getClass().equals(Double.class)
+				|| y.getClass().equals(String.class);
+
+		if (xIsNum && yIsNum) {
+            final String opStr = op.toString();
+
+            final boolean compRes;
+            final double xVal = getDouble(x);
+            final double yVal = getDouble(y);
+
+            switch (opStr) {
+                case "lt":
+                    compRes = xVal < yVal;
+                    break;
+                case "gt":
+                    compRes = xVal > yVal;
+                    break;
+                case "lte":
+                    compRes = xVal <= yVal;
+                    break;
+                case "gte":
+                    compRes = xVal >= yVal;
+                    break;
+                default:
+                    throw new ParseTreeEvaluatorException("Unsupported comparison operator: \"" + opStr +"\"");
+            }
+
+            ValueUnion result = new ValueUnion(compRes);
+
+			return result;
+		} else if (xIsNum && y.getClass().equals(Matrix.class)) {
+            throw new ParseTreeEvaluatorException("Comparison operation does not apply to matrices");
+		} else if (x.getClass().equals(Matrix.class) && yIsNum) {
+            throw new ParseTreeEvaluatorException("Comparison operation does not apply to matrices");
+		} else if (x.getClass().equals(Matrix.class)
+				&& y.getClass().equals(Matrix.class)) {
+			throw new ParseTreeEvaluatorException("Comparison operation does not apply to matrices");
+		} else {
+			throw new RuntimeException(
+					"Unsupport types scenario for method \"subtract\"");
+		}
+	}
+
 	public Object multiply(Object x, Object y) {
 		boolean xIsNum = x.getClass().equals(Double.class)
 				|| x.getClass().equals(String.class);

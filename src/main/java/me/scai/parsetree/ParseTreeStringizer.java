@@ -1,6 +1,7 @@
 package me.scai.parsetree;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ParseTreeStringizer {
 
@@ -8,8 +9,11 @@ public class ParseTreeStringizer {
     public final static String STRINGIZATION_FAILED_STRING = "[Stringization failed due to syntax error]";
 
     /* Member variables */
-	private HashMap<String, String []> sumString2InstrMap = new HashMap<String, String []>(); 		/* For stringization to plain computer math notation */
-	private HashMap<String, String> specialStringMap = new HashMap<String, String>();
+	private Map<String, String []> sumString2InstrMap = new HashMap<>(); 		/* For stringization to plain computer math notation */
+	private Map<String, String> specialStringMap = new HashMap<>();
+
+	private Map<String, String> specialTerminalNameMap = new HashMap<>();
+
 	/* ~Member variables */
 
 	/* Methods */
@@ -19,11 +23,19 @@ public class ParseTreeStringizer {
 		sumString2InstrMap.clear();
 		specialStringMap.clear();
 
-		/* Create map of special strings */
+		/* Create map of special strings: Strinigization instructions */
 		specialStringMap.put("_SPACE_", " ");
         specialStringMap.put("_UNDERSCORE_", "_");
 		specialStringMap.put("_OPEN_PAREN_", "(");
-		specialStringMap.put("_CLOSE_PAREN_", ")");
+		specialStringMap.put("_CLOSE_PAREN_", ")")
+
+		/* Create map of special mapping from terminal names in grammar definition to those in the
+		 * stringization results */ ;
+		// TODO: Externalize
+		specialTerminalNameMap.put("lt", "<");
+		specialTerminalNameMap.put("gt", ">");
+		specialTerminalNameMap.put("lte", "<=");
+		specialTerminalNameMap.put("gte", ">=");
 
 		for (int i = 0; i < gpSet.prods.size(); ++i) {
 			GraphicalProduction gp = gpSet.prods.get(i);
@@ -65,7 +77,12 @@ public class ParseTreeStringizer {
 
 				if ( n.ch[iNode].isTerminal() ) {
 					Node chNode = n.ch[iNode];
-					s += chNode.termName;
+					final String termName = chNode.termName;
+					final String mappedTermName = specialTerminalNameMap.containsKey(termName) ?
+							                      specialTerminalNameMap.get(termName) :
+							                      termName;
+
+					s += mappedTermName;
 				}
 				else {
 					s += stringize(n.ch[iNode]);
