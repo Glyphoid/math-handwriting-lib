@@ -1,45 +1,39 @@
 package me.scai.handwriting;
 
-import com.google.gson.JsonParser;
-import me.scai.plato.helpers.CStrokeJsonHelper;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class Test_StrokeCuratorConfig {
-    private static final String configFilePath  = "C:\\Users\\scai\\Dropbox\\Plato\\test-data\\stroke_curator_config_testCase_1.json";
+    private StrokeCuratorConfig config;
 
-    //TODO: Fix hard-coded path
-    private static final String tokenEnginePath = "C:\\Users\\scai\\Dropbox\\Plato\\test-data\\token_engine.sdv.sz0_whr1_ns1.ser";
+    private URL tokenEngineFileUrl;
 
     private static final String TOKEN_ENGINE_TYPE = "SDV";
 
     private TokenRecogEngine tokEngine = null;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
 	@Before
 	public void setUp() throws Exception {
 
-        URL tokenEngineFileUrl = new File(tokenEnginePath).toURI().toURL();
+        final String testResourcesPath = File.separator + "test" + File.separator + "resources";
+
+        final URL strokeCuratorConfigUrl = this.getClass().getClassLoader().getResource(testResourcesPath +
+                File.separator + "config" + File.separator + "stroke_curator_config_test_1.json");
+        config = StrokeCuratorConfig.fromJsonFileAtUrl(strokeCuratorConfigUrl);
+
+        tokenEngineFileUrl = this.getClass().getClassLoader().getResource(testResourcesPath +
+                File.separator + "token_engine" + File.separator + "token_engine.sdv.sz0_whr1_ns1.ser");
+
+//        URL tokenEngineFileUrl = new File(tokenEnginePath).toURI().toURL();
 
         ObjectInputStream objInStream = null;
         boolean readSuccessful = false;
@@ -78,8 +72,9 @@ public class Test_StrokeCuratorConfig {
 
 	@Test
 	public void test() {
-        StrokeCuratorConfig config = StrokeCuratorConfig.fromJsonFile(configFilePath);
-		
+//        StrokeCuratorConfig config = StrokeCuratorConfig.fromJsonFile(configFilePath);
+
+
 		assertEquals(config.tokenPairRules.size(), 2);
 				
 		assertEquals(config.tokenPairRules.get(0).tokenA, "-");

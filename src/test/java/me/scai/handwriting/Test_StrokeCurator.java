@@ -5,12 +5,7 @@ import me.scai.plato.helpers.CStrokeJsonHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.*;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -18,8 +13,6 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertArrayEquals;
 
 public class Test_StrokeCurator {
-    private static final String configFilePath  = "C:\\Users\\scai\\Dropbox\\Plato\\test-data\\stroke_curator_config_testCase_1.json";
-
     private static final String TEST_ROOT_DIR = TestHelper.TEST_ROOT_DIR;
     private static final String RESOURCES_DIR = "resources";
     private static final String RESOURCES_CONFIG_DIR = "config";
@@ -30,8 +23,6 @@ public class Test_StrokeCurator {
 
     private StrokeCurator curator;
     private StrokeCurator curatorPrime;
-
-    private TokenRecogEngine tokEngine = null;
 
     @Before
     public void setup() {

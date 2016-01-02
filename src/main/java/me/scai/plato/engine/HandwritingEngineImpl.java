@@ -1,6 +1,5 @@
 package me.scai.plato.engine;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
 import com.google.gson.Gson;
@@ -438,9 +437,6 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
 
         injectSerializedState(stateStack.getLastSerializedState() == null ?
                               initialState : stateStack.getLastSerializedState());
-
-//        strokeCurator.undoUserAction();
-//        updateCurrentTokenSet();
     }
 
     @Override
@@ -448,20 +444,16 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         stateStack.redo();
 
         injectSerializedState(stateStack.getLastSerializedState());
-//        strokeCurator.redoUserAction();
-//        updateCurrentTokenSet();
     }
 
     @Override
     public boolean canUndoUserAction() {
         return stateStack.canUndo();
-//        return strokeCurator.canUndoUserAction();
     }
 
     @Override
     public boolean canRedoUserAction() {
         return stateStack.canRedo();
-//        return strokeCurator.canRedoUserAction();
     }
 
     @Override

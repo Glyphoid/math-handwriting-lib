@@ -1,0 +1,29 @@
+{
+    "tokenPairRules" :
+        [   
+            {
+                "tokenA" : "-",
+                "tokenB" : "-",
+                "predicaments" : 
+                    [
+                        "relativeLengthDifference < 0.5",
+                        "relativeLeftXOffset < 0.2",
+                        "relativeRightXOffset < 0.2",
+                        "numTokensInBetween == 0"
+                    ],
+                "recommendation" : "mergeAs: \"=\""
+            },
+            {
+                "tokenA" : "tick",
+                "tokenB" : "-",
+                "predicaments" : 
+                    [
+                    ],
+                "recommendation" : "mergeAs: \"root\""
+            }
+        ],
+    "mergePartners" :
+        {
+            "root": []
+        }
+}

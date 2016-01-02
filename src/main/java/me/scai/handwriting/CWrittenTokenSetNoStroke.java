@@ -188,25 +188,6 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 				max_y = bounds[3];
 		}
 	}
-
-    // TODO: Since this is not used, should it be removed?
-//	public void deleteToken(int i) {
-//		if ( i < 0 ) {
-//			System.err.println("Deletion index is negative");
-//			return;
-//		}
-//
-//		if ( i >= nTokens() ) {
-//			System.err.println("Deletion index exceeds number of tokens");
-//			return;
-//		}
-//
-//		tokens.remove(i);
-//
-//		calcBounds();
-//
-//		deleteOneToken();
-//	}
 	
 	/* Read from .wts file */
 	public void readFromFile(String fileName) throws FileNotFoundException, IOException {
@@ -310,31 +291,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 		calcBounds();
 	}
 	
-	/* Testing routine */
-	public static void main(String [] args) {
-		/* Read .wts file */
-		final String wtsFileName = "C:\\Users\\systemxp\\Documents\\My Dropbox\\Plato\\data\\tokensets\\TS_1.wts";
-		CWrittenTokenSetNoStroke wt = new CWrittenTokenSetNoStroke();
-		
-		try {
-			wt.readFromFile(wtsFileName);
-		}
-		catch ( FileNotFoundException fnfe ) {
-			System.err.println(fnfe.getMessage());
-		}
-		catch ( IOException ioe ) {
-			System.err.println(ioe.getMessage());
-		}
-		
-		System.out.println("Done reading wts file: " + wtsFileName);
-	}
-	
 	@Override
 	public void clear() {
-//		tokenBounds.clear();
-		
-//		recogWinners.clear();
-//		recogPs.clear();
 		tokens.clear();
         tokenUuids.clear();
 		tokenIDs.clear();

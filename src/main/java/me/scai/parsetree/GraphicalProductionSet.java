@@ -425,28 +425,6 @@ public class GraphicalProductionSet {
 		
 		return gpSet;
 	}
-	
-	/* Test main */
-//	public static void main(String [] args) {
-//		final String prodSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\productions.txt";
-//		final String termSetFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
-//		
-//		TerminalSet termSet = null;
-//		try {
-//			termSet = TerminalSet.createFromFile(termSetFN);
-//		}
-//		catch ( Exception e ) {
-//			System.err.println(e);
-//		}
-//		
-//		GraphicalProductionSet gps = new GraphicalProductionSet();
-//		try {
-//			gps.readProductionsFromFile(prodSetFN, termSet);
-//		}
-//		catch ( Exception e ) {
-//			System.err.println(e);
-//		}
-//	}
 
     private void calcTransitiveChildrenProdMap() {
         transitiveChildrenProdMap = new HashMap<>();

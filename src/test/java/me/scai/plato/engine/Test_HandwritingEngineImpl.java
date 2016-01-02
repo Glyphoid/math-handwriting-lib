@@ -3,6 +3,7 @@ package me.scai.plato.engine;
 import com.google.gson.JsonObject;
 import me.scai.handwriting.*;
 import me.scai.parsetree.*;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -26,7 +27,8 @@ public class Test_HandwritingEngineImpl {
     private HandwritingEngine hwEng;
 
     /* Constructor */
-    public Test_HandwritingEngineImpl() {
+    @Before
+    public void setUp() {
         // Create token engine
         TokenRecogEngine tokenRecogEngine = null;
         try {
@@ -440,6 +442,224 @@ public class Test_HandwritingEngineImpl {
         /* Test state injection round trip */
         roundTripVerifyStateSerializationThruInjection(hwEng);
     }
+
+    @Test
+    public void testUndoRedo() throws HandwritingEngineException {
+        /* Initial state */
+        assertFalse(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        verifyWrittenTokenSet(hwEng, new String[]{});
+        verifyTokenSet(hwEng, new boolean[]{}, new String[]{});
+
+        /* Add 1st token "7" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[]{5, 7, 9, 8, 7},
+                new float[]{30, 30, 30, 40, 50}));
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7"});
+        verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"7"});
+
+        /* Undo and then redo 1st AddToken action */
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+        assertTrue(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        hwEng.undoUserAction();
+        assertNull(hwEng.getLastUserAction());
+
+        verifyWrittenTokenSet(hwEng, new String[]{});
+        verifyTokenSet(hwEng, new boolean[]{}, new String[]{});
+
+        assertFalse(hwEng.canUndoUserAction());
+        assertTrue(hwEng.canRedoUserAction());
+
+        hwEng.redoUserAction();
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7"});
+        verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"7"});
+
+        /* Add 2nd stroke: "2" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[]{15, 30, 30, 15, 15, 30},
+                new float[]{30, 30, 40, 40, 50, 50}));
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2"});
+        verifyTokenSet(hwEng, new boolean[]{false, false}, new String[]{"7", "2"});
+
+        /* Undo and then redo 2nd AddToken action */
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+        assertTrue(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        hwEng.undoUserAction();
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7"});
+        verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"7"});
+
+        assertTrue(hwEng.canUndoUserAction());
+        assertTrue(hwEng.canRedoUserAction());
+
+        hwEng.redoUserAction();
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2"});
+        verifyTokenSet(hwEng, new boolean[]{false, false}, new String[]{"7", "2"});
+
+        /* Add 3rd stroke: "-" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[]{0, 10, 20, 30, 40},
+                new float[]{25, 25, 25, 25, 25}));
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-"});
+        verifyTokenSet(hwEng, new boolean[]{false, false, false}, new String[]{"7", "2", "-"});
+
+        /* Undo and then redo 3rd AddToken action */
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+        assertTrue(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        hwEng.undoUserAction();
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2"});
+        verifyTokenSet(hwEng, new boolean[]{false, false}, new String[]{"7", "2"});
+
+        assertTrue(hwEng.canUndoUserAction());
+        assertTrue(hwEng.canRedoUserAction());
+
+        hwEng.redoUserAction();
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-"});
+        verifyTokenSet(hwEng, new boolean[]{false, false, false}, new String[]{"7", "2", "-"});
+
+        /* Add 4th stroke: "1" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[]{20, 20.1f, 20.2f, 20.3f, 20.4f},
+                new float[]{0, 5, 10, 15, 20}));
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
+        verifyTokenSet(hwEng, new boolean[]{false, false, false, false}, new String[]{"7", "2", "-", "1"});
+
+        /* Undo and then redo 4th AddToken action */
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+        assertTrue(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        hwEng.undoUserAction();
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-"});
+        verifyTokenSet(hwEng, new boolean[]{false, false, false}, new String[]{"7", "2", "-"});
+
+        assertTrue(hwEng.canUndoUserAction());
+        assertTrue(hwEng.canRedoUserAction());
+
+        hwEng.redoUserAction();
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
+        verifyTokenSet(hwEng, new boolean[]{false, false, false, false}, new String[]{"7", "2", "-", "1"});
+
+        /* Subset parsing "72" */
+        TokenSetParserOutput subsetParseRes = hwEng.parseTokenSubset(new int[]{0, 1});
+        assertEquals("72", subsetParseRes.getStringizerOutput());
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
+        verifyTokenSet(hwEng, new boolean[]{true, false, false}, new String[]{"72", "-", "1"});
+
+        /* Undo and redo the subset parsing */
+        assertEquals(HandwritingEngineUserAction.ParseTokenSubset, hwEng.getLastUserAction());
+        assertTrue(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        hwEng.undoUserAction();
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
+        verifyTokenSet(hwEng, new boolean[]{false, false, false, false}, new String[]{"7", "2", "-", "1"});
+
+        assertTrue(hwEng.canUndoUserAction());
+        assertTrue(hwEng.canRedoUserAction());
+
+        hwEng.redoUserAction();
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
+        verifyTokenSet(hwEng, new boolean[]{true, false, false}, new String[]{"72", "-", "1"});
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+
+        /* Remove the token "1" */
+        // The index is to the abstract token, not written token
+        hwEng.removeToken(2);
+
+        verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-"});
+        verifyTokenSet(hwEng, new boolean[] {true, false}, new String[] {"72", "-"});
+
+        /* Undo and redo the RemoveToken action */
+        assertEquals(HandwritingEngineUserAction.RemoveToken, hwEng.getLastUserAction());
+        assertTrue(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        hwEng.undoUserAction();
+        assertEquals(HandwritingEngineUserAction.ParseTokenSubset, hwEng.getLastUserAction());
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1"});
+        verifyTokenSet(hwEng, new boolean[]{true, false, false}, new String[]{"72", "-", "1"});
+
+        assertTrue(hwEng.canUndoUserAction());
+        assertTrue(hwEng.canRedoUserAction());
+
+        hwEng.redoUserAction();
+
+        verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-"});
+        verifyTokenSet(hwEng, new boolean[] {true, false}, new String[] {"72", "-"});
+
+        assertEquals(HandwritingEngineUserAction.RemoveToken, hwEng.getLastUserAction());
+
+        /* Add two tokens: "11" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[] {20, 20.1f, 20.2f, 20.3f, 20.4f},
+                new float[] {0, 5, 10, 15, 20}));
+        hwEng.addStroke(TestHelper.getMockStroke(new float[] {22, 22.1f, 22.2f, 22.3f, 22.4f},
+                new float[] {0, 5, 10, 15, 20}));
+
+        verifyWrittenTokenSet(hwEng, new String[] {"7", "2", "-", "1", "1"});
+        verifyTokenSet(hwEng, new boolean[] {true, false, false, false}, new String[] {"72", "-", "1", "1"});
+
+        /* Undo and redo the two latest add token actions */
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+        assertTrue(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        hwEng.undoUserAction();
+        hwEng.undoUserAction();
+        assertEquals(HandwritingEngineUserAction.RemoveToken, hwEng.getLastUserAction());
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-"});
+        verifyTokenSet(hwEng, new boolean[] {true, false}, new String[] {"72", "-"});
+
+        assertTrue(hwEng.canUndoUserAction());
+        assertTrue(hwEng.canRedoUserAction());
+
+        hwEng.redoUserAction();
+        hwEng.redoUserAction();
+
+        verifyWrittenTokenSet(hwEng, new String[]{"7", "2", "-", "1", "1"});
+        verifyTokenSet(hwEng, new boolean[] {true, false, false, false}, new String[] {"72", "-", "1", "1"});
+
+        assertTrue(hwEng.canUndoUserAction());
+        assertFalse(hwEng.canRedoUserAction());
+
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+
+        /* Parse the entire token set, which contains a node token */
+        TokenSetParserOutput parseRes = hwEng.parseTokenSet();
+
+        assertEquals("(11 / 72)", parseRes.getStringizerOutput());
+
+        /* The whole-token-set parsing should not be a part of the state stack */
+        assertEquals(HandwritingEngineUserAction.AddStroke, hwEng.getLastUserAction());
+
+        /* Test state injection round trip */
+        roundTripVerifyStateSerializationThruInjection(hwEng);
+    }
+
 
     /* Test helper methods */
     // Round-trip verification of the JSON serialization and deserialization of handwriting engine state through
