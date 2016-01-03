@@ -10,7 +10,7 @@ See:
 * [Demo videos (YouTube)](https://www.youtube.com/watch?v=9LFmDcpyZ0w&list=PLcUSYoM0otQi4qCaO5uzluG8ww69kgepc)
 
 
-## How to build Glyphoid math-handwriting-lib
+## Build and Test
 1. Make sure that you have the following installed:
   1. Java 7 or above
   2. Apache Maven
