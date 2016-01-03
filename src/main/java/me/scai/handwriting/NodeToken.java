@@ -62,7 +62,7 @@ public class NodeToken extends AbstractToken {
 
     @Override
     public void getTokenTerminalType(TerminalSet termSet) {
-        tokenTermType = null;
+        tokenTermTypes = null;
     }
 
     @Override

@@ -349,8 +349,8 @@ public class CWrittenTokenSetNoStroke extends CAbstractWrittenTokenSet {
 	}
 	
 	@Override
-	public String getTokenTermType(int i) {
-		return tokens.get(i).tokenTermType;
+	public List<String> getTokenTermTypes(int i) {
+		return tokens.get(i).tokenTermTypes;
 	}
 
 	public String toString() {

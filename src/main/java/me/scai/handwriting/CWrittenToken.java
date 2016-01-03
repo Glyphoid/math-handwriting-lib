@@ -1,5 +1,6 @@
 package me.scai.handwriting;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import java.io.File;
@@ -55,8 +56,10 @@ public class CWrittenToken extends AbstractToken {
 			}
 		}
 		
-		if (wt0.tokenTermType != null) {
-			tokenTermType = new String(wt0.tokenTermType);
+		if (wt0.tokenTermTypes != null) {
+//			tokenTermTypes = new String(wt0.tokenTermTypes);
+
+            tokenTermTypes = new ArrayList<>(wt0.tokenTermTypes);
 		}
 		
 		initializeTokenBounds();
@@ -655,7 +658,7 @@ public class CWrittenToken extends AbstractToken {
     @Override
 	public void getTokenTerminalType(TerminalSet termSet) {
 		if ( recogWinner != null )
-			tokenTermType = termSet.getTypeOfToken(recogWinner);
+			tokenTermTypes = termSet.getTypeOfToken(recogWinner);
 	}
 	
 	/* Get the individual strokes */

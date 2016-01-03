@@ -1,6 +1,7 @@
 package me.scai.parsetree;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ParseTreeMathTexifier {
 	/* Member variables */
@@ -8,8 +9,8 @@ public class ParseTreeMathTexifier {
 	public final static String parsingErrString = "[Parsing failed: Syntax error]";
     public final static String MATH_TEXIFICATION_FAILED_STRING = "[Conversion to Math Tex failed]";
 	
-	private HashMap<String, String []> sumString2MathTexInstrMap = new HashMap<String, String []>();/* For stringization to Math TeX noatation */
-	private HashMap<String, String> terminal2TexNotationMap = new HashMap<String, String>();
+	private Map<String, String []> sumString2MathTexInstrMap = new HashMap<>();/* For stringization to Math TeX noatation */
+	private Map<String, String> terminal2TexNotationMap = new HashMap<>();
 	/* ~Member variables */
 	
 	/* Constructor */
@@ -106,9 +107,6 @@ public class ParseTreeMathTexifier {
 				case "GET_TEX_ASSIGN_OP":
 					s += getTexAssignOp(n.ch[chIdx].termName);
 					break;
-                case "GET_TEX_COMPARATOR_OP":
-                    s += getTexComparatorOP(n.ch[chIdx].termName);
-                    break;
 				default:
 					throw new RuntimeException("Unrecognized function name for TeXification: \"" + texFunctionName + "\"");					
 				}
@@ -178,26 +176,4 @@ public class ParseTreeMathTexifier {
 		return term;
 	}
 
-	private String getTexComparatorOP(String term) {
-        String texOp = null;
-
-		switch (term) {
-            case "lt":
-                texOp = "<";
-                break;
-            case "gt":
-                texOp = ">";
-                break;
-            case "lte":
-                texOp = "\\leq";
-                break;
-            case "gte":
-                texOp = "\\geq";
-                break;
-            default:
-                throw new IllegalArgumentException("Unrecognized comparator: \"" + term + "\"");
-        }
-
-        return texOp;
-	}
 }

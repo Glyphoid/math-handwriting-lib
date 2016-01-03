@@ -413,6 +413,9 @@ public class ParseTreeEvaluator {
                 case "gte":
                     compRes = xVal >= yVal;
                     break;
+                case "=":
+                    compRes = xVal == yVal;
+                    break;
                 default:
                     throw new ParseTreeEvaluatorException("Unsupported comparison operator: \"" + opStr +"\"");
             }
@@ -834,8 +837,8 @@ public class ParseTreeEvaluator {
 		if (obj.getClass().equals(String.class)) {
 			String argStr = (String) obj;
 
-			String tokenType = prodSet.terminalSet.getTypeOfToken(argStr);
-			if (tokenType != null && tokenType.equals("VARIABLE_SYMBOL")) {
+			List<String> tokenTypes = prodSet.terminalSet.getTypeOfToken(argStr);
+            if (tokenTypes != null && tokenTypes.contains("VARIABLE_SYMBOL")) {
 				return new FunctionArgumentList(argStr);
 			} else {
 				return new FunctionArgumentList(getDouble(argStr)); /* TODO: Matrix types? */

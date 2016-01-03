@@ -3,6 +3,7 @@ package me.scai.handwriting;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 public abstract class CAbstractWrittenTokenSet {
     /* Member variables */
@@ -17,9 +18,6 @@ public abstract class CAbstractWrittenTokenSet {
 
     /* Constructor */
     public CAbstractWrittenTokenSet() {} // For deserialization
-	
-//	public ArrayList<String> recogWinners = new ArrayList<String>();
-//	public ArrayList<double []> recogPs = new ArrayList<double []>();
 	
 	/* Get the number of tokens */
 	public int nTokens() {
@@ -81,7 +79,7 @@ public abstract class CAbstractWrittenTokenSet {
 	public abstract float [] getTokenBounds(int i);
 	public abstract float [] getTokenBounds(int [] is);
 
-	public abstract String getTokenTermType(int i);
+	public abstract List<String> getTokenTermTypes(int i);
 
     public abstract float [] setTokenBounds(int i, final float [] newBounds);
 	

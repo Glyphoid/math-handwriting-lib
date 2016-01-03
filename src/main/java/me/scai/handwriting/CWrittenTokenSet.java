@@ -2,6 +2,7 @@ package me.scai.handwriting;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	public ArrayList<String> recogWinners = new ArrayList<>();
@@ -273,8 +274,8 @@ public class CWrittenTokenSet extends CAbstractWrittenTokenSet {
 	}
 	
 	@Override
-	public String getTokenTermType(int i) {
-		return tokens.get(i).tokenTermType;
+	public List<String> getTokenTermTypes(int i) {
+		return tokens.get(i).tokenTermTypes;
 	}
 
 

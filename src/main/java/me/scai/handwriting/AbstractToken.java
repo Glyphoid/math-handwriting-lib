@@ -2,6 +2,8 @@ package me.scai.handwriting;
 
 import me.scai.parsetree.TerminalSet;
 
+import java.util.List;
+
 public abstract class AbstractToken {
     /* Member variables */
     protected float [] tokenBounds = new float[4];
@@ -10,7 +12,7 @@ public abstract class AbstractToken {
 
     /* The type of a token, according to the terminal set, if applicable.
      * For a node token, the terminal type will be null */
-    public String tokenTermType = null;
+    public List<String> tokenTermTypes = null;
 
     /* Constructor */
     public AbstractToken() {

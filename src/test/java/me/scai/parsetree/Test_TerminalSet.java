@@ -50,7 +50,7 @@ public class Test_TerminalSet {
 			fail("Failed due to IOException: " + exc.getMessage());
 		}
 		
-		assertFalse(ts.token2TypeMap.isEmpty());
+		assertFalse(ts.token2TypesMap.isEmpty());
 		assertFalse(ts.type2TokenMap.isEmpty());
 		assertFalse(ts.token2TexNotationMap.isEmpty());
 	}
@@ -70,7 +70,7 @@ public class Test_TerminalSet {
 			fail("Failed due to Exception: " + exc.getMessage());
 		}
 		
-		assertFalse(ts.token2TypeMap.isEmpty());
+		assertFalse(ts.token2TypesMap.isEmpty());
 		assertFalse(ts.type2TokenMap.isEmpty());
 		assertFalse(ts.token2TexNotationMap.isEmpty());
 	}

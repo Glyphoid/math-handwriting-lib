@@ -23,12 +23,13 @@ public class TerminalSet {
 	
 	public final static String terminalNameTypePrefix = "TERMINAL(";
 	public final static String terminalNameTypeSuffix = ")";
-//	public final static String epsString = "EPS";
 	
 	/* Members */
-	HashMap<String, String []> type2TokenMap = new HashMap<String, String []>();
-	HashMap<String, String>	token2TypeMap = new HashMap<String, String>();
-	HashMap<String, String> token2TexNotationMap = new HashMap<String, String>();
+	Map<String, String []> type2TokenMap = new HashMap<>();
+
+	Map<String, List<String>> token2TypesMap = new HashMap<>();
+
+	Map<String, String> token2TexNotationMap = new HashMap<>();
 	
 	private TokenDegeneracy tokenDegen;
 	
@@ -81,7 +82,16 @@ public class TerminalSet {
 			
 			/* Add to token-to-type map */
 			for (int j = 0; j < terms.length; ++j) {
-				token2TypeMap.put(terms[j], typeName);
+                if (token2TypesMap.containsKey(terms[j])) {
+                    token2TypesMap.get(terms[j]).add(typeName);
+                } else {
+                    List<String> typeNames = new ArrayList<>();
+                    typeNames.add(typeName);
+
+                    token2TypesMap.put(terms[j], typeNames);
+                }
+
+//				token2TypesMap.put(terms[j], typeName);
 			}
 		}
 
@@ -101,9 +111,8 @@ public class TerminalSet {
 	}
 		
 	/* Get the type of a token */
-	public String getTypeOfToken(String token) {
-		return token2TypeMap.get(token);
-		
+	public List<String> getTypeOfToken(String token) {
+		return token2TypesMap.get(token);
 	}
 	
 	/* Test if a type is a terminal type */
@@ -126,7 +135,7 @@ public class TerminalSet {
 	
 	/* Test if a token belongs to a terminal type */
 	public boolean isTokenTerminal(String token) {
-		 return token2TypeMap.keySet().contains(token);
+		 return token2TypesMap.keySet().contains(token);
 	}
 	
 	/* Determine whether a token matches a type. Normally, this just entails
@@ -138,8 +147,19 @@ public class TerminalSet {
 			return terminalNameTypeMatches(typeName, tokenName);
 		}
 		else {
-			String tTokenType = getTypeOfToken(tokenName);
-            return typeName.equals(tTokenType); // null guard
+			List<String> tTokenTypes = getTypeOfToken(tokenName);
+
+            boolean isMatch = false;
+
+            if (tTokenTypes != null) {
+                for (String tTokenType : tTokenTypes) {
+                    if (typeName.equals(tTokenType)) {
+                        return true;
+                    }
+                }
+            }
+
+            return isMatch;
 		}
 	}
 	
@@ -184,8 +204,16 @@ public class TerminalSet {
 			}
 		}
 		
-		String tTokenType = getTypeOfToken(tokenName);
-		return types.contains(tTokenType);
+		List<String> tTokenTypes = getTypeOfToken(tokenName);
+
+        for (String tTokenType : tTokenTypes) {
+            if (types.contains(tTokenType)) {
+                return true;
+            }
+        }
+
+        return false;
+
 	}
 	
 	/* Factory method: From a JSON file */
@@ -202,18 +230,6 @@ public class TerminalSet {
 		
 		return ts;
 	}
-		
-	
-	/* Testing routine */
-//	public static void main(String [] args) {
-//		final String tsFN = "C:\\Users\\scai\\Plato\\handwriting\\graph_lang\\terminals.txt";
-//		
-//		try {
-//			TerminalSet.createFromFile(tsFN);
-//		}
-//		catch ( Exception e ) {
-//			System.err.println(e.getMessage());
-//		}
-//	}
+
 	
 }

@@ -36,10 +36,22 @@ public class NodeInternalGeometry {
 			Node chNode = node.ch[i]; /* Child node */			
 			
 			if (chNode.isTerminal()) {
-				String termType = termSet.getTypeOfToken(chNode.termName);
-				if (majorTerminalTypes.contains(termType)) {
-					b.add(chNode.getBounds());
-				}
+
+                List<String> termTypes = termSet.getTypeOfToken(chNode.termName);
+                boolean typeMatch = false;
+
+                if (termTypes != null) {
+                    for (String termType : termTypes) {
+                        if (majorTerminalTypes.contains(termType)) {
+                            typeMatch = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (typeMatch) {
+                    b.add(chNode.getBounds());
+                }
 			}
 			else {
 				List<float []> tBounds = getMajorTokenBounds(chNode);
@@ -69,7 +81,18 @@ public class NodeInternalGeometry {
 		return maxWidth;
 	}
 	
-	public boolean isTerminalTypeMajor(String termType) {
-		return majorTerminalTypes.contains(termType);
+	public boolean isTerminalTypeMajor(List<String> termTypes) {
+        boolean match = false;
+
+        if (termTypes != null) {
+            for (String termType : termTypes) {
+                if (majorTerminalTypes.contains(termType)) {
+                    match = true;
+                    break;
+                }
+            }
+        }
+
+        return match;
 	}
 }

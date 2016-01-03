@@ -548,7 +548,9 @@ public class Test_QADataSet {
             new QADataEntry("sim_247", "(1 <= (3 - 2))").withMathTex("{1}\\leq{{3}-{2}}").withEvalRes(true),
             new QADataEntry("sim_248", "((1 / 2) > (3 / 4))").withMathTex("{\\frac{1}{2}}>{\\frac{3}{4}}").withEvalRes(false),
             new QADataEntry("sim_249", "((a ^ 2) <= 3)").withMathTex("{{a}^{2}}\\leq{3}").withEvalRes(true),
-            new QADataEntry("sim_250", "((5 - 7) <= (0 - 2))").withMathTex("{{5}-{7}}\\leq{{0}-{2}}").withEvalRes(true)
+            new QADataEntry("sim_250", "((5 - 7) <= (0 - 2))").withMathTex("{{5}-{7}}\\leq{{0}-{2}}").withEvalRes(true),
+            new QADataEntry("sim_251", "(3 = 98)").withMathTex("{3}={98}").withEvalRes(false),
+            new QADataEntry("sim_252", "((sqrt(A)) = (0 / 8))").withMathTex("{\\sqrt{A}}={\\frac{0}{8}}").withEvalRes(true),
         };
         QADataSuites.put("comparisons", new QADataSuite(entries_comparisons, false));
 

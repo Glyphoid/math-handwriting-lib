@@ -13,7 +13,7 @@
     "BRACKET_R"        : ["]"],
     "CURLY_BRACKET_L"  : ["cbl"],
     "CURLY_BRACKET_R"  : ["cbr"],
-    "COMPARATOR"       : ["gt", "lt", "gte", "lte"],
+    "COMPARATOR"       : ["gt", "lt", "gte", "lte", "="],
     "VARIABLE_SYMBOL"  : ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "Y", "Z", 
                           "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
                           "gr_Ga", "gr_De", "gr_Th", "gr_La", "gr_Xi", "gr_Pi", "gr_Si", "gr_Up", "gr_Ph", "gr_Ps", "gr_Om",   
@@ -23,6 +23,10 @@
     "COMMA"            : [","]
   },
   "texNotations" : {
+    "lt"          : "<",
+    "gt"          : ">",
+    "lte"         : "\\leq",
+    "gte"         : "\\geq",
     "gr_Ga"       : "\\Gamma",
     "gr_De"       : "\\Delta",
     "gr_Th"       : "\\Theta",

@@ -4,6 +4,8 @@ import com.google.gson.annotations.Expose;
 import me.scai.handwriting.CAbstractWrittenTokenSet;
 import me.scai.parsetree.TerminalSet;
 
+import java.util.List;
+
 /* WidthRelation */
 public class SpacingRelation extends GeometricRelation {
 	public enum SpacingRelationType {
@@ -40,9 +42,9 @@ public class SpacingRelation extends GeometricRelation {
 	private float getMaxMajorTokenWidth(CAbstractWrittenTokenSet wts) {
 		float maxWidth = 0.0f;
 		for (int i = 0; i < wts.getNumTokens(); ++i) {						
-			String tokenTermType = wts.getTokenTermType(i);
+			List<String> tokenTermTypes = wts.getTokenTermTypes(i);
 			
-			if (nodeInternalGeom.isTerminalTypeMajor(tokenTermType)) {
+			if (nodeInternalGeom.isTerminalTypeMajor(tokenTermTypes)) {
 				float [] bnds = wts.getTokenBounds(i);
 				float w = bnds[2] - bnds[0];
 				
@@ -58,9 +60,9 @@ public class SpacingRelation extends GeometricRelation {
 	private float getMaxMajorTokenHeight(CAbstractWrittenTokenSet wts) {
 		float maxHeight = 0.0f;
 		for (int i = 0; i < wts.getNumTokens(); ++i) {						
-			String tokenTermType = wts.getTokenTermType(i);
+			List<String> tokenTermTypes = wts.getTokenTermTypes(i);
 			
-			if (nodeInternalGeom.isTerminalTypeMajor(tokenTermType)) {
+			if (nodeInternalGeom.isTerminalTypeMajor(tokenTermTypes)) {
 				float [] bnds = wts.getTokenBounds(i);
 				float h = bnds[3] - bnds[1];
 				
