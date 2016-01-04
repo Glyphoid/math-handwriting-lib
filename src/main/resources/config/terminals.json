@@ -19,6 +19,8 @@
                           "gr_Ga", "gr_De", "gr_Th", "gr_La", "gr_Xi", "gr_Pi", "gr_Si", "gr_Up", "gr_Ph", "gr_Ps", "gr_Om",   
                           "gr_al", "gr_be", "gr_ga", "gr_de", "gr_ep", "gr_ze", "gr_et", "gr_th", "gr_io", "gr_ka", "gr_la", "gr_mu", "gr_nu", "gr_xi", "gr_omicron", "gr_pi", "gr_rh", "gr_si", "gr_ta", "gr_up", "gr_ph", "gr_ch", "gr_omega"],
     "ASSIGN_OP"        : ["="],
+    "LOGICAL_AND_OP"   : ["gr_La"],
+    "LOGICAL_OR_OP"    : ["V"],
     "INTEG_OP"         : ["integ"],
     "COMMA"            : [","]
   },

@@ -27,7 +27,9 @@ public class ParseTreeStringizer {
 		specialStringMap.put("_SPACE_", " ");
         specialStringMap.put("_UNDERSCORE_", "_");
 		specialStringMap.put("_OPEN_PAREN_", "(");
-		specialStringMap.put("_CLOSE_PAREN_", ")")
+		specialStringMap.put("_CLOSE_PAREN_", ")");
+        specialStringMap.put("_LOGICAL_AND_", "&&");
+		specialStringMap.put("_LOGICAL_OR_", "||");
 
 		/* Create map of special mapping from terminal names in grammar definition to those in the
 		 * stringization results */ ;

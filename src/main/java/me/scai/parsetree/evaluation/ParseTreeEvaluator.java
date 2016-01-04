@@ -253,6 +253,7 @@ public class ParseTreeEvaluator {
 
 		lhsStack.pop();
 		rhsStack.pop();
+
 		return evalRes;
 	}
 
@@ -274,6 +275,8 @@ public class ParseTreeEvaluator {
 		} else if (x.getClass().equals(String.class)) {
 			// return Double.parseDouble((String) x);
 			return x;
+        } else if (x.getClass().equals(Boolean.class)) {
+            return (Boolean) x;
 		} else if (x.getClass().equals(Double.class)) {
 			return (Double) x;
 		} else if (x.getClass().equals(Matrix.class)) {
@@ -434,6 +437,42 @@ public class ParseTreeEvaluator {
 			throw new RuntimeException(
 					"Unsupport types scenario for method \"subtract\"");
 		}
+	}
+
+	public Object logical_binary_op(Object op, Object x, Object y)
+        throws ParseTreeEvaluatorException {
+
+        final boolean bx;
+        if (x.getClass() == Boolean.class) {
+            bx = (Boolean) x;
+        } else if (x instanceof ValueUnion) {
+            bx = ((ValueUnion) x).getBoolean();
+        } else {
+            throw new ParseTreeEvaluatorException("Unexpected operand class for logical binary operator: " + x.getClass().getName());
+        }
+
+        final boolean by;
+        if (y.getClass() == Boolean.class) {
+            by = (Boolean) y;
+        } else if (x instanceof ValueUnion) {
+            by = ((ValueUnion) y).getBoolean();
+        } else {
+            throw new ParseTreeEvaluatorException("Unexpected operand class for logical binary operator: " + x.getClass().getName());
+        }
+
+        assert(op.getClass() == String.class);
+        final String opStr = (String) op;
+
+        boolean res;
+        switch (opStr) {
+            case "gr_La": // Logical AND (Lambda)
+                res = bx && by;
+                break;
+            default:
+                throw new ParseTreeEvaluatorException("Unrecognized binary logical operator: \"" + opStr + "\"");
+        }
+
+        return new ValueUnion(res);
 	}
 
 	public Object multiply(Object x, Object y) {

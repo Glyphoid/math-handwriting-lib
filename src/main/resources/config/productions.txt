@@ -315,6 +315,29 @@ _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _MATH_TEX_      { n1 } n0 { n2 }
 _EVAL_			COMPARE(n0, n1, n2)
 
+---
+LOGICAL_TERM
+COMPARISON
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+---
+LOGICAL_AND_TERM
+LOGICAL_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+---
+LOGICAL_AND_TERM # Use right recursion
+LOGICAL_AND_OP
+LOGICAL_AND_TERM : {AlignMiddle(0), PositionWest(0)} # Left expression
+LOGICAL_TERM : {AlignMiddle(0), PositionEast(0)} # Right expression
+_STRINGIZE_		( n1 _SPACE_ _LOGICAL_AND_ _SPACE_ n2 )
+_MATH_TEX_      { n1 } \land { n2 }
+_EVAL_			LOGICAL_BINARY_OP(n0, n1, n2)
+
 --- # 27
 EXPR_LV3
 ADDITION
@@ -703,7 +726,7 @@ _EVAL_			n0
 
 ---
 ROOT
-COMPARISON
+LOGICAL_AND_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
