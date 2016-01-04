@@ -4,5 +4,8 @@ install:
   - mkdir /home/travis/java-worker-pool
   - git clone https://github.com/Glyphoid/java-worker-pool.git /home/travis/java-worker-pool
   - mvn -f /home/travis/java-worker-pool/pom.xml clean install -DskipTests
+  - mkdir /home/travis/tokensets
+  - git clone https://github.com/Glyphoid/tokensets /home/travis/tokensets
 
-
+script:
+  - mvn test -B -DtokenSetPathPrefix=/home/travis/tokensets/TS_
