@@ -73,10 +73,10 @@ public class GraphicalProduction {
 	 * e.g., addition-subtraction, multiplication-division (non-fraction)
 	 */
 	
-	transient String [] stringizeInstr;		/* Instruction for stringization */
-    transient String [] mathTexInstr;         /* Instruction for generating Math TeX */
+	transient String [] stringizeInstr;		 /* Instruction for stringization */
+    transient String [] mathTexInstr;        /* Instruction for generating Math TeX */
     transient String [] mathMlInstr;         /* Instruction for generating MathML */
-	public transient  String [] evalInstr;            /* Instruction for evaluation */
+	public transient  String [] evalInstr;   /* Instruction for evaluation */
 	
 	/* ~Member variables */
 

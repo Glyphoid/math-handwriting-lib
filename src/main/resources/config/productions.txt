@@ -323,6 +323,22 @@ _MATH_TEX_      n0
 _EVAL_			n0
 
 ---
+LOGICAL_PAREN_TERM        # Parenthesized logical expression
+LOGICAL_OR_TERM
+PARENTHESIS_L : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
+PARENTHESIS_R : {AlignMiddle(0), PositionEast(0)}	# Right parenthesis
+_STRINGIZE_ 	( n0 )
+_MATH_TEX_      \left( n0 \right)
+_EVAL_ 			n0
+
+---
+LOGICAL_TERM
+LOGICAL_PAREN_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+---
 LOGICAL_AND_TERM
 LOGICAL_TERM
 _STRINGIZE_		n0

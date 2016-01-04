@@ -204,12 +204,12 @@ class GeometricShortcut {
      * based on the type of the geometric shortcut.
      * Return value: 0-1 indicators of whether a token is to be head or non-head
      */
-    public int [][] getPartitionBipartite(CAbstractWrittenTokenSet wts, boolean bReverse) {
+    public int[][] getPartitionBipartite(CAbstractWrittenTokenSet wts, boolean bReverse) {
         int nt = wts.nTokens();
-        int [][] labels = null;
+        int[][] labels = null;
 
         if ( nt == 0 ) {
-            throw new RuntimeException("Attempting to apply bipartite shortcut on one or fewer tokens");
+            throw new IllegalStateException("Attempting to apply bipartite shortcut on one or fewer tokens");
         }
 
         if ( nt == 1 ) {

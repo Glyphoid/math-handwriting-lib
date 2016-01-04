@@ -559,6 +559,9 @@ public class Test_QADataSet {
             new QADataEntry("sim_258", "((1 < -3) || ((8 = 8) && (9 >= (9 / 1))))").withMathTex("{{1}<{-{3}}}\\lor{{{8}={8}}\\land{{9}\\geq{\\frac{9}{1}}}}").withEvalRes(true),
             new QADataEntry("sim_259", "(((sin(3) < 0) && (5 < 4)) || ((cos(8) < 0) && (2 = 2)))").withMathTex("{{{\\sin{3}}<{0}}\\land{{5}<{4}}}\\lor{{{\\cos{8}}<{0}}\\land{{2}={2}}}").withEvalRes(true),
             new QADataEntry("sim_260", "((1 >= 2) || (((3 >= (4 ^ 5)) && (6 < 7)) || (8 = 9)))").withMathTex("{{1}\\geq{2}}\\lor{{{{3}\\geq{{4}^{5}}}\\land{{6}<{7}}}\\lor{{8}={9}}}").withEvalRes(false),
+            new QADataEntry("sim_261", "((1 <= 2))").withMathTex("\\left({1}\\leq{2}\\right)").withEvalRes(true),
+            new QADataEntry("sim_262", "((((1 > 2) || (3 > 4))) && (5 < 6))").withMathTex("{\\left({{1}>{2}}\\lor{{3}>{4}}\\right)}\\land{{5}<{6}}").withEvalRes(false),
+            new QADataEntry("sim_263", "((((1 >= 2) || (3 <= 4))) && (((5 < 6) || (7 < 8))))").withMathTex("{\\left({{1}\\geq{2}}\\lor{{3}\\leq{4}}\\right)}\\land{\\left({{5}<{6}}\\lor{{7}<{8}}\\right)}").withEvalRes(true),
         };
         QADataSuites.put("logicalExpressions", new QADataSuite(entries_logicalExpressions, false));
 
