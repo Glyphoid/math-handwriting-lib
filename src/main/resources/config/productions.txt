@@ -338,6 +338,22 @@ _STRINGIZE_		( n1 _SPACE_ _LOGICAL_AND_ _SPACE_ n2 )
 _MATH_TEX_      { n1 } \land { n2 }
 _EVAL_			LOGICAL_BINARY_OP(n0, n1, n2)
 
+---
+LOGICAL_OR_TERM
+LOGICAL_AND_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+---
+LOGICAL_OR_TERM
+LOGICAL_OR_OP
+LOGICAL_AND_TERM : {AlignMiddle(0), PositionWest(0)} # Left expression
+LOGICAL_OR_TERM : {AlignMiddle(0), PositionEast(0)} # Right expression
+_STRINGIZE_		( n1 _SPACE_ _LOGICAL_OR_ _SPACE_ n2 )
+_MATH_TEX_      { n1 } \lor { n2 }
+_EVAL_			LOGICAL_BINARY_OP(n0, n1, n2)
+
 --- # 27
 EXPR_LV3
 ADDITION
@@ -383,7 +399,6 @@ SQROOT : {AlignMiddle(0), PositionEast(0)}
 _STRINGIZE_		n0 n1
 _MATH_TEX_      n0 n1
 _EVAL_ 			NEGATIVE(n1)
-
 
 --- # 33
 FRACTION_TERM
@@ -726,7 +741,7 @@ _EVAL_			n0
 
 ---
 ROOT
-LOGICAL_AND_TERM
+LOGICAL_OR_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0

@@ -311,8 +311,8 @@ public class Test_TokenSetParser {
     }
 
     @Test
-    public void testParser_comparisons() {
-        testParser("comparisons");
+    public void testParser_logicalExpressions() {
+        testParser("logicalExpressions");
     }
 
     @Test

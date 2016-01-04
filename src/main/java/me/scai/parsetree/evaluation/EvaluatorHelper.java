@@ -1,6 +1,5 @@
 package me.scai.parsetree.evaluation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -8,7 +7,6 @@ import java.util.regex.Matcher;
 import me.scai.parsetree.Node;
 
 public class EvaluatorHelper {
-//    static final Pattern argNamePatternPart = Pattern.compile("__funcArg[0-9]+__");
     static final Pattern argNamePattern = Pattern.compile("__stack[0-9]+__funcArg[0-9]+__.*__");
     
     public static String genInternalFuncArgName(int stackHeight, int argIdx, String argOrigName) {

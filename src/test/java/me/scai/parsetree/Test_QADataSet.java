@@ -539,7 +539,7 @@ public class Test_QADataSet {
         QADataSuites.put("predefinedConstants", new QADataSuite(entries_predefinedConstants, false));
 
         /* Comparisons */
-        QADataEntry[] entries_comparisons = {
+        QADataEntry[] entries_logicalExpressions = {
             new QADataEntry("sim_242", "(2 > 1)").withMathTex("{2}>{1}").withEvalRes(true),
             new QADataEntry("sim_243", "(-1 < 4)").withMathTex("{-{1}}<{4}").withEvalRes(true),
             new QADataEntry("sim_244", "((2 + 1) > 0)").withMathTex("{{2}+{1}}>{0}").withEvalRes(true),
@@ -554,8 +554,13 @@ public class Test_QADataSet {
             new QADataEntry("sim_253", "((1 < 2) && (3 <= 4))").withMathTex("{{1}<{2}}\\land{{3}\\leq{4}}").withEvalRes(true),
             new QADataEntry("sim_254", "(((0 = 0) && (1 = 2)) && (3 = 4))").withMathTex("{{{0}={0}}\\land{{1}={2}}}\\land{{3}={4}}").withEvalRes(false),
             new QADataEntry("sim_255", "((((1 / 2) > (sqrt((1 / 2)))) && (0 <= 9)) && (-1 < c))").withMathTex("{{{\\frac{1}{2}}>{\\sqrt{\\frac{1}{2}}}}\\land{{0}\\leq{9}}}\\land{{-{1}}<{c}}").withEvalRes(false),
+            new QADataEntry("sim_256", "((12 > 3) || (4 < -5))").withMathTex("{{12}>{3}}\\lor{{4}<{-{5}}}").withEvalRes(true),
+            new QADataEntry("sim_257", "((((3 ^ 2) >= 1) && (0 = 0)) || (5 > 8))").withMathTex("{{{{3}^{2}}\\geq{1}}\\land{{0}={0}}}\\lor{{5}>{8}}").withEvalRes(true),
+            new QADataEntry("sim_258", "((1 < -3) || ((8 = 8) && (9 >= (9 / 1))))").withMathTex("{{1}<{-{3}}}\\lor{{{8}={8}}\\land{{9}\\geq{\\frac{9}{1}}}}").withEvalRes(true),
+            new QADataEntry("sim_259", "(((sin(3) < 0) && (5 < 4)) || ((cos(8) < 0) && (2 = 2)))").withMathTex("{{{\\sin{3}}<{0}}\\land{{5}<{4}}}\\lor{{{\\cos{8}}<{0}}\\land{{2}={2}}}").withEvalRes(true),
+            new QADataEntry("sim_260", "((1 >= 2) || (((3 >= (4 ^ 5)) && (6 < 7)) || (8 = 9)))").withMathTex("{{1}\\geq{2}}\\lor{{{{3}\\geq{{4}^{5}}}\\land{{6}<{7}}}\\lor{{8}={9}}}").withEvalRes(false),
         };
-        QADataSuites.put("comparisons", new QADataSuite(entries_comparisons, false));
+        QADataSuites.put("logicalExpressions", new QADataSuite(entries_logicalExpressions, false));
 
         /* Token sets with incorrect syntax */
         QADataEntry[] entries_incorrectSyntax = {

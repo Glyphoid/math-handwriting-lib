@@ -24,7 +24,6 @@ public class ParseTreeEvaluator {
 
 	/* Member variables */
 	/* Constants */
-	// final static String passFuncName = "PASS";
 	private GraphicalProductionSet prodSet;
 
 	Map<String, String> sumString2FuncNameMap = new HashMap<>();
@@ -454,7 +453,7 @@ public class ParseTreeEvaluator {
         final boolean by;
         if (y.getClass() == Boolean.class) {
             by = (Boolean) y;
-        } else if (x instanceof ValueUnion) {
+        } else if (y instanceof ValueUnion) {
             by = ((ValueUnion) y).getBoolean();
         } else {
             throw new ParseTreeEvaluatorException("Unexpected operand class for logical binary operator: " + x.getClass().getName());
@@ -467,6 +466,9 @@ public class ParseTreeEvaluator {
         switch (opStr) {
             case "gr_La": // Logical AND (Lambda)
                 res = bx && by;
+                break;
+            case "V": // Logical OR (Vee)
+                res = bx || by;
                 break;
             default:
                 throw new ParseTreeEvaluatorException("Unrecognized binary logical operator: \"" + opStr + "\"");
