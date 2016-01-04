@@ -1,7 +1,5 @@
 # math-handwriting-lib
-===========================================================================
-A parser and evaluator of handwritten mathematical formulae (Java)
-===========================================================================
+# A parser and evaluator of handwritten mathematical formulae (Java)
 
 [![Build & Test on Travis CI](https://travis-ci.org/Glyphoid/math-handwriting-lib.svg?branch=master)](https://travis-ci.org/Glyphoid/math-handwriting-lib)
 
