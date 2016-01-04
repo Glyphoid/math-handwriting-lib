@@ -1,1 +1,5 @@
 language: java
+
+install:
+  - mkdir /home/travis/java-worker-pool
+  - ls -l /home/travis/java-worker-pool
