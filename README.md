@@ -1,5 +1,4 @@
 # math-handwriting-lib
-
 ===========================================================================
 A parser and evaluator of handwritten mathematical formulae (Java)
 ===========================================================================
