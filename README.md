@@ -14,19 +14,20 @@ List of currently supported math notation syntaxes:
 
 1. Numerical values: Decimal numbers, negative/positive signs
 2. Basic arithemtics: Addition, subtraction, multplication
-3. Exponentiation
-4. Square root
-5. Parentheses (Limited support so far)
-6. Variable definition and arithmetics: Symbol names including Latin and Greek letters, with or without suffixes
-7. Function definition and evaluation: Multi-argument function supported
-8. Matrices and vectors: Sparse matrix notations supported, addition, multiplication, transpose, inverse
-9. Certain common elementary functions: e.g., sin, cos, log, exp
-10. Certain matrix functions: det, rank
-11. Summation (Sigma) and product (Pi) expressions
-12. Definite integrals
-13. Numerical comparisons (e.g., >, <, =) 
-14. Logical AND / OR expressions
-15. Common mathematical and scientific constants, such as pi, e and c
+3. Fractions
+4. Exponentiation
+5. Square root
+6. Parentheses (Limited support so far)
+7. Variable definition and arithmetics: Symbol names including Latin and Greek letters, with or without suffixes
+8. Function definition and evaluation: Multi-argument function supported
+9. Matrices and vectors: Sparse matrix notations supported, addition, multiplication, transpose, inverse
+10. Certain common elementary functions: e.g., sin, cos, log, exp
+11. Certain matrix functions: det, rank
+12. Summation (Sigma) and product (Pi) expressions
+13. Definite integrals
+14. Numerical comparisons (e.g., >, <, =) 
+15. Logical AND / OR expressions
+16. Common mathematical and scientific constants, such as pi, e and c
 
 ## Build and Test
 1. Make sure that you have the following installed:
