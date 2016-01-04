@@ -2,4 +2,7 @@ language: java
 
 install:
   - mkdir /home/travis/java-worker-pool
-  - ls -l /home/travis/java-worker-pool
+  - git clone https://github.com/Glyphoid/java-worker-pool.git /home/travis/java-worker-pool
+  - mvn -f /home/travis/java-worker-pool/pom.xml clean install -DskipTests
+
+
