@@ -27,7 +27,6 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     private static final String CURRENT_TOKEN_SET_JSON_KEY    = "currentTokenSet";
     private static final String ABSTRACT_2_WRITTEN_TOKEN_UUIDS_JSON_KEY = "abstract2WrittenTokenUuids";
 
-
     private static final int STATE_STACK_CAPACITY = 20;
 
     /* Member variables */

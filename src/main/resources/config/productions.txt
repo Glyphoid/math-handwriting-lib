@@ -75,42 +75,42 @@ _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 36
+--- # 10
 EXPR_LV0_6
 SQROOT_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_ 			n0
 
---- # 36
+--- # 11
 EXPR_LV0_6
 VARIABLE_EXPONENTIATION
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 23
+--- # 12
 EXPR_LV1
 EXPR_LV0_6
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 23
+--- # 13
 EXPR_LV1
 MULTIPLICATION_VAR
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 11
+--- # 14
 EXPR_LV1
 FRACTION_TERM
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 12
+--- # 15
 EXPR_LV1			# Addition with parentheses
 ADDITION
 PARENTHESIS_L : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
@@ -119,7 +119,7 @@ _STRINGIZE_ 	( n0 )
 _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
 
---- # 13
+--- # 16
 EXPR_LV1			# Subtraction with parentheses
 SUBTRACTION
 PARENTHESIS_L : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
@@ -128,7 +128,7 @@ _STRINGIZE_ 	( n0 )
 _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
 
---- # 14
+--- # 17
 EXPR_LV0_5
 MULTIPLICATION
 PARENTHESIS_L : {AlignMiddle(0), PositionWest(0)}	# Left parenthesis
@@ -137,21 +137,21 @@ _STRINGIZE_ 	( n0 )
 _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
 
----
+--- # 18
 EXPR_LV1_5
 EXPR_LV1
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
----
+--- # 19
 EXPR_LV1_5
 EXPONENTIATION
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
 
---- # 15
+--- # 20
 MULTIPLICATION		(ASSOC: ASSOC_LEFT_3B: MULTIPLICATION)
 MULT_OP
 EXPR_LV1_5 : {AlignMiddle(0), PositionWest(0)} # 1st number
@@ -160,7 +160,7 @@ _STRINGIZE_		( n1 _SPACE_ * _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_MULTIPLY_OP(n0) { n2 }
 _EVAL_			MULTIPLY(n1, n2)
 
----
+--- # 21
 VARIABLE_EXPONENTIATION    # The exponentiation of a variable, e.g., a^2, a^b, a^sqrt(a), a^(1/3) (without the parentheses). TODO: Given that it includes so many different types of stuff now, perhaps it should be renamed
 VARIABLE_EVALUATED
 EXPR_LV4 : {AlignBottomNorthPastMiddle(0), AlignTopNorthPastTop(0), PositionGenEast(0)}	# The non-head is the exponent.
@@ -168,7 +168,7 @@ _STRINGIZE_		( n0 _SPACE_ ^ _SPACE_ n1 )		# _SPACE_ is a single space
 _MATH_TEX_      { n0 } ^ { n1 }
 _EVAL_			EXPONENTIATION(n0, n1) 		# TODO: Fix bug
 
----
+--- # 22
 VARIABLE_EXPONENTIATION
 VARIABLE_EVALUATED
 _STRINGIZE_		n0
@@ -365,10 +365,19 @@ _EVAL_			n0
 LOGICAL_OR_TERM
 LOGICAL_OR_OP
 LOGICAL_AND_TERM : {AlignMiddle(0), PositionWest(0)} # Left expression
-LOGICAL_OR_TERM : {AlignMiddle(0), PositionEast(0)} # Right expression
+LOGICAL_OR_TERM  : {AlignMiddle(0), PositionEast(0)} # Right expression
 _STRINGIZE_		( n1 _SPACE_ _LOGICAL_OR_ _SPACE_ n2 )
 _MATH_TEX_      { n1 } \lor { n2 }
 _EVAL_			LOGICAL_BINARY_OP(n0, n1, n2)
+
+--- # PROBLEMATIC
+IF_STATEMENT
+COMMA
+EXPR_LV4                : {PositionGenWest(0)} # Value expression
+LOGICAL_OR_TERM         : {PositionGenEast(0)} # Logical predicament
+_STRINGIZE_		( n1 ) _SPACE_ _IF_ _SPACE_ n2
+_MATH_TEX_      { n1 } ,\;\text{if SPACE() } { n2 }
+_EVAL_			n1  # TODO: Implement conditional eval to the value (or Null otherwise)
 
 --- # 27
 EXPR_LV3
@@ -758,6 +767,13 @@ _EVAL_			n0
 ---
 ROOT
 LOGICAL_OR_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+---
+ROOT        # TODO: Merge into CASES statement
+IF_STATEMENT
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0

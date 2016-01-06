@@ -9,9 +9,11 @@ import me.scai.handwriting.*;
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
 
 public class GraphicalProductionSet {
-	private static final String commentString = "#";
+    /* Constants */
+	private static final String COMMENT_STRING = "#";
 	private static final String separatorString = "---";
-	
+
+    /* Member variables */
 	public ArrayList<GraphicalProduction> prods = new ArrayList<>(); /* List of productions */
     public ArrayList<String> prodSumStrings = new ArrayList<>(); /* List of productions */
 
@@ -21,10 +23,13 @@ public class GraphicalProductionSet {
 	
 	public TerminalSet terminalSet;
 	private int [] searchIdx = null;
+
+    private Map<String, List<Integer>> lhs2ProdIndices; // Map from lhs name to all possible production indicies
+    private ArrayList<Set<String>> requiredTermTypes; // Required terminal types of the productions
 	/* The array of possible terminal type for each production. 
 	 * Calculated by the private method: calcTermTypes() */
-	
-//	private HashMap<String, ArrayList<String> > ntTerminalTypes = new HashMap<String, ArrayList<String> >();			
+
+//	private HashMap<String, ArrayList<String> > ntTerminalTypes = new HashMap<String, ArrayList<String> >();
 	/* Used during calcTermTypes(int i) */
 	
 	/* Methods */
@@ -43,9 +48,13 @@ public class GraphicalProductionSet {
 	public int numProductions() {
 		return prods.size();
 	}
-	
-	
-	private void readProductionsFromLines(String [] lines, TerminalSet termSet) {
+
+    /**
+     * Read production set from lines of the configuration file
+     * @param lines
+     * @param termSet
+     */
+	private void readProductionsFromLines(String[] lines, TerminalSet termSet) {
 		terminalSet = termSet;
 		
 		int idxLine = 0;
@@ -66,15 +75,18 @@ public class GraphicalProductionSet {
 			
 			/* Construct a new production from the list of strings */			
 			try {
-				if ( pLines.get(0).startsWith(separatorString) )
-					pLines.remove(0);
+				if ( pLines.get(0).startsWith(separatorString) ) {
+                    pLines.remove(0);
+                }
 
                 GraphicalProduction gp = GraphicalProduction.genFromStrings(pLines, termSet);
 				prods.add(gp);
                 prodSumStrings.add(gp.sumString);
 			}
 			catch ( Exception e ) {
-				System.err.println(e.getMessage());
+				e.printStackTrace();
+
+                throw new IllegalStateException("Reading of graphical productions failed due to: " + e.getMessage());
 			}
 		}
 
@@ -82,6 +94,8 @@ public class GraphicalProductionSet {
 		for (int i = 0; i < searchIdx.length; ++i) {
 			searchIdx[i] = i;
 		}
+
+        calcRequiredTermTypes();
 	}
 	
 	/* Read productions from production list file */
@@ -90,7 +104,7 @@ public class GraphicalProductionSet {
 	{
 		String [] lines;
 		try {
-			lines = TextHelper.readLinesTrimmedNoComment(prodListFileName, commentString);
+			lines = TextHelper.readLinesTrimmedNoComment(prodListFileName, COMMENT_STRING);
 		}
 		catch ( FileNotFoundException fnfe ) {
 			throw fnfe;
@@ -101,6 +115,136 @@ public class GraphicalProductionSet {
 		
 		readProductionsFromLines(lines, termSet);
 	}
+
+    private void calcLHS2ProdIndices() {
+        if (prods == null || prods.isEmpty()) {
+            throw new IllegalStateException("Cannot calculate required terminal types because productions have not been initialized");
+        }
+
+        final int np = prods.size();
+
+        lhs2ProdIndices = new HashMap<>();
+        for (int i = 0; i < np; ++i) {
+            GraphicalProduction prod = prods.get(i);
+
+            if ( !lhs2ProdIndices.containsKey(prod.lhs) ) {
+                List<Integer> prodIndices = new ArrayList<>();
+                prodIndices.add(i);
+
+                lhs2ProdIndices.put(prod.lhs, prodIndices);
+            } else {
+                lhs2ProdIndices.get(prod.lhs).add(i);
+            }
+        }
+    }
+
+    /* Analyze the productions to determine the terminal type requirements of each production */
+    private void calcRequiredTermTypes() {
+        if (prods == null || prods.isEmpty()) {
+            throw new IllegalStateException("Cannot calculate required terminal types because productions have not been initialized");
+        }
+
+        final int np = prods.size(); // Number of productions
+
+        if (lhs2ProdIndices == null || lhs2ProdIndices.isEmpty()) {
+            calcLHS2ProdIndices();
+        }
+
+        // Cached results for performance
+        Map<String, List<String>> lhs2RequiredTermTypes = new HashMap<>();
+
+        requiredTermTypes = new ArrayList<>();
+        requiredTermTypes.ensureCapacity(np);
+        for (int i = 0; i < np; ++i) {
+            requiredTermTypes.add(null);
+        }
+
+//        // Not transitive
+//        for (int i = 0; i < np; ++i) {
+//            GraphicalProduction prod = prods.get(i);
+//
+//            for (int j = 0;j < prod.rhs.length; ++j) {
+//                if (prod.rhsIsTerminal[j]) {
+//                    requiredTermTypes.get(i).add(prod.rhs[j]);
+//                }
+//            }
+//        }
+
+        for (int i = 0; i < np; ++i) {
+            calcRequiredTermTypes(i);
+        }
+
+    }
+
+    private Set<String> calcRequiredTermTypes(int prodIdx) {
+        GraphicalProduction prod = prods.get(prodIdx);
+
+        if (requiredTermTypes.get(prodIdx) != null) {
+            // Already calculated
+            return requiredTermTypes.get(prodIdx);
+        }
+
+        Set<String> termTypes = new HashSet<>();
+
+        for (int j = 0;j < prod.rhs.length; ++j) {
+            final String rhs = prod.rhs[j];
+
+            if (prod.rhsIsTerminal[j]) {
+                termTypes.add(rhs);
+            } else {
+                List<Integer> prodIndices = getProductionIndicesFromLHS(rhs);
+
+                /* These are all the possible production indices. We need to calculate an intersect of their required
+                   terminal types. */
+
+                /* Iterate through all possible children prods */
+                ArrayList<Set<String>> childTermTypeSets = new ArrayList<>();
+                for (int childProdIdx : prodIndices) {
+                    if (childProdIdx == prodIdx) {
+//                            prods.get(childProdIdx).lhs.equals(prods.get(prodIdx).lhs)) {
+                        continue;   // Avoid infinite loop
+                    }
+
+                    if (childProdIdx < prodIdx) {
+                        if (requiredTermTypes.get(childProdIdx) != null) {
+                            childTermTypeSets.add(requiredTermTypes.get(childProdIdx));
+                        } else {
+                            childTermTypeSets.add(new HashSet<String>());
+                            // TODO: This is not strictly correct, but doesn't break correctness of the parsing result.
+                            //       The correct implementation probably requires a topological sort of the productions.
+                        }
+                    } else {
+                        if (requiredTermTypes.get(childProdIdx) != null) {
+                            childTermTypeSets.add(requiredTermTypes.get(childProdIdx));
+                        } else {
+                            childTermTypeSets.add(calcRequiredTermTypes(childProdIdx));
+                        }
+                    }
+                }
+
+                /* Get the set intersection */
+
+                if (!childTermTypeSets.isEmpty()) {
+                    Set<String> childTermTypes = childTermTypeSets.get(0);
+                    for (int i = 1; i < childTermTypeSets.size(); ++i) {
+                        childTermTypes.retainAll(childTermTypeSets.get(i));
+                    }
+
+                    termTypes.addAll(childTermTypes);
+                }
+
+//                    lhs2TermTypes.put(rhs, childTermTypes);
+            }
+        }
+
+        requiredTermTypes.set(prodIdx, termTypes);
+        return termTypes;
+
+    }
+
+    public List<Integer> getProductionIndicesFromLHS(String lhs) {
+        return lhs2ProdIndices.get(lhs);
+    }
 	
 	/* Read productions from production list file at a URL */
 	public void readProductionsFromUrl(URL prodListFileUrl, TerminalSet termSet)
@@ -108,9 +252,8 @@ public class GraphicalProductionSet {
 	{
 		String [] lines;
 		try {
-			lines = TextHelper.readLinesTrimmedNoCommentFromUrl(prodListFileUrl, commentString);
-		}
-		catch ( IOException ioe ) {
+			lines = TextHelper.readLinesTrimmedNoCommentFromUrl(prodListFileUrl, COMMENT_STRING);
+		} catch ( IOException ioe ) {
 			throw ioe;
 		}
 		
@@ -134,13 +277,9 @@ public class GraphicalProductionSet {
 			                         int [] searchSubsetIdx, 
 			                         TerminalSet termSet, 
 			                         String lhs,
-			                         ArrayList<int [][]> idxPossibleHead, 
-			                         boolean bDebug) throws InterruptedException {
+			                         ArrayList<int [][]> idxPossibleHead) throws InterruptedException {
 		/* TODO: Make use of geomShortcuts */
-		
-		if ( bDebug )
-			System.out.println("Calling getIdxValidProds on token set: " + tokenSet);
-		
+
 		if ( idxPossibleHead.size() != 0 ) {
 			System.err.println("WARNING: Input ArrayList of int [], idxPossibleHead, is not empty.");
 			idxPossibleHead.clear();
@@ -162,10 +301,45 @@ public class GraphicalProductionSet {
 			}
 
 			idxValidProdsList_woExclude.add(prodIdx);
-			
-			boolean bExclude = false;
-			
-			/* Flags for exclusion due to extra terminal nodes */
+
+            /* Exclusion due to missing terminal types */
+            boolean excluded4MissingTermType = false;
+
+            //TODO: Refactor the following code into a function
+            if ( !requiredTermTypes.get(prodIdx).isEmpty() ) {
+                List<String> requiredTypes = new LinkedList<>();
+                requiredTypes.addAll(requiredTermTypes.get(prodIdx));
+
+                for (int k = 0; k < tokenSet.nTokens(); ++k) {
+                    AbstractToken token = tokenSet.tokens.get(k);
+
+                    if (token instanceof CWrittenToken) {
+                        String tokenName = token.getRecogResult();
+
+                        Iterator<String> reqTypeIter = requiredTypes.iterator();
+                        while (reqTypeIter.hasNext()) {
+                            String type = reqTypeIter.next();
+                            if (termSet.match(tokenName, type)) {
+                                requiredTypes.remove(type);
+                                break;
+                            }
+                        }
+
+                        if (requiredTypes.isEmpty()) {
+                            break;
+                        }
+                    }
+                }
+
+                if (!requiredTypes.isEmpty()) {
+                    excluded4MissingTermType = true;
+                }
+            }
+
+
+            /* Flags for exclusion due to extra terminal types for the given production */
+			boolean excluded4WrongTermType = false;
+
             List<String> possibleTermTypesList = terminalTypes.get(prodIdx);
 			
 			for (int k = 0; k < tokenSet.nTokens(); ++k) {
@@ -175,7 +349,7 @@ public class GraphicalProductionSet {
                     String tokenName = token.getRecogResult();
 
                     if ( !termSet.typeListContains(possibleTermTypesList, tokenName) ) {
-                        bExclude = true;
+                        excluded4WrongTermType = true;
                         break;
                     }
                 } else if (token instanceof NodeToken) {
@@ -185,8 +359,8 @@ public class GraphicalProductionSet {
                 }
 
 			}
-			
-			if ( bExclude ) {
+
+			if ( excluded4MissingTermType || excluded4WrongTermType ) {
 				continue;
 			}
 

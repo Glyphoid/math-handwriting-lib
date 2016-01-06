@@ -49,8 +49,9 @@ public class ParseTreeMathTexifier {
 	static int [] getTexFunctionArgIndices(String item) {
 		if (item.indexOf("(") == -1 || item.indexOf(")") == -1) {
 			return null;
-		}
-		else {
+		} else if (item.indexOf(")") == item.indexOf("(") + 1) { // Empty arg list
+            return null;
+        } else {
 			String funcArgsStr = item.substring(item.indexOf("(") + 1, item.indexOf(")"));
 			
 			String [] funcArgs = funcArgsStr.split(",");
@@ -88,31 +89,32 @@ public class ParseTreeMathTexifier {
 			String texFunctionName = getTexFunctionName(instrItem);
 			
 			if ( texFunctionName != null ) { /* Special string */
-				int [] chIndices = getTexFunctionArgIndices(instrItem);
-				int chIdx = chIndices[0];
-				
+				int[] chIndices = getTexFunctionArgIndices(instrItem);
+
 				switch (texFunctionName) {	
 				case "GET_TEX_VAR_NOTATION":
-					s += getTexVarNotation(n.ch[chIdx].termName);
+					s += getTexVarNotation(n.ch[chIndices[0]].termName);
 					break;
 				case "GET_TEX_PLUS_OP":
-					s += getTexPlusOp(n.ch[chIdx].termName);
+					s += getTexPlusOp(n.ch[chIndices[0]].termName);
 					break;
 				case "GET_TEX_MINUS_OP":
-					s += getTexMinusOp(n.ch[chIdx].termName);
+					s += getTexMinusOp(n.ch[chIndices[0]].termName);
 					break;
 				case "GET_TEX_MULTIPLY_OP":
-					s += getTexMultiplyOp(n.ch[chIdx].termName);
+					s += getTexMultiplyOp(n.ch[chIndices[0]].termName);
 					break;
 				case "GET_TEX_ASSIGN_OP":
-					s += getTexAssignOp(n.ch[chIdx].termName);
+					s += getTexAssignOp(n.ch[chIndices[0]].termName);
 					break;
+                case "SPACE":
+                    s += " ";
+                    break;
 				default:
 					throw new RuntimeException("Unrecognized function name for TeXification: \"" + texFunctionName + "\"");					
 				}
 //				s += invokeTexFunction(texFunctionName, texFunctionNodeIdx); /* TODO: Use reflection */
-			}
-			else if ( instrItem.startsWith("n") ) { /* String content from the children nodes */
+			} else if ( instrItem.startsWith("n") ) { /* String content from the children nodes */
 				int iNode = Integer.parseInt( instrItem.substring(1, instrItem.length()) );
 				if ( iNode < 0 || iNode >= n.nc ) {
 					throw new RuntimeException("Node index (" + iNode 

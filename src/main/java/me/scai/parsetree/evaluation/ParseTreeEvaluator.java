@@ -15,6 +15,7 @@ import Jama.Matrix;
 import me.scai.parsetree.Node;
 import me.scai.parsetree.GraphicalProduction;
 import me.scai.parsetree.GraphicalProductionSet;
+import me.scai.parsetree.evaluation.program.ProgramKeyword;
 import me.scai.parsetree.scientific.ScientificConstants;
 import org.jscience.physics.amount.Amount;
 
@@ -674,6 +675,32 @@ public class ParseTreeEvaluator {
 		Method method = this.getClass().getMethod(funcName, argTypes);
 		return method;
 	}
+
+    public ProgramKeyword get_program_keyword_2char(Object s0, Object s1) {
+        assert(s0.getClass() == String.class);
+        assert(s1.getClass() == String.class);
+
+        final String str0 = ((String) s0).toUpperCase();
+        final String str1 = ((String) s1).toLowerCase();
+
+        final ProgramKeyword kw = ProgramKeyword.valueOf(str0 + str1);
+
+        return kw;
+    }
+
+    public ProgramKeyword get_program_keyword_3char(Object s0, Object s1, Object s2) {
+        assert(s0.getClass() == String.class);
+        assert(s1.getClass() == String.class);
+        assert(s2.getClass() == String.class);
+
+        final String str0 = ((String) s0).toUpperCase();
+        final String str1 = ((String) s1).toLowerCase();
+        final String str2 = ((String) s2).toLowerCase();
+
+        final ProgramKeyword kw = ProgramKeyword.valueOf(str0 + str1 + str2);
+
+        return kw;
+    }
 
 	public String string(Object s) {
 		@SuppressWarnings("rawtypes")

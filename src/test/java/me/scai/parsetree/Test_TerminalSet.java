@@ -14,10 +14,14 @@ import java.io.IOException;
 import java.net.URL;
 
 public class Test_TerminalSet {
+    /* Constants */
     private static final String TEST_ROOT_DIR        = TestHelper.TEST_ROOT_DIR;
 	private static final String RESOURCES_DIR        = "resources";
 	private static final String RESOURCES_CONFIG_DIR = "config";
 	private static final String TERMINALS_JSON_FILE  = "terminals.json";
+
+    /* Member variables */
+    TerminalSet ts;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -29,6 +33,18 @@ public class Test_TerminalSet {
 
 	@Before
 	public void setUp() throws Exception {
+        ts = new TerminalSet();
+
+        final URL tsJsonFileUrl = Test_TerminalSet.class.getClassLoader().getResource(
+                TEST_ROOT_DIR + File.separator + RESOURCES_DIR +
+                        File.separator + RESOURCES_CONFIG_DIR +
+                        File.separator + TERMINALS_JSON_FILE);
+        try {
+            ts.readFromJsonAtUrl(tsJsonFileUrl);
+        }
+        catch (IOException exc) {
+            fail("Failed due to IOException: " + exc.getMessage());
+        }
 	}
 
 	@After
@@ -37,19 +53,6 @@ public class Test_TerminalSet {
 
 	@Test
 	public void test() {
-		TerminalSet ts = new TerminalSet();
-
-		final URL tsJsonFileUrl = Test_TerminalSet.class.getClassLoader().getResource(
-                TEST_ROOT_DIR + File.separator + RESOURCES_DIR +
-				File.separator + RESOURCES_CONFIG_DIR + 
-				File.separator + TERMINALS_JSON_FILE);
-		try {
-			ts.readFromJsonAtUrl(tsJsonFileUrl);
-		}
-		catch (IOException exc) {
-			fail("Failed due to IOException: " + exc.getMessage());
-		}
-		
 		assertFalse(ts.token2TypesMap.isEmpty());
 		assertFalse(ts.type2TokenMap.isEmpty());
 		assertFalse(ts.token2TexNotationMap.isEmpty());
@@ -57,21 +60,32 @@ public class Test_TerminalSet {
 
 	@Test
 	public void testFactoryMethod() {
-		final URL tsJsonFileUrl = Test_TerminalSet.class.getClassLoader().getResource(
-				TEST_ROOT_DIR + File.separator + RESOURCES_DIR +
-				File.separator + RESOURCES_CONFIG_DIR + 
-				File.separator + TERMINALS_JSON_FILE);
-		
-		TerminalSet ts = null;
-		try {
-			ts = TerminalSet.createFromJsonAtUrl(tsJsonFileUrl);
-		}
-		catch (Exception exc) {
-			fail("Failed due to Exception: " + exc.getMessage());
-		}
-		
 		assertFalse(ts.token2TypesMap.isEmpty());
 		assertFalse(ts.type2TokenMap.isEmpty());
 		assertFalse(ts.token2TexNotationMap.isEmpty());
 	}
+
+    @Test
+    public void testTokenName2TokenTypeMatch() {
+        // WARNING: These assertions are dependent on the content of the terminal set config file
+
+        // Negative cases
+        assertFalse(ts.match("1", "COMPARATOR"));
+        assertFalse(ts.match("2", "COMPARATOR"));
+
+        assertFalse(ts.match("k", "TERMINAL(j)"));
+
+        // Positive cases
+        assertTrue(ts.match("gt", "COMPARATOR"));
+        assertTrue(ts.match("gte", "COMPARATOR"));
+
+        // Overloaded operators
+        assertTrue(ts.match("=", "COMPARATOR"));
+        assertTrue(ts.match("=", "ASSIGN_OP"));
+
+        assertTrue(ts.match("V", "VARIABLE_SYMBOL"));
+        assertTrue(ts.match("V", "LOGICAL_OR_OP"));
+
+        assertTrue(ts.match("i", "TERMINAL(i)"));
+    }
 }

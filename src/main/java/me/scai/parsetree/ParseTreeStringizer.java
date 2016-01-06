@@ -30,6 +30,7 @@ public class ParseTreeStringizer {
 		specialStringMap.put("_CLOSE_PAREN_", ")");
         specialStringMap.put("_LOGICAL_AND_", "&&");
 		specialStringMap.put("_LOGICAL_OR_", "||");
+        specialStringMap.put("_IF_", "if");
 
 		/* Create map of special mapping from terminal names in grammar definition to those in the
 		 * stringization results */ ;

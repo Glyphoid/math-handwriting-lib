@@ -42,15 +42,10 @@ public class TerminalSet {
 		String [] lines = null;
 		try {			
 			lines = TextHelper.readLinesTrimmedNoCommentFromUrl(tsFileUrl, commentString);
-		}
-		catch ( Exception e ) {
-//			throw new IOException("Failed to read terminal set from file: " + tsFileName);
+		} catch ( Exception e ) {
 			throw new IOException("Failed to read terminal set from URL: \"" + tsFileUrl + "\"");
 		}
-		
-//		System.out.println("Done calling readLinesTrimmedNoCommentFromUrl()"); //DEBUG
-//		System.out.println("lines.length = " + lines.length); //DEBUG
-		
+
 		/* Concatenate the lines to a single string */
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < lines.length; ++i) {

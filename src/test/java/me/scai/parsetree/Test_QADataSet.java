@@ -565,6 +565,13 @@ public class Test_QADataSet {
         };
         QADataSuites.put("logicalExpressions", new QADataSuite(entries_logicalExpressions, false));
 
+        QADataEntry[] entries_ifStatements = {
+            new QADataEntry("sim_264", "(3) if (x <= 0)").withMathTex("{3},\\;\\text{if }{{x}\\leq{0}}").withEvalRes(3.0), // TODO: Implement Eval for if statement
+            new QADataEntry("sim_265", "((x + y)) if (3 >= 2)").withMathTex("{{x}+{y}},\\;\\text{if }{{3}\\geq{2}}").withEvalRes(0.0), //TODO:
+            new QADataEntry("sim_267", "((4 / 5)) if ((x = 6) && (y = 7))").withMathTex("{\\frac{4}{5}},\\;\\text{if }{{{x}={6}}\\land{{y}={7}}}").withEvalRes(0.8), //TODO:
+        };
+        QADataSuites.put("ifStatements", new QADataSuite(entries_ifStatements, false));
+
         /* Token sets with incorrect syntax */
         QADataEntry[] entries_incorrectSyntax = {
            new QADataEntry("sim_167", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(ParseTreeEvaluator.EVAL_FAILED_STRING).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),

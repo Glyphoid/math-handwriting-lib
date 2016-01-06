@@ -21,7 +21,6 @@ public class TokenSetParser implements ITokenSetParser {
 	private int currDrillDepth = 0; /* Thread-safe? */
 
 	private boolean bDebug = false;
-	private boolean bDebug2 = false;
 
 	/* Temporary variables for parsing */
     private boolean usingMultiThreads = false;
@@ -119,7 +118,6 @@ public class TokenSetParser implements ITokenSetParser {
                                final CWrittenTokenSetNoStroke[][][] aRemainingSets)
         throws InterruptedException {
 
-		final boolean bDebug = false;
 		final float selectiveDrillThresh = recursionGeomScoreRatioThresh; /* To disable selective drill, set to 0.0f */
 
 		final String[] hashKey1 = new String[1];
@@ -129,10 +127,6 @@ public class TokenSetParser implements ITokenSetParser {
         String tHashKey = getHashCodeFromTokenSetAndIdxValidProds(tokenSet, idxValidProds);
 
         if (existsInEvalGeom2MaxScoreMap(tHashKey)) {
-			if (this.bDebug2) {
-                System.out.println("Hash map contains key: " + tHashKey);
-            }
-
 			Node[][] r_nodes = getFromEvalGeom2NodesMap(tHashKey);
 			for (int i = 0; i < r_nodes.length; ++i) {
                 nodes[i] = r_nodes[i];
@@ -150,10 +144,6 @@ public class TokenSetParser implements ITokenSetParser {
 
 			return getFromEvalGeom2MaxScoreMap(tHashKey);
 		}
-
-		if (this.bDebug2) {
-            System.out.println("evalGeometry: " + tHashKey);
-        }
 
 		/* First pass: Obtain the geometric scores without drill-down */
 		boolean[][] bToDrill = null;
@@ -389,7 +379,7 @@ public class TokenSetParser implements ITokenSetParser {
 
                                             if (singleNodeToken) {
 
-                                                d_idxValidProds_wwoe = gpSet.getIdxValidProds(d_tokenSet, null, termSet, d_lhs, d_idxPossibleHead, bDebug);
+                                                d_idxValidProds_wwoe = gpSet.getIdxValidProds(d_tokenSet, null, termSet, d_lhs, d_idxPossibleHead);
                                                 d_idxValidProds = d_idxValidProds_wwoe[0];
                                                 d_idxValidProds_noExclude = d_idxValidProds_wwoe[1];
 
@@ -432,7 +422,7 @@ public class TokenSetParser implements ITokenSetParser {
                                                     d_idxPossibleHead.add(iph);
                                                 }
                                             } else {
-                                                d_idxValidProds_wwoe = gpSet.getIdxValidProds(d_tokenSet, null, termSet, d_lhs, d_idxPossibleHead, bDebug);
+                                                d_idxValidProds_wwoe = gpSet.getIdxValidProds(d_tokenSet, null, termSet, d_lhs, d_idxPossibleHead);
                                                 d_idxValidProds = d_idxValidProds_wwoe[0];
                                                 d_idxValidProds_noExclude = d_idxValidProds_wwoe[1];
                                             }
@@ -540,7 +530,7 @@ public class TokenSetParser implements ITokenSetParser {
 			String hashKey = tokenSet.toString() + "@" + c_lhs;
 			if (!existsInTokenSetLHS2IdxValidProdsMap(tokenSet.toString())) {
 				c_idxValidProds_wwoe = gpSet.getIdxValidProds(tokenSet, null,
-						termSet, c_lhs, c_idxPossibleHead, this.bDebug);
+						termSet, c_lhs, c_idxPossibleHead);
 				c_idxValidProds = c_idxValidProds_wwoe[0];
 				c_idxValidProds_noExclude = c_idxValidProds_wwoe[1];
 
@@ -666,7 +656,7 @@ public class TokenSetParser implements ITokenSetParser {
 
 		String hashKey = tokenSet.toString() + "@" + lhs;
 		if ( !existsInTokenSetLHS2IdxValidProdsMap(hashKey) ) {
-			idxValidProds_wwoe = gpSet.getIdxValidProds(tokenSet, null, termSet, lhs, idxPossibleHead, this.bDebug);
+			idxValidProds_wwoe = gpSet.getIdxValidProds(tokenSet, null, termSet, lhs, idxPossibleHead);
 			idxValidProds = idxValidProds_wwoe[0];
 			// idxValidProds_noExclude = idxValidProds_wwoe[1];
 

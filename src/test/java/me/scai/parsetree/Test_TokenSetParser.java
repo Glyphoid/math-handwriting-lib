@@ -316,6 +316,11 @@ public class Test_TokenSetParser {
     }
 
     @Test
+    public void testParser_ifStatements() {
+        testParser("ifStatements");
+    }
+
+    @Test
     public void testParser_incorrectSyntax() {
         testParser("incorrectSyntax");
     }
