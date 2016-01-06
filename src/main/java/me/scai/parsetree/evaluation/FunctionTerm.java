@@ -1,5 +1,7 @@
 package me.scai.parsetree.evaluation;
 
+import me.scai.parsetree.ParseTreeStringizer;
+
 import java.util.List;
 
 public class FunctionTerm extends FunctionSigmaPiIntegralTerm {
@@ -69,15 +71,25 @@ public class FunctionTerm extends FunctionSigmaPiIntegralTerm {
 		/* TODO: Replace the symbol node in the body that match argument names with  
 		 *       special nodes. */
 		
-		Object out = evaluator.eval(this.evalBody);
+		Object out = evaluator.eval(evalBody);
 		
 		/* Recover argument names */
 //		this.setArgNames(origFuncArgNames);
 
 		return out;
 	}
-	
-	
+
+	/**
+	 * Stringize the full content of the function definition, including the name, arg list and body,
+	 * @return   Full description string
+     */
+	public String getFullDefinition(ParseTreeStringizer stringizer) {
+		String fullDef = toString();
+
+		fullDef += " := " + stringizer.stringize(evalBody);
+
+        return fullDef;
+	}
 
 	@Override
 	public String toString() {

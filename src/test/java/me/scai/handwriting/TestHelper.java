@@ -2,6 +2,8 @@ package me.scai.handwriting;
 
 import me.scai.parsetree.*;
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
+import me.scai.plato.engine.HandwritingEngine;
+import me.scai.plato.engine.HandwritingEngineImpl;
 
 import java.io.*;
 import java.net.URL;
@@ -9,12 +11,18 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class TestHelper {
+    /* Constants */
     public static final String TEST_ROOT_DIR          = "main";
     private static final String RESOURCES_DIR         = "resources";
     private static final String TERMINALS_FILE_NAME   = "terminals.json";
     private static final String PRODUCTIONS_FILE_NAME = "productions.txt";
     private static final String RESOURCES_CONFIG_DIR  = "config";
+
+    private static final String STROKE_CURATOR_CONFIG_FILE = "stroke_curator_config.json";
 
     public static class WorkerTuple {
         public GraphicalProductionSet gpSet;
@@ -25,6 +33,36 @@ public class TestHelper {
         public ParseTreeMathTexifier mathTexifier;
 
         public WorkerTuple() {}
+    }
+
+    /* Helper methods */
+    public static HandwritingEngine getHandwritingEngine() {
+        TokenRecogEngine tokenRecogEngine = null;
+        try {
+            tokenRecogEngine = readTokenEngine();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create token engine instance due to: " + e.getMessage());
+        }
+
+        assert(tokenRecogEngine != null);
+
+        // Create stroke curator
+        URL strokeCuratorConfigUrl = Thread.currentThread().getContextClassLoader().getResource(TEST_ROOT_DIR +
+                File.separator + RESOURCES_DIR +
+                File.separator + RESOURCES_CONFIG_DIR +
+                File.separator + STROKE_CURATOR_CONFIG_FILE);
+
+        StrokeCuratorConfigurable strokeCurator = new StrokeCuratorConfigurable(strokeCuratorConfigUrl, tokenRecogEngine);
+
+        // Create parser, stringizer, evaluator, etc.
+        TestHelper.WorkerTuple workerTuple = TestHelper.getTestWorkerTuple();
+
+        TokenSetParser tokenSetParser = workerTuple.tokenSetParser;
+
+        // Create handwriting engine
+        HandwritingEngine hwEng = new HandwritingEngineImpl(strokeCurator, tokenSetParser, workerTuple.gpSet, workerTuple.termSet);
+
+        return hwEng;
     }
 
     public static WorkerTuple getTestWorkerTuple() {
@@ -160,5 +198,37 @@ public class TestHelper {
         }
 
         return stroke;
+    }
+
+    public static void verifyTokenSet(HandwritingEngine hwEng, boolean[] isNodeToken, String[] trueTokenNames) {
+        final int tnt = isNodeToken.length; // True number of tokens
+
+        assert(trueTokenNames.length == tnt);
+
+        CWrittenTokenSetNoStroke wtSet = (CWrittenTokenSetNoStroke) hwEng.getTokenSet();
+
+        assertEquals(tnt, wtSet.getNumTokens());
+
+        for (int i = 0; i < tnt; ++i) {
+            if (isNodeToken[i]) {
+                assertTrue(wtSet.tokens.get(i) instanceof NodeToken);
+            } else {
+                assertTrue(wtSet.tokens.get(i) instanceof CWrittenToken);
+            }
+
+            assertEquals(trueTokenNames[i], wtSet.tokens.get(i).getRecogResult());
+        }
+    }
+
+    /* Test helper methods */
+    public static void verifyWrittenTokenSet(HandwritingEngine hwEng, String[] trueTokenNames) {
+        CWrittenTokenSet wtSet = hwEng.getWrittenTokenSet();
+
+        final int tnt = trueTokenNames.length; // True number of tokens
+        assertEquals(tnt, wtSet.getNumTokens());
+
+        for (int i = 0; i < tnt; ++i) {
+            assertEquals(trueTokenNames[i], wtSet.tokens.get(i).getRecogResult());
+        }
     }
 }

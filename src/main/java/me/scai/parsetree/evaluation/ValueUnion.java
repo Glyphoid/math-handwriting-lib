@@ -1,6 +1,8 @@
 package me.scai.parsetree.evaluation;
 
 import Jama.Matrix;
+import me.scai.parsetree.ParseTreeStringizer;
+import me.scai.parsetree.evaluation.matrix.MatrixHelper;
 import org.jscience.physics.amount.Amount;
 
 public class ValueUnion {
@@ -113,4 +115,32 @@ public class ValueUnion {
     public ValueType getValueType() {
         return valueType;
     }
+
+    public String getValueString(ParseTreeStringizer stringizer) {
+        String valStr;
+
+        if (valueType == ValueType.Boolean) {
+            valStr = Boolean.toString((Boolean) value);
+
+        } else if (valueType == ValueType.Double) {
+            valStr = Double.toString((Double) value);
+
+        } else if (valueType == ValueType.Matrix) {
+            valStr = MatrixHelper.matrix2String((Matrix) value);
+
+        } else if (valueType == ValueType.UserFunction) {
+            assert(valueType != null);
+
+            valStr = ((FunctionTerm) value).getFullDefinition(stringizer);
+
+        } else if (valueType == ValueType.PhysicalQuantity) {
+            valStr = ((Amount) value).toString();
+
+        } else {
+            throw new IllegalStateException("Encountered unexpected value type when trying to generate string representation of ValueUnion");
+        }
+
+        return valStr;
+    }
+
 }

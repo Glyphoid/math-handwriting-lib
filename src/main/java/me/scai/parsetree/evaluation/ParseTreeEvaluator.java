@@ -15,6 +15,7 @@ import Jama.Matrix;
 import me.scai.parsetree.Node;
 import me.scai.parsetree.GraphicalProduction;
 import me.scai.parsetree.GraphicalProductionSet;
+import me.scai.parsetree.evaluation.matrix.MatrixHelper;
 import me.scai.parsetree.evaluation.program.ProgramKeyword;
 import me.scai.parsetree.scientific.ScientificConstants;
 import org.jscience.physics.amount.Amount;
@@ -90,7 +91,7 @@ public class ParseTreeEvaluator {
 
 	    String evalResStr = "";
         if (evalRes.getClass().equals(Matrix.class)) {
-            evalResStr = matrix2String((Matrix) evalRes);
+            evalResStr = MatrixHelper.matrix2String((Matrix) evalRes);
         } else if (evalRes.getClass().equals(FunctionTerm.class)) {
             evalResStr = ((FunctionTerm) evalRes).toString();
         } else {
@@ -109,29 +110,7 @@ public class ParseTreeEvaluator {
 		return evalRes2String(evalRes);
 	}
 
-	/* Convert a matrix to a string */
-	private String matrix2String(Matrix m) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
 
-		int nr = m.getRowDimension();
-		int nc = m.getColumnDimension();
-		for (int i = 0; i < nr; ++i) {
-			for (int j = 0; j < nc; ++j) {
-				sb.append("" + m.get(i, j));
-				if (j < nc - 1) {
-					sb.append(", ");
-				}
-			}
-
-			if (i < nr - 1) {
-				sb.append("; ");
-			}
-		}
-
-		sb.append("]");
-		return sb.toString();
-	}
 
 	/* Trace direct ancestor and see if a certain production is included in it */
 	private boolean hasDirectAncestor(String targProd) {
@@ -769,7 +748,7 @@ public class ParseTreeEvaluator {
 
 		if (b.getClass().equals(Matrix.class)) {
 			varMap.addVar(varName, new ValueUnion((Matrix) b));
-			s = matrix2String((Matrix) b);
+			s = MatrixHelper.matrix2String((Matrix) b);
 		} else if (b.getClass().equals(String.class)) {
             varMap.addVar(varName, new ValueUnion(Double.parseDouble((String) b)));
 			s = (String) b;
