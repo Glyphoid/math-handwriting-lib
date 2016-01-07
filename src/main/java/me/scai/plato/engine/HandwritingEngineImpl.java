@@ -11,7 +11,7 @@ import me.scai.handwriting.*;
 
 import me.scai.parsetree.*;
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
-import me.scai.parsetree.evaluation.ParseTreeEvaluatorException;
+import me.scai.parsetree.evaluation.exceptions.ParseTreeEvaluatorException;
 
 import me.scai.parsetree.evaluation.PlatoVarMap;
 import me.scai.parsetree.evaluation.ValueUnion;

@@ -1,6 +1,7 @@
 package me.scai.parsetree.evaluation;
 
 import me.scai.parsetree.ParseTreeStringizer;
+import me.scai.parsetree.evaluation.exceptions.ParseTreeEvaluatorException;
 
 import java.util.List;
 

@@ -15,6 +15,7 @@ import Jama.Matrix;
 import me.scai.parsetree.Node;
 import me.scai.parsetree.GraphicalProduction;
 import me.scai.parsetree.GraphicalProductionSet;
+import me.scai.parsetree.evaluation.exceptions.*;
 import me.scai.parsetree.evaluation.matrix.MatrixHelper;
 import me.scai.parsetree.evaluation.program.ProgramKeyword;
 import me.scai.parsetree.scientific.ScientificConstants;
@@ -217,7 +218,14 @@ public class ParseTreeEvaluator {
 			try {
 				evalRes = m.invoke(this, args);
 			}  catch (InvocationTargetException iteExc) {
-				throw new ParseTreeEvaluatorException("Evaluation failed due to InvocationTargetException");
+
+				ParseTreeEvaluatorException rootCause = ParseTreeEvaluatorHelper.findRootCause(iteExc);
+
+				if (rootCause != null) {
+					throw rootCause;
+				} else {
+					throw new ParseTreeEvaluatorException("Evaluation failed due to InvocationTargetException");
+				}
 			} 
 			catch (IllegalAccessException iaeExc) {
 				throw new ParseTreeEvaluatorException("Evaluation failed due to IllegalAccessExcpetion");
@@ -244,7 +252,7 @@ public class ParseTreeEvaluator {
 		} else if (x.getClass().equals(ValueUnion.class)) {
             return ((ValueUnion) x).getDouble();
         } else {
-			throw new RuntimeException("Unexpected type: " + x.getClass());
+			throw new IllegalArgumentException("Unexpected type: " + x.getClass());
 		}
 	}
 
@@ -540,8 +548,7 @@ public class ParseTreeEvaluator {
 		double d_x = getDouble(x);
 
 		if (d_x < 0.0) {
-			throw new SquareRootOfNegativeException(
-					"Attempt to get the square root of negative number " + d_x);
+			throw new SquareRootOfNegativeException();
 		}
 
 		double y = Math.sqrt(d_x);
@@ -552,9 +559,7 @@ public class ParseTreeEvaluator {
 		double d_x = getDouble(x);
 
 		if (d_x <= 0.0) {
-			throw new LogarithmOfNonPositiveException(
-					"Attempt to take the logarithm of non-positive number "
-							+ d_x);
+			throw new LogarithmOfNonPositiveException();
 		}
 
 		double y = Math.log(d_x);
@@ -579,8 +584,7 @@ public class ParseTreeEvaluator {
 
 	public double det(Object x) throws InvalidArgumentForMatrixOperation {
 		if (!x.getClass().equals(Matrix.class)) {
-			throw new InvalidArgumentForMatrixOperation(
-					"Invalid argument type for matrix operation");
+			throw new InvalidArgumentForMatrixOperation("det");
 		}
 
 		return ((Matrix) x).det();
@@ -588,8 +592,7 @@ public class ParseTreeEvaluator {
 
 	public double rank(Object x) throws InvalidArgumentForMatrixOperation {
 		if (!x.getClass().equals(Matrix.class)) {
-			throw new InvalidArgumentForMatrixOperation(
-					"Invalid argument type for matrix operation");
+			throw new InvalidArgumentForMatrixOperation("rank");
 		}
 
 		return ((Matrix) x).rank();
@@ -943,7 +946,7 @@ public class ParseTreeEvaluator {
 		String functionName = funcTermInput.getFunctionName();
 		ValueUnion funcTermStoredVal = varMap.getVarValue(functionName);
 		if (funcTermStoredVal == null) {
-			throw new UndefinedFunctionException("Undefined function: \"" + functionName + "\"");
+			throw new UndefinedFunctionException(functionName);
 		}
 
 		FunctionTerm funcTermStored = funcTermStoredVal.getUserFunction(); /* TODO: check if function exists */

@@ -63,7 +63,8 @@ public class PlatoVarMap {
         if (varMap.containsKey(varName)) {
             return varMap.get(varName);
         } else {
-            if ( varName.substring(varName.indexOf("funcArg")).indexOf("__") !=
+            if ( varName.contains("funcArg") &&
+                    varName.substring(varName.indexOf("funcArg")).indexOf("__") !=
                     varName.substring(varName.indexOf("funcArg")).lastIndexOf("__") ) {
                 String[] parts = varName.split("__");
                 String varName1 = String.format("__%s__%s__", parts[1], parts[2]);

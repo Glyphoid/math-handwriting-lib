@@ -10,7 +10,7 @@ import java.util.List;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 import me.scai.handwriting.TestHelper;
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
-import me.scai.parsetree.evaluation.ParseTreeEvaluatorException;
+import me.scai.parsetree.evaluation.exceptions.ParseTreeEvaluatorException;
 
 import org.junit.After;
 import org.junit.Test;
@@ -115,7 +115,7 @@ public class Test_TokenSetParser {
                     evalRes = evaluator.eval(parseRoot);
                     evalResStr = evaluator.evalRes2String(evalRes);
                 } catch (ParseTreeEvaluatorException exc) {
-                    evalResStr = "[Evaluator exception occurred]";
+                    evalResStr = "Evaluation error: " + exc.getMessage();
                 }
 
             }
@@ -140,6 +140,11 @@ public class Test_TokenSetParser {
             
             /* Check eval result */
             if (tokenSetTrueEvalRes != null && tokenSetTrueEvalRes.getClass().equals(String.class)) {
+
+                assertTrue(tokenSetTrueEvalRes instanceof String);
+
+                // Assert that error occurred during parse-tree evaluation
+                assertTrue(evalResStr.contains((String) tokenSetTrueEvalRes));
 
             } else if (tokenSetTrueEvalResRange != null || tokenSetTrueEvalRes != null) {
                 /* Check type match */
@@ -323,5 +328,10 @@ public class Test_TokenSetParser {
     @Test
     public void testParser_incorrectSyntax() {
         testParser("incorrectSyntax");
+    }
+
+    @Test
+    public void testParser_evaluationError() {
+        testParser("evaluationError");
     }
 }

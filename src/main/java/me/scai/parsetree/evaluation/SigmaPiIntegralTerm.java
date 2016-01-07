@@ -1,5 +1,7 @@
 package me.scai.parsetree.evaluation;
 
+import me.scai.parsetree.evaluation.exceptions.ParseTreeEvaluatorException;
+
 import java.util.List;
 
 /* Parent class for sigma summation, pi product and integral terms */

@@ -1,6 +1,7 @@
 package me.scai.parsetree;
 
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
+import me.scai.parsetree.evaluation.exceptions.*;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -574,11 +575,21 @@ public class Test_QADataSet {
 
         /* Token sets with incorrect syntax */
         QADataEntry[] entries_incorrectSyntax = {
-           new QADataEntry("sim_167", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(ParseTreeEvaluator.EVAL_FAILED_STRING).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),
-           new QADataEntry("sim_168", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(ParseTreeEvaluator.EVAL_FAILED_STRING).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),
-           new QADataEntry("sim_169", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(ParseTreeEvaluator.EVAL_FAILED_STRING).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING)
+            new QADataEntry("sim_167", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(null).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),
+            new QADataEntry("sim_168", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(null).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),
+            new QADataEntry("sim_169", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(null).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING)
         };
         QADataSuites.put("incorrectSyntax", new QADataSuite(entries_incorrectSyntax, false));
+
+        /* Token sets with correct syntax that will trigger errors during evaluation */
+        QADataEntry[] entries_evaluationError = {
+            new QADataEntry("sim_266", "(0 ^ 0)").withEvalRes(new ZeroToZerothPowerException().getMessage()),
+            new QADataEntry("sim_268", "(sqrt(-7))").withEvalRes(new SquareRootOfNegativeException().getMessage()),
+            new QADataEntry("sim_270", "det(e)").withEvalRes(new InvalidArgumentForMatrixOperation("det").getMessage()),
+            new QADataEntry("sim_271", "log(-2)").withEvalRes(new LogarithmOfNonPositiveException().getMessage()),
+            new QADataEntry("sim_272", "f(y)").withEvalRes(new UndefinedFunctionException("f").getMessage()),
+        };
+        QADataSuites.put("evaluationError", new QADataSuite(entries_evaluationError, false));
     }
 	
 	/* ~Member variables */
