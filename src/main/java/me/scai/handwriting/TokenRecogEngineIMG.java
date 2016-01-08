@@ -345,7 +345,7 @@ public class TokenRecogEngineIMG extends TokenRecogEngine {
 	}	
 	
 	@Override
-	public void train(String inDirName) {
+	public void train(String inDirName, String outDataDirName) {
 		int testRatioDenom = 20;
 		int testRatioNumer = 3;
 		
@@ -598,7 +598,7 @@ public class TokenRecogEngineIMG extends TokenRecogEngine {
 			bvs[2] = bIncludeTokenNumStrokes;
 
 			tokEngine.setFeatures(ivs, bvs);
-			tokEngine.train(letterDir);
+			tokEngine.train(letterDir, null);
 
 			/* Test run on all the previous data */
 			/* Get the list of all .wt files */

@@ -165,7 +165,7 @@ public abstract class TokenRecogEngine implements Serializable {
 	}
 	
 	/* Abstract methods */	
-	public abstract void train(String inDirName);
+	public abstract void train(String inDirName, String outDataDirName);
 	
 	public abstract boolean isReadyToRecognize();
 	

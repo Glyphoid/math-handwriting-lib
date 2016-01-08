@@ -12,9 +12,7 @@ import java.util.*;
 
 public class MachineLearningHelper {
 
-
     public static DataSetWithStringLabels readDataFromDir(final String inDirName, TokenSettings tokenSettings) {
-
         DataSetWithStringLabels r = new DataSetWithStringLabels();
 
         File inDir = new File(inDirName);
@@ -29,7 +27,8 @@ public class MachineLearningHelper {
 
 		/* Recursively retrieve data from sub-directories */
         for (int i = 0; i < allFiles.length; ++i) {
-            if ( allFiles[i].isDirectory() ) {
+            if ( allFiles[i].isDirectory() &&
+                 allFiles[i].getName().indexOf(".") != 0 ) { // Skip hidden folders
                 System.out.println("Reading data from subdirectory: " + allFiles[i].getPath());
 
                 DataSetWithStringLabels dataSetWithStringLabels = readDataFromDir(allFiles[i].getPath(), tokenSettings);

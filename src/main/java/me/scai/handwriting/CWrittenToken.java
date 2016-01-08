@@ -536,23 +536,82 @@ public class CWrittenToken extends AbstractToken {
 	 * 	{startPointNormX, startPointNormY, endPointNormX, endPointNormY}
 	 */
 	public float [] getSEPV(final int maxNumStrokes) {
-		
+
 		float [] sepv = new float[4 * maxNumStrokes];
 		int ns = (nStrokes() <= maxNumStrokes) ? nStrokes() : maxNumStrokes;
-		
+
 		for (int i = 0; i < ns; ++i) {
 			int np = strokes.get(i).nPoints(); /* Number of points */
 			float [] sxs = strokes.get(i).getXs(); /* Stroke X values */
 			float [] sys = strokes.get(i).getYs(); /* Stroke Y values */
-			
+
 			sepv[i * 4] = sxs[0];
 			sepv[i * 4 + 1] = sys[0];
 			sepv[i * 4 + 2] = sxs[np - 1];
 			sepv[i * 4 + 3] = sys[np - 1];
 		}
-		
+
 		return sepv;
 	}
+
+    // Experimenting with adding min and max values of x and y to sepv
+//	public float [] getSEPV(final int maxNumStrokes) {
+//		// Each stroke has eight value
+//		// 0: start x
+//		// 1: start y
+//		// 2: end x
+//		// 3: end y
+//		// 4: min x
+//		// 5: min y
+//		// 6: max x
+//		// 7: max y
+//		float [] sepv = new float[8 * maxNumStrokes];
+//		int ns = (nStrokes() <= maxNumStrokes) ? nStrokes() : maxNumStrokes;
+//
+//		for (int i = 0; i < ns; ++i) {
+//			int np = strokes.get(i).nPoints(); /* Number of points */
+//			float [] sxs = strokes.get(i).getXs(); /* Stroke X values */
+//			float [] sys = strokes.get(i).getYs(); /* Stroke Y values */
+//
+//            int offset = i *4;
+//
+//			sepv[offset] = sxs[0];
+//			sepv[offset++] = sys[0];
+//			sepv[offset++] = sxs[np - 1];
+//			sepv[offset++] = sys[np - 1];
+//
+//			float min_x = Float.POSITIVE_INFINITY;
+//			float max_x = Float.NEGATIVE_INFINITY;
+//			float min_y = Float.POSITIVE_INFINITY;
+//			float max_y = Float.NEGATIVE_INFINITY;
+//
+//			for (int j = 0; j < np; ++j) {
+//				if (sxs[j] < min_x) {
+//					min_x = sxs[j];
+//				}
+//
+//				if (sxs[j] > max_x) {
+//					max_x = sxs[j];
+//				}
+//
+//				if (sys[j] < min_y) {
+//					min_y = sys[j];
+//				}
+//
+//				if (sys[j] > max_y) {
+//					max_y = sys[j];
+//				}
+//
+//			}
+//
+//            sepv[offset++] = min_x;
+//            sepv[offset++] = min_y;
+//            sepv[offset++] = max_x;
+//            sepv[offset++] = max_y;
+//		}
+//
+//		return sepv;
+//	}
 
 	
 	/* Convert the CWrittenToken to SDV (Stroke direction vector):

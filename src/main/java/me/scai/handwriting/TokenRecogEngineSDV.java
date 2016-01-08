@@ -45,6 +45,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	private transient TokenDegeneracy tokenDegen = null;
 	
 	/* Validation data */
+	transient List<float []> sdveDataTrain = null;
+	transient List<Integer> trueLabelsTrain = null;
+
 	transient List<float []> sdveDataValidation = null;
 	transient List<Integer> trueLabelsValidation = null;
 
@@ -237,10 +240,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		
 		train.finishTraining();
 	}	
-	
-	
+
 	@Override
-	public void train(String inDirName) {
+	public void train(String inDirName, String outDataDirName) {
 		if (inDirName.length() < 1) {
 			System.err.println("ERROR: The specified input directory name is empty");
 		} else {
@@ -257,8 +259,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 
 			Map<String, DataSet> divDataSets = readDataFromDir(inDirName, tokenNames);
 
-            List<float[]> sdveDataTrain = divDataSets.get("training").getX();
-            List<Integer> trueLabelsTrain = divDataSets.get("training").getY();
+            sdveDataTrain = divDataSets.get("training").getX();
+            trueLabelsTrain = divDataSets.get("training").getY();
 
             /* Data sanity checks */
             assert( !sdveDataTrain.isEmpty() );
@@ -277,13 +279,19 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 
             /* Write data to csv files */
             /* Write training data */
-            DataIOHelper.printFloatDataToCsvFile(sdveDataTrain, new File(inDirName, "sdve_train_data.csv"));
+            File f = new File(outDataDirName, "sdve_train_data.csv");
+            DataIOHelper.printFloatDataToCsvFile(sdveDataTrain, f);
+			System.out.println("Wrote training data to " + f.getAbsolutePath());
 
             /* Write validation data */
-            DataIOHelper.printFloatDataToCsvFile(sdveDataValidation, new File(inDirName, "sdve_validation_data.csv"));
+            f = new File(outDataDirName, "sdve_validation_data.csv");
+            DataIOHelper.printFloatDataToCsvFile(sdveDataValidation, f);
+            System.out.println("Wrote validation data to " + f.getAbsolutePath());
 
             /* Write test data */
-            DataIOHelper.printFloatDataToCsvFile(sdveDataTest, new File(inDirName, "sdve_test_data.csv"));
+            f = new File(outDataDirName, "sdve_test_data.csv");
+            DataIOHelper.printFloatDataToCsvFile(sdveDataTest, new File(outDataDirName, "sdve_test_data.csv"));
+            System.out.println("Wrote test data to " + f.getAbsolutePath());
 
             /* Write training labels */
             /* Determine the range of the label indices */
@@ -339,21 +347,31 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
             }
 
             /* Write train labels */
-            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTrain, nLabels,
-                                                        new File(inDirName, "sdve_train_labels.csv"));
+            f = new File(outDataDirName, "sdve_train_labels.csv");
+            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTrain, nLabels, f);
+            System.out.println("Wrote training labels to " + f.getAbsolutePath());
+
             /* Write validation labels */
-            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsValidation, nLabels,
-                                                        new File(inDirName, "sdve_validation_labels.csv"));
+            f = new File(outDataDirName, "sdve_validation_labels.csv");
+            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsValidation, nLabels, f);
+            System.out.println("Wrote validation labels to " + f.getAbsolutePath());
+
             /* Write test labels */
-            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTest, nLabels, new File(inDirName, "sdve_test_labels.csv"));
+            f = new File(outDataDirName, "sdve_test_labels.csv");
+            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTest, nLabels, f);
+            System.out.println("Wrote test labels to " + f.getAbsolutePath());
 
             /* Write token names file */
             PrintWriter pw = null;
             try {
-                pw = new PrintWriter(new File(inDirName, "token_names.txt"));
+                f = new File(outDataDirName, "token_names.txt");
+                pw = new PrintWriter(f);
                 for (String tokenName : tokenNames) {
                     pw.println(tokenName);
                 }
+
+                System.out.println("Wrote token names to " + f.getAbsolutePath());
+
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage());
             } finally {
@@ -568,7 +586,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		return (float) nErr / (float) nTested;
 	}
 
-    float getTestErrorRate() {
+    public float getTestErrorRate() {
         if ( sdveDataTest == null || trueLabelsTest == null )
             throw new RuntimeException("Test data have not be generated yet");
 
