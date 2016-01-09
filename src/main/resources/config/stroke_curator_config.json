@@ -1,4 +1,5 @@
 {
+    "remoteTokenEngineUrl" : "http://127.0.0.1:11610/glyphoid/token-recog",
     "tokenPairRules":
         [   
             {

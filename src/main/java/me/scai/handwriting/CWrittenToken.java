@@ -623,21 +623,27 @@ public class CWrittenToken extends AbstractToken {
 	 * 			will discard any strokes after the maximum number */
 	public float [] getSDV(final int npPerStroke, 
 						   final int maxNumStrokes, 
-						   final float [] wh) {
+						   final float[] wh) {
 		float hwRatio = 1.0f;
 		if ( wh != null ) {
-			if ( wh.length != 2 )
-				throw new RuntimeException("wh ratio does not have the expected length (2)");
+			if ( wh.length != 2 ) {
+                throw new RuntimeException("wh ratio does not have the expected length (2)");
+            }
+
 			hwRatio = wh[1] / wh[0];
 		}
 		
-		if ( npPerStroke < 2 )
-			throw new RuntimeException("The input value of npPerStroke is too small");
-		if ( maxNumStrokes < 1 )
-			throw new RuntimeException("The input value of maxNumStrokes is too small");
+		if ( npPerStroke < 2 ) {
+            throw new RuntimeException("The input value of npPerStroke is too small");
+        }
+
+		if ( maxNumStrokes < 1 ) {
+            throw new RuntimeException("The input value of maxNumStrokes is too small");
+        }
 		
-		if ( !bNormalized )
-			this.normalizeAxes();
+		if ( !bNormalized ) {
+            this.normalizeAxes();
+        }
 		
 		int sdvLen = (npPerStroke - 1) * maxNumStrokes;
 		float [] sdv = new float[sdvLen];

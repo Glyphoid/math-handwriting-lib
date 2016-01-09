@@ -5,6 +5,10 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 import com.google.gson.*;
+import me.scai.handwriting.remote.TokenRecogRemoteEngine;
+import me.scai.handwriting.remote.TokenRecogRemoteEngineException;
+import me.scai.handwriting.remote.TokenRecogRemoteEngineImpl;
+import me.scai.handwriting.tokens.TokenSettings;
 import me.scai.plato.helpers.CStrokeJsonHelper;
 import me.scai.plato.helpers.CWrittenTokenSetJsonHelper;
 import org.apache.commons.lang.ArrayUtils;
@@ -58,6 +62,8 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
     private int nClosestToTest = 2;	/* TODO: Remove arbitrariness */
 
     private TokenRecogEngine tokenEngine = null;
+    private transient TokenRecogRemoteEngine remoteTokenEngine;
+
     private CWrittenTokenSet wtSet = new CWrittenTokenSet();
 
     private List<String> tokenUuids = new ArrayList<>(); // UUIDs of the tokens
@@ -90,6 +96,26 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         tokenEngine = tokEngine;
 
         config = StrokeCuratorConfig.fromJsonFileAtUrl(configFN);
+
+        if (config.getRemoteTokenEngineUrl() != null && !config.getRemoteTokenEngineUrl().isEmpty() &&
+                tokenEngine instanceof TokenRecogEngineSDV) {
+            logger.info("Constructing instance of remote token engine at URL: " + config.getRemoteTokenEngineUrl());
+
+            // Construct instance of remote (HTTP) token engine
+            TokenRecogEngineSDV sdvTokenEngine = (TokenRecogEngineSDV) tokenEngine;
+
+            TokenSettings tokenSettings = new TokenSettings(sdvTokenEngine.isIncludeTokenSize(),
+                                                            sdvTokenEngine.isIncludeTokenWHRatio(),
+                                                            sdvTokenEngine.isIncludeTokenNumStrokes(),
+                                                            sdvTokenEngine.getHardCodedTokens(),
+                                                            sdvTokenEngine.getNpPerStroke(),
+                                                            sdvTokenEngine.getMaxNumStrokes(),
+                                                            sdvTokenEngine.getTokenDegen());
+
+            remoteTokenEngine = new TokenRecogRemoteEngineImpl(config.getRemoteTokenEngineUrl(), tokenSettings);
+
+            logger.info("Obtained remote token engine: " + remoteTokenEngine);
+        }
 
         generateInitialStateSerialization();
     }
@@ -145,11 +171,16 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
         CWrittenToken tmpWT = generateMergedToken(oldWrittenTokenIdx, strokesUN.size() - 1);
 
-        double [] newPs = new double[tokenEngine.tokenNames.size()];
-        int newRecRes = tokenEngine.recognize(tmpWT, newPs);
+//        double [] newPs = new double[tokenEngine.tokenNames.size()];
+//        int newRecRes = tokenEngine.recognize(tmpWT, newPs);
 
-        String newWinnerTokenName = tokenEngine.getTokenName(newRecRes);
-        double newMaxP = newPs[newRecRes];
+//        String newWinnerTokenName = tokenEngine.getTokenName(newRecRes);
+//        double newMaxP = newPs[newRecRes]; //TODO: Remove
+        TokenRecogOutput recogOut = callTokenEngine(tmpWT);
+
+        double newMaxP = (double) recogOut.getMaxP();
+        String newWinnerTokenName = recogOut.getWinner();
+        double[] newPs = recogOut.getCandidatePsAsDoubleArray();
 
         if ( (!toCompareMaxPs) || (newMaxP > wtRecogMaxPs.get(oldWrittenTokenIdx) * mergePValueRatioThresh ) ) {
             /* Replace the old token set with a new one that includes the new stroke */
@@ -307,10 +338,11 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         wt.addStroke(s);
         wt.normalizeAxes();
 
-        double [] ps = new double[tokenEngine.tokenNames.size()];
-        int recRes = tokenEngine.recognize(wt, ps);
+//        double [] ps = new double[tokenEngine.tokenNames.size()];
+//        int recRes = tokenEngine.recognize(wt, ps); //TODO: Remove
+        TokenRecogOutput recogOut = callTokenEngine(wt);
 
-        return tokenEngine.getTokenName(recRes);
+        return recogOut.getWinner();
     }
 
     private void addNewWrittenTokenFromStroke(CStroke s0) {
@@ -324,18 +356,20 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         wt.addStroke(s);
         wt.normalizeAxes();
 
-        double [] ps = new double[tokenEngine.tokenNames.size()];
-        int recRes = tokenEngine.recognize(wt, ps);
-        String winnerTokenName = tokenEngine.getTokenName(recRes);
+//        double [] ps = new double[tokenEngine.tokenNames.size()];
+//        int recRes = tokenEngine.recognize(wt, ps);
+//        String winnerTokenName = tokenEngine.getTokenName(recRes);
+        TokenRecogOutput recogOut = callTokenEngine(wt);
+        double[] ps = recogOut.getCandidatePsAsDoubleArray();
 
-        wtRecogWinners.add(winnerTokenName);
+        wtRecogWinners.add(recogOut.getWinner());
         wtRecogPs.add(ps);
-        wtRecogMaxPs.add(ps[recRes]);
+        wtRecogMaxPs.add((double) recogOut.getMaxP());
 
-        wt.setRecogPs(ps);	/* TODO: Wrap into tokenEngine.recognize() */
-        wt.setRecogResult(winnerTokenName); /* TODO: Wrap into tokenEngine.recognize() */
+        wt.setRecogPs(recogOut.getCandidatePsAsDoubleArray());	/* TODO: Wrap into tokenEngine.recognize() */
+        wt.setRecogResult(recogOut.getWinner()); /* TODO: Wrap into tokenEngine.recognize() */
 
-        wtSet.addToken(wt, winnerTokenName, ps);
+        wtSet.addToken(wt, recogOut.getWinner(), ps);
         addNewTokenUuid();
 
         strokeState.set(strokeState.size() - 1, wtSet.nTokens() - 1);
@@ -562,23 +596,25 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
             tmpWT.normalizeAxes();
 
             /* Perform recognition on the new token */
-            double [] newPs = new double[tokenEngine.tokenNames.size()];
-            int newRecRes = tokenEngine.recognize(tmpWT, newPs);
+//            double [] newPs = new double[tokenEngine.tokenNames.size()];
+//            int newRecRes = tokenEngine.recognize(tmpWT, newPs);
+//
+//            String newWinnerTokenName = tokenEngine.getTokenName(newRecRes);
+//            double newMaxP = newPs[newRecRes];
+            TokenRecogOutput recogOutput = callTokenEngine(tmpWT);
+            double[] ps = recogOutput.getCandidatePsAsDoubleArray();
 
-            String newWinnerTokenName = tokenEngine.getTokenName(newRecRes);
-            double newMaxP = newPs[newRecRes];
+            tmpWT.setRecogResult(recogOutput.getWinner());
+            tmpWT.setRecogPs(ps);
 
-            tmpWT.setRecogResult(newWinnerTokenName);
-            tmpWT.setRecogPs(newPs);
-
-            wtSet.replaceToken(tokenIdx, tmpWT, newWinnerTokenName, newPs);
+            wtSet.replaceToken(tokenIdx, tmpWT, recogOutput.getWinner(), ps);
             replaceTokenUuidWithNew(tokenIdx);
 
             wtCtrXs.set(tokenIdx, tmpWT.getCentralX());
             wtCtrYs.set(tokenIdx, tmpWT.getCentralY());
-            wtRecogWinners.set(tokenIdx, newWinnerTokenName);
-            wtRecogPs.set(tokenIdx, newPs);
-            wtRecogMaxPs.set(tokenIdx, newMaxP);
+            wtRecogWinners.set(tokenIdx, recogOutput.getWinner());
+            wtRecogPs.set(tokenIdx, ps);
+            wtRecogMaxPs.set(tokenIdx, (double) recogOutput.getMaxP());
             wtConstStrokeIdx.set(tokenIdx, MathHelper.listOfIntegers2ArrayOfInts(constIndices));
         }
     }
@@ -674,16 +710,18 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         tmpWT.normalizeAxes();
 
         /* Perform recognition on the new token */
-        double [] newPs = new double[tokenEngine.tokenNames.size()];
-        int newRecRes = tokenEngine.recognize(tmpWT, newPs);
+//        double [] newPs = new double[tokenEngine.tokenNames.size()];
+//        int newRecRes = tokenEngine.recognize(tmpWT, newPs);
+//
+//        String newWinnerTokenName = tokenEngine.getTokenName(newRecRes);
+//        double newMaxP = newPs[newRecRes];
+        TokenRecogOutput output = callTokenEngine(tmpWT);
+        double[] ps = output.getCandidatePsAsDoubleArray();
 
-        String newWinnerTokenName = tokenEngine.getTokenName(newRecRes);
-        double newMaxP = newPs[newRecRes];
+        tmpWT.setRecogResult(output.getWinner()); /* TODO: Refactor into tokenEngine.recognize() */
+        tmpWT.setRecogPs(ps);
 
-        tmpWT.setRecogResult(newWinnerTokenName); /* TODO: Refactor into tokenEngine.recognize() */
-        tmpWT.setRecogPs(newPs);
-
-        wtSet.addToken(wtSet.getNumTokens(), tmpWT, newWinnerTokenName, newPs);
+        wtSet.addToken(wtSet.getNumTokens(), tmpWT, output.getWinner(), ps);
         addNewTokenUuid();
 
         /* Central X and Y coordinates of the token */
@@ -691,9 +729,9 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
         wtCtrYs.add(tmpWT.getCentralY());
 
         /* Update recognition results */
-        wtRecogWinners.add(newWinnerTokenName);
-        wtRecogPs.add(newPs);
-        wtRecogMaxPs.add(newMaxP);
+        wtRecogWinners.add(output.getWinner());
+        wtRecogPs.add(ps);
+        wtRecogMaxPs.add((double) output.getMaxP());
 
         /* Update the wtConstStrokeIdx */
         wtConstStrokeIdx.add(indices);
@@ -1056,5 +1094,64 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
 
     private void addNewTokenUuid() {
         tokenUuids.add(TokenUuidUtils.getRandomTokenUuid());
+    }
+
+
+    /**
+     * Recognize the token engine, using the remote token engine first, if available. Fall back
+     * to the local token engine if the call to the remote one fails.
+     * @param wt Written token
+     * @return
+     */
+    private TokenRecogOutput callTokenEngine(CWrittenToken wt) {
+        TokenRecogOutput output = null;
+
+        if (remoteTokenEngine != null) {
+            try {
+                output = remoteTokenEngine.recognize(wt);
+
+                /* Generate the full list of ps, by filling zeros in the tokens not in remote engine output */
+                List<String> candidateNames = output.getCandidateNames();
+                List<Float> candidatePs = output.getCandidatePs();
+
+                List<String> allNames = tokenEngine.tokenNames;
+                ArrayList<Float> allPs = new ArrayList<>();
+                allPs.ensureCapacity(allNames.size());
+
+                for (int i = 0; i < allNames.size(); ++i) {
+                    final String tokenName = allNames.get(i);
+
+                    if (candidateNames.contains(tokenName)) {
+                        allPs.add(candidatePs.get(candidateNames.indexOf(tokenName)));
+                    } else {
+                        allPs.add(0f);
+                    }
+                }
+
+                output = new TokenRecogOutput(output.getWinner(), output.getMaxP(), allNames, allPs);
+
+            } catch (TokenRecogRemoteEngineException e) {
+                logger.severe("Call to remote token engine failed due to: " + e.getMessage() +
+                              ". Will fall back to local (Java) token engine");
+            }
+        }
+
+        // Fall back to local token engine if remote engine if unavailable or failing
+        if (output == null) {
+            double[] ps = new double[tokenEngine.tokenNames.size()];
+            int recogIdx = tokenEngine.recognize(wt, ps);
+
+            String winnerTokenName = tokenEngine.getTokenName(recogIdx);
+            float maxP = (float) ps[recogIdx];
+
+            List<Float> candidatePs = new ArrayList<>();
+            for (double p : ps) {
+                candidatePs.add((float) p);
+            }
+
+            output = new TokenRecogOutput(winnerTokenName, maxP, tokenEngine.tokenNames, candidatePs);
+        }
+
+        return output;
     }
 }

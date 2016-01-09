@@ -34,7 +34,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	private float dotMaxHeight = 3;
 	private int dotTokenIndex = -1;
 	
-	private String [] hardCodedTokens;
+	private String[] hardCodedTokens;
 	
 	/* Inner interface */
 	/* Inner interface: Progress bar updater */
@@ -607,5 +607,19 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
         return (float) nErr / (float) nTested;
     }
 
-	
+    public int getNpPerStroke() {
+        return npPerStroke;
+    }
+
+    public int getMaxNumStrokes() {
+        return maxNumStrokes;
+    }
+
+    public String[] getHardCodedTokens() {
+        return hardCodedTokens;
+    }
+
+    public TokenDegeneracy getTokenDegen() {
+        return tokenDegen;
+    }
 }

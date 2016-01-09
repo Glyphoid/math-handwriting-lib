@@ -113,9 +113,11 @@ class TokenPairRule {
 /* Class: StrokeCuratorConfig: a set of rules */
 public class StrokeCuratorConfig {
 	private static final Gson gson  = new Gson();
-	
+
 	public List<TokenPairRule> tokenPairRules;
-	public Map<String, List<String> > mergePartners; 
+	public Map<String, List<String> > mergePartners;
+
+	private String remoteTokenEngineUrl;
 	
 	/* Factory method: From JSON String */
 	public static StrokeCuratorConfig fromJson(String json) {
@@ -154,11 +156,9 @@ public class StrokeCuratorConfig {
 	public boolean potentiallyMergeable(String tokenA, String tokenB) {				
 		if (mergePartners.containsKey(tokenA)) {
 			return mergePartners.get(tokenA).contains(tokenB);
-		}
-		else if (mergePartners.containsKey(tokenB)) {
+		} else if (mergePartners.containsKey(tokenB)) {
 			return mergePartners.get(tokenB).contains(tokenA);
-		}
-		else {
+		} else {
 			return true;
 		}
 	}
@@ -185,5 +185,8 @@ public class StrokeCuratorConfig {
 		
 		return out;
 	}
-	
+
+	public String getRemoteTokenEngineUrl() {
+		return remoteTokenEngineUrl;
+	}
 }

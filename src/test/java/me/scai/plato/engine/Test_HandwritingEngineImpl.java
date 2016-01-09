@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import me.scai.handwriting.*;
 import me.scai.parsetree.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -25,8 +26,7 @@ public class Test_HandwritingEngineImpl {
     @Test
     public void testSubsetParsingFollowedByRemoveTokenThenAddTokens() throws HandwritingEngineException {
         /* Add 1st token "7" */
-        hwEng.addStroke(TestHelper.getMockStroke(new float[] {5, 7, 9, 8, 7},
-                                                 new float[] {30, 30, 30, 40, 50}));
+        addSeven(hwEng);
         TestHelper.verifyWrittenTokenSet(hwEng, new String[] {"7"});
         TestHelper.verifyTokenSet(hwEng, new boolean[] {false}, new String[] {"7"});
 
@@ -81,8 +81,7 @@ public class Test_HandwritingEngineImpl {
     @Test
      public void testSubsetParsingFollowedByTokenMoving_hardWay() throws HandwritingEngineException {
         /* Add 1st token "7" */
-        hwEng.addStroke(TestHelper.getMockStroke(new float[] {5, 7, 9, 8, 7},
-                new float[] {30, 30, 30, 40, 50}));
+        addSeven(hwEng);
         TestHelper.verifyWrittenTokenSet(hwEng, new String[] {"7"});
         TestHelper.verifyTokenSet(hwEng, new boolean[] {false}, new String[] {"7"});
 
@@ -155,8 +154,7 @@ public class Test_HandwritingEngineImpl {
     @Test
     public void testSubsetParsingFollowedByTokenMoving_easyWay() throws HandwritingEngineException {
         /* Add 1st token "7" */
-        hwEng.addStroke(TestHelper.getMockStroke(new float[] {5, 7, 9, 8, 7},
-                new float[] {30, 30, 30, 40, 50}));
+        addSeven(hwEng);
         TestHelper.verifyWrittenTokenSet(hwEng, new String[] {"7"});
         TestHelper.verifyTokenSet(hwEng, new boolean[] {false}, new String[] {"7"});
 
@@ -229,8 +227,7 @@ public class Test_HandwritingEngineImpl {
     @Test
     public void testSubsetParsingFollowedByRemoveMultipleTokens() throws HandwritingEngineException {
         /* Add 1st token "7" */
-        hwEng.addStroke(TestHelper.getMockStroke(new float[]{5, 7, 9, 8, 7},
-                new float[]{30, 30, 30, 40, 50}));
+        addSeven(hwEng);
         TestHelper.verifyWrittenTokenSet(hwEng, new String[]{"7"});
         TestHelper.verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"7"});
 
@@ -272,8 +269,7 @@ public class Test_HandwritingEngineImpl {
     @Test
     public void testSubsetParsingFollowedByAbstractTokenMove() throws HandwritingEngineException {
         /* Add 1st token "7" */
-        hwEng.addStroke(TestHelper.getMockStroke(new float[]{5, 7, 9, 8, 7},
-                new float[]{30, 30, 30, 40, 50}));
+        addSeven(hwEng);
         TestHelper.verifyWrittenTokenSet(hwEng, new String[]{"7"});
         TestHelper.verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"7"});
 
@@ -322,7 +318,7 @@ public class Test_HandwritingEngineImpl {
         TestHelper.verifyTokenSet(hwEng, new boolean[]{false, false, false, false}, new String[]{"7", "2", "-", "1"});
 
         // Individual written tokens should have been shifted as a result of the abstract token move
-        assertArrayEquals(new float[] {5, 0, 9, 20}, hwEng.getTokenBounds(0), FLOAT_TOL);
+        assertArrayEquals(new float[] {5, 0, 14, 20}, hwEng.getTokenBounds(0), FLOAT_TOL);
         assertArrayEquals(new float[] {15, 0, 30, 20}, hwEng.getTokenBounds(1), FLOAT_TOL);
         assertArrayEquals(newBounds_1, hwEng.getTokenBounds(3), FLOAT_TOL); // Index is for abstract token
 
@@ -331,11 +327,11 @@ public class Test_HandwritingEngineImpl {
         assertEquals("(72 / 1)", parseRes.getStringizerOutput());
     }
 
+//    @Ignore // TODO: Fix the issue with numerical string differences such as:  9.999999682655225e-21 vs. 1e-20
     @Test
     public void testSerializeAndInjectState() throws HandwritingEngineException {
         /* Add 1st token "7" */
-        hwEng.addStroke(TestHelper.getMockStroke(new float[]{5, 7, 9, 8, 7},
-                new float[]{30, 30, 30, 40, 50}));
+        addSeven(hwEng);
         TestHelper.verifyWrittenTokenSet(hwEng, new String[]{"7"});
         TestHelper.verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"7"});
 
@@ -420,8 +416,7 @@ public class Test_HandwritingEngineImpl {
         TestHelper.verifyTokenSet(hwEng, new boolean[]{}, new String[]{});
 
         /* Add 1st token "7" */
-        hwEng.addStroke(TestHelper.getMockStroke(new float[]{5, 7, 9, 8, 7},
-                new float[]{30, 30, 30, 40, 50}));
+        addSeven(hwEng);
 
         TestHelper.verifyWrittenTokenSet(hwEng, new String[]{"7"});
         TestHelper.verifyTokenSet(hwEng, new boolean[]{false}, new String[]{"7"});
@@ -657,6 +652,10 @@ public class Test_HandwritingEngineImpl {
         return tokenIdx;
     }
 
+    private void addSeven(HandwritingEngine hwEng) throws HandwritingEngineException {
+        hwEng.addStroke(TestHelper.getMockStroke(new float[] {5.000f, 5.973f, 7.189f, 8.527f, 10.959f, 12.784f, 14.000f, 13.635f, 12.297f, 10.959f, 10.230f, 9.500f, 9.014f, 8.770f, 8.649f, 8.405f, 8.284f},
+                                                 new float[] {30.899f, 30.449f, 30.225f, 30.000f, 30.000f, 30.000f, 30.449f, 32.247f, 35.169f, 38.090f, 39.888f, 41.910f, 43.933f, 45.730f, 47.753f, 48.876f, 50.000f}));
+    }
     
 }
 

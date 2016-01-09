@@ -68,17 +68,13 @@ public class MachineLearningHelper {
                     continue;
                 }
 
-                float [] im_wh = new float[2];
+                float [] im_wh = new float[2]; // Width and height
                 im_wh[0] = t_imData.w;
                 im_wh[1] = t_imData.h;
 
-				/* TODO: Combine into a function */
-                float [] sdv = t_wt.getSDV(tokenSettings.getNpPerStroke(), tokenSettings.getMaxNumStrokes(), im_wh);
-                float [] sepv = t_wt.getSEPV(tokenSettings.getMaxNumStrokes()); // Stroke endpoint vector
-                x = addExtraDimsToSDV(sdv, sepv, t_imData.w, t_imData.h, t_imData.nStrokes,
-                                      tokenSettings.isIncludeTokenSize(),
-                                      tokenSettings.isIncludeTokenWHRatio(),
-                                      tokenSettings.isIncludeTokenNumStrokes());
+                t_wt.width = t_imData.w;
+                t_wt.height = t_imData.h;
+                x = getSdveVector(t_wt, tokenSettings);
 
                 r.addSample(x, tokenSettings.getTokenDegeneracy().getDegenerated(t_imData.tokenName));
 
@@ -89,6 +85,20 @@ public class MachineLearningHelper {
         }
 
         return r;
+    }
+
+    public static float[] getSdveVector(CWrittenToken wt, TokenSettings tokenSettings) {
+        assert(wt.width > 0 || wt.height > 0);
+
+        float[] im_wh = new float[] {wt.width, wt.height};
+
+        float[] sdv = wt.getSDV(tokenSettings.getNpPerStroke(), tokenSettings.getMaxNumStrokes(), im_wh);
+        float[] sepv = wt.getSEPV(tokenSettings.getMaxNumStrokes()); // Stroke endpoint vector
+
+        return addExtraDimsToSDV(sdv, sepv, wt.width, wt.height, wt.nStrokes(),
+                tokenSettings.isIncludeTokenSize(),
+                tokenSettings.isIncludeTokenWHRatio(),
+                tokenSettings.isIncludeTokenNumStrokes());
     }
 
     /**

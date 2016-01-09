@@ -74,8 +74,9 @@ public class Test_StrokeCuratorConfig {
 	public void test() {
 //        StrokeCuratorConfig config = StrokeCuratorConfig.fromJsonFile(configFilePath);
 
-
 		assertEquals(config.tokenPairRules.size(), 2);
+
+        assertEquals("http://127.0.0.1:11610/glyphoid/token-recog", config.getRemoteTokenEngineUrl());
 				
 		assertEquals(config.tokenPairRules.get(0).tokenA, "-");
 		assertEquals(config.tokenPairRules.get(0).tokenB, "-");
