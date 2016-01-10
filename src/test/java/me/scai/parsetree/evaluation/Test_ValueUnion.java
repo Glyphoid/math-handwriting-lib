@@ -49,6 +49,14 @@ public class Test_ValueUnion {
     }
 
     @Test
+    public void testValueUnion_undefined() {
+        ValueUnion undefined0 = new ValueUnion(Undefined.getInstance());
+
+        assertEquals(ValueUnion.ValueType.Undefined, undefined0.getValueType());
+        assertNotNull(undefined0.get());
+    }
+
+    @Test
     public void testValueUnion_doubleValueString() {
         ValueUnion double0 = new ValueUnion(0);
         ValueUnion double1 = new ValueUnion(-1.0);

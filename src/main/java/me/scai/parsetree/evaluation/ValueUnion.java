@@ -7,6 +7,7 @@ import org.jscience.physics.amount.Amount;
 
 public class ValueUnion {
 	public enum ValueType {
+        Undefined,      // Undefined type, used in case such as: unsatisfied logical predicament in an "if" expression
 		Boolean,
 		Double,
         Matrix,
@@ -19,6 +20,13 @@ public class ValueUnion {
     private String description = "";
 
 	/* Constructors */
+    /* Constructor for Undefined type */
+    public ValueUnion(Undefined undefined) {
+        assert(undefined != null);
+
+        valueType = ValueType.Undefined;
+        value = undefined;
+    }
 
     /* Constructor for Boolean type */
     public ValueUnion(boolean bv) {
@@ -63,6 +71,9 @@ public class ValueUnion {
 	public Object get() {
 		return value;
 	}
+
+    // Note: The Undefined type does not require a dedicated value getter because the value always points to the same
+    // singleton object
 
     public boolean getBoolean() {
         if (valueType == ValueType.Boolean) {
