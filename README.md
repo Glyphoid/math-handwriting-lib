@@ -34,6 +34,7 @@ List of currently supported math notation syntaxes:
   1. Java 7 or above
   2. Apache Maven
 2. Download and build the [Glyphoid Java Worker Pool Porject](https://github.com/Glyphoid/java-worker-pool)
+3. Download and build the [Glyphoid Java Web Utilites Porject](https://github.com/Glyphoid/java-web-utils)
 3. Get the token set data from the [tokensets repository](https://github.com/Glyphoid/tokensets). These are required by the unit tests of math-handwriting-lib.
 4. cd to the root directory of math-handwriting-lib (i.e., where the pom.xml is)
 5. On Linux and Mac, execute Maven clean build and local-repository installation: 
