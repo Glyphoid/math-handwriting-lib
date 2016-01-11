@@ -15,4 +15,9 @@ public class Undefined {
 
         return instance;
     }
+
+    @Override
+    public String toString() {
+        return "undefined";
+    }
 }

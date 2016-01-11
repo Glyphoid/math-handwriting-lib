@@ -10,6 +10,7 @@ import java.util.List;
 import me.scai.handwriting.CWrittenTokenSetNoStroke;
 import me.scai.handwriting.TestHelper;
 import me.scai.parsetree.evaluation.ParseTreeEvaluator;
+import me.scai.parsetree.evaluation.Undefined;
 import me.scai.parsetree.evaluation.exceptions.ParseTreeEvaluatorException;
 
 import org.junit.After;
@@ -148,12 +149,18 @@ public class Test_TokenSetParser {
 
             } else if (tokenSetTrueEvalResRange != null || tokenSetTrueEvalRes != null) {
                 /* Check type match */
-                assertTrue(evalRes.getClass().equals(Double.class) ||
+                assertTrue(evalRes.getClass().equals(Undefined.class) ||
+                           evalRes.getClass().equals(Double.class) ||
                            evalRes.getClass().equals(String.class) ||
                            evalRes.getClass().equals(Boolean.class));
 
-                if (evalRes.getClass().equals(Boolean.class)) {
+                if (evalRes.getClass().equals(Undefined.class)) {
+                    assertTrue(tokenSetTrueEvalRes instanceof Undefined);
+                    assertEquals(tokenSetTrueEvalRes, evalRes);
+
+                } else if (evalRes.getClass().equals(Boolean.class)) {
                     assertEquals((Boolean) tokenSetTrueEvalRes, evalRes);
+
                 } else {
                     double evalResDbl;
                     if (evalRes.getClass().equals(String.class)) {

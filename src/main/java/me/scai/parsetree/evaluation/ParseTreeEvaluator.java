@@ -191,7 +191,8 @@ public class ParseTreeEvaluator {
                         lhsStackTop().equals("PI_TERM") && j == 0 ||
                         lhsStackTop().equals("PI_TERM") && j == 2 ||
                         lhsStackTop().equals("DEF_INTEG_TERM") && j == 2 ||
-                        lhsStackTop().equals("DEF_INTEG_TERM") && j == 3  // Body of the Pi term. Pass as is. Do not evaluate.
+                        lhsStackTop().equals("DEF_INTEG_TERM") && j == 3 ||  // Body of the Pi term. Pass as is. Do not evaluate.
+                        lhsStackTop().equals("IF_STATEMENT") && j == 0    // If-statement value term
                         ) {
 					/* Special case for function body definition */
 					/* TODO: Do not hard code this */
@@ -463,6 +464,29 @@ public class ParseTreeEvaluator {
         }
 
         return new ValueUnion(res);
+	}
+
+
+    /**
+     *
+     * @param v
+     * @param p
+     * @return
+     * @throws ParseTreeEvaluatorException
+     */
+	public Object if_statement(Object v, Object p)
+			throws ParseTreeEvaluatorException {
+        assert(p instanceof Boolean);
+
+        if ((boolean) p) {
+            assert(v instanceof Node);
+
+            // This ensures that the expression doesn't get evaluated unless the logical condition (predicament) is met.
+            return eval((Node) v);
+        } else {
+            return new ValueUnion(Undefined.getInstance());
+        }
+
 	}
 
 	public Object multiply(Object x, Object y) {
