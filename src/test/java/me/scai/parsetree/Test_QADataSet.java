@@ -572,6 +572,18 @@ public class Test_QADataSet {
             new QADataEntry("sim_265", "((x + y)) if (3 >= 2)").withMathTex("{{x}+{y}},\\;\\text{if }{{3}\\geq{2}}").withEvalRes(0.0),
             new QADataEntry("sim_267", "((4 / 5)) if ((x = 6) && (y = 7))").withMathTex("{\\frac{4}{5}},\\;\\text{if }{{{x}={6}}\\land{{y}={7}}}").withEvalRes(Undefined.getInstance()), // Predicament is not met
             new QADataEntry("sim_276", "((3 + 2)) if ((1 = 4) && (5 = 6))").withMathTex("{{3}+{2}},\\;\\text{if }{{{1}={4}}\\land{{5}={6}}}").withEvalRes(Undefined.getInstance()), // Predicament is not met
+//            new QADataEntry("sim_273", "(x) if (x >= 0); (0) if (x < 0)"),
+//                    .withMathTex("{x},\\;\\text{if }{{x}\\geq{0}}\\\\\n{0},\\;\\text{if }{{x}<{0}}").withEvalRes(0.0), // TODO: Why does this fail? It seems to have something to do with the "-x" term.
+//            new QADataEntry("sim_274", "(x) if (x >= 0); (0) if (x < 0)")
+//                    .withMathTex("{x},\\;\\text{if }{{x}\\geq{0}}\\\\\n{0},\\;\\text{if }{{x}<{0}}").withEvalRes(0.0), // TODO: This takes too long without incremental parsing
+            new QADataEntry("sim_275", "{ (0) if (x < 0); (x) if (x >= 0) }")
+                    .withMathTex("\\{\\begin{array}{cc}{0},\\;\\text{if }{{x}<{0}}\\\\\n{x},\\;\\text{if }{{x}\\geq{0}}\\end{array}").withEvalRes(0.0),
+            new QADataEntry("sim_277", "{ (4) if (2 >= 1); (3) if (7 < 6) }")
+                    .withMathTex("\\{\\begin{array}{cc}{4},\\;\\text{if }{{2}\\geq{1}}\\\\\n{3},\\;\\text{if }{{7}<{6}}\\end{array}").withEvalRes(4.0),
+            new QADataEntry("sim_278", "{ ((sqrt(2))) if (1 <= 0); ((2 ^ 3)) if (-2 > -3) }")
+                    .withMathTex("\\{\\begin{array}{cc}{\\sqrt{2}},\\;\\text{if }{{1}\\leq{0}}\\\\\n{{2}^{3}},\\;\\text{if }{{-{2}}>{-{3}}}\\end{array}").withEvalRes(8.0),
+            new QADataEntry("sim_279", "{ (x) if (1 >= 0); ((x + 1)) if (2 < 0) }")
+                    .withMathTex("\\{\\begin{array}{cc}{x},\\;\\text{if }{{1}\\geq{0}}\\\\\n{{x}+{1}},\\;\\text{if }{{2}<{0}}\\end{array}").withEvalRes(0.0)
         };
         QADataSuites.put("ifStatements", new QADataSuite(entries_ifStatements, false));
 

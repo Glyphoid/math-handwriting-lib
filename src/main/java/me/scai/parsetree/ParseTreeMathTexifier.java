@@ -110,6 +110,9 @@ public class ParseTreeMathTexifier {
                 case "SPACE":
                     s += " ";
                     break;
+				case "LINE_BREAK":
+					s += "\\\\\n";
+					break;
 				default:
 					throw new RuntimeException("Unrecognized function name for TeXification: \"" + texFunctionName + "\"");					
 				}

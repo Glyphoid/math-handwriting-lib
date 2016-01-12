@@ -370,14 +370,37 @@ _STRINGIZE_		( n1 _SPACE_ _LOGICAL_OR_ _SPACE_ n2 )
 _MATH_TEX_      { n1 } \lor { n2 }
 _EVAL_			LOGICAL_BINARY_OP(n0, n1, n2)
 
---- # PROBLEMATIC
+--- #
 IF_STATEMENT
 COMMA
 EXPR_LV4                : {PositionGenWest(0)} # Value expression
 LOGICAL_OR_TERM         : {PositionGenEast(0)} # Logical predicament
 _STRINGIZE_		( n1 ) _SPACE_ _IF_ _SPACE_ n2
 _MATH_TEX_      { n1 } ,\;\text{if SPACE() } { n2 }
-_EVAL_		    IF_STATEMENT(n1, n2)  # TODO: Implement conditional eval to the value (or Null otherwise)
+_EVAL_		    IF_STATEMENT(n1, n2)
+
+--- #
+SWITCH_STATEMENT
+IF_STATEMENT
+_STRINGIZE_     n0
+_MATH_TEX_      n0
+_EVAL_          n0
+
+--- #
+SWITCH_STATEMENT
+SWITCH_STATEMENT
+IF_STATEMENT    : {AlignLeft(0), PositionNorth(0)} # Additional row down below # , SpacingVerticalExceedsMeanMaxMajorTokenHeight(0)
+_STRINGIZE_     n0 ; _SPACE_ n1
+_MATH_TEX_      n0 LINE_BREAK() n1
+_EVAL_          SWITCH_NON_UNDEFINED(n0, n1)
+
+--- #
+SWITCH_STATEMENT
+CURLY_BRACKET_L
+SWITCH_STATEMENT : {AlignMiddle(0), PositionEast(0)} #
+_STRINGIZE_     { _SPACE_ n1 _SPACE_ }
+_MATH_TEX_      \{ \begin{array}{cc} n1 \end{array}
+_EVAL_          n1
 
 --- # 27
 EXPR_LV3
@@ -772,8 +795,8 @@ _MATH_TEX_      n0
 _EVAL_			n0
 
 ---
-ROOT        # TODO: Merge into CASES statement
-IF_STATEMENT
+ROOT
+SWITCH_STATEMENT  # IF_STATEMENT
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0

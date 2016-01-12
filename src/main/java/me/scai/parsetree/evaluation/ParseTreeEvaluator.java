@@ -276,8 +276,9 @@ public class ParseTreeEvaluator {
         } else if (x.getClass().equals(Amount.class)) {
             Amount amountX = (Amount) x;
             return Double.valueOf((double) amountX.getEstimatedValue());
-
-		} else {
+		} else if (x.getClass().equals(Undefined.class)) {
+            return (Undefined) x;
+        } else {
 			throw new RuntimeException("Unexpected input type: " + x.getClass());
 		}
 
@@ -469,8 +470,8 @@ public class ParseTreeEvaluator {
 
     /**
      *
-     * @param v
-     * @param p
+     * @param v		The value node (the part before the "," and/or "if")
+     * @param p     The logical predicament
      * @return
      * @throws ParseTreeEvaluatorException
      */
@@ -486,6 +487,12 @@ public class ParseTreeEvaluator {
         } else {
             return new ValueUnion(Undefined.getInstance());
         }
+
+	}
+
+	public Object switch_non_undefined(Object v1, Object v2) {
+		// If both are Undefined, the return value will be Undefined
+		return v1 instanceof Undefined ? v2 : v1;
 
 	}
 
