@@ -333,6 +333,11 @@ public class Test_TokenSetParser {
     }
 
     @Test
+    public void testParser_piecewiseFunctionStateful() {
+        testParser("piecewiseFunctionStateful");
+    }
+
+    @Test
     public void testParser_incorrectSyntax() {
         testParser("incorrectSyntax");
     }

@@ -681,6 +681,15 @@ _STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
 _MATH_TEX_      { n1 } GET_TEX_ASSIGN_OP(n0) { n2 }
 _EVAL_			DEFINE_USER_FUNCTION(n1, n2)
 
+--- # Piecewise function definition
+USER_FUNCTION_DEF # Definition of user-defined function
+ASSIGN_OP
+USER_FUNCTION_TERM      : {AlignMiddle(0), PositionWest(0)} # Variable symbol
+SWITCH_STATEMENT        : {AlignMiddle(0), PositionEast(0)} # Value expression
+_STRINGIZE_		( n1 _SPACE_ n0 _SPACE_ n2 )
+_MATH_TEX_      { n1 } GET_TEX_ASSIGN_OP(n0) { n2 }
+_EVAL_			DEFINE_USER_FUNCTION(n1, n2)
+
 ---
 SIGMA_TERM  # The head part of the Sigma sum term: Sigma, the assignment and lower bound (e.g., i = 1) and upper bound (e.g, 10)
 TERMINAL(gr_Si)

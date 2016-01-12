@@ -587,6 +587,13 @@ public class Test_QADataSet {
         };
         QADataSuites.put("ifStatements", new QADataSuite(entries_ifStatements, false));
 
+        QADataEntry[] entries_piecewiseFunctionStateful = {
+            new QADataEntry("sim_281", "(f(x) = { (x) if (x >= 0); (0) if (x < 0) })")
+                    .withMathTex("{f{\\left(x\\right)}}={\\{\\begin{array}{cc}{x},\\;\\text{if }{{x}\\geq{0}}\\\\\n{0},\\;\\text{if }{{x}<{0}}\\end{array}}"),
+            new QADataEntry("sim_282", "f(2)").withMathTex("f{\\left(2\\right)}").withEvalRes(2.0)
+        };
+        QADataSuites.put("piecewiseFunctionStateful", new QADataSuite(entries_piecewiseFunctionStateful, false));
+
         /* Token sets with incorrect syntax */
         QADataEntry[] entries_incorrectSyntax = {
             new QADataEntry("sim_167", ParseTreeStringizer.STRINGIZATION_FAILED_STRING).withEvalRes(null).withMathTex(ParseTreeMathTexifier.MATH_TEXIFICATION_FAILED_STRING),
