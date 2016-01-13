@@ -91,6 +91,13 @@ _EVAL_			n0
 
 --- # 12
 EXPR_LV1
+VARIABLE_EXPONENTIATION_NEGATIVE
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			n0
+
+--- # 12
+EXPR_LV1
 EXPR_LV0_6
 _STRINGIZE_		n0
 _MATH_TEX_      n0
@@ -174,6 +181,14 @@ VARIABLE_EVALUATED
 _STRINGIZE_		n0
 _MATH_TEX_      n0
 _EVAL_			n0
+
+--- # 34
+VARIABLE_EXPONENTIATION_NEGATIVE	# Negative of variable exponentiation
+MINUS_OP
+VARIABLE_EVALUATED : {AlignMiddle(0), PositionEast(0)}
+_STRINGIZE_		n0 ( n1 )
+_MATH_TEX_      n0 { n1 }
+_EVAL_ 			NEGATIVE(n1)
 
 ---
 VARIABLE_EXPONENTIATION
@@ -265,7 +280,15 @@ MULTIPLICATION_VAR                           # Left operand: A variable multipli
 VARIABLE_EXPONENTIATION : {AlignMiddle(0), PositionEast(0), SpacingHorizontalBelowMeanMaxMajorTokenWidth(0)} # Right operand
 _STRINGIZE_     ( n0 * n1 )
 _MATH_TEX_      { n0 } { n1 }
-_EVAL_			MULTIPLY(n0, n1)          
+_EVAL_			MULTIPLY(n0, n1)
+
+--- # 34
+MULTIPLICATION_VAR	# Negative of variable exponentiation
+MINUS_OP
+MULTIPLICATION_VAR : {AlignMiddle(0), PositionEast(0)}
+_STRINGIZE_		n0 ( n1 )
+_MATH_TEX_      n0 { n1 }
+_EVAL_ 			NEGATIVE(n1)
 
 --- # 22
 EXPR_LV1

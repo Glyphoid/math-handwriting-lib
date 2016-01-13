@@ -309,7 +309,12 @@ public class Test_QADataSet {
             new QADataEntry("sim_147", "(A_9 / B_10)", "\\frac{A_9}{B_10}"),  /* Subscripts in a fraction */
             new QADataEntry("sim_148", "(sqrt(B_7))", "\\sqrt{B_7}"),         /* Subscripts in a sqrt */
             new QADataEntry("sim_149", "(((A_1 + B_2)) * c_3)", "{\\left({A_1}+{B_2}\\right)}\\ast{c_3}"), /* Subscripts in a pair of parentheses */
-            new QADataEntry("sim_150", "(sqrt(((A_1 ^ 2) + ((B_3 ^ 4) / D_5))))", "\\sqrt{{{A_1}^{2}}+{\\frac{{B_3}^{4}}{D_5}}}")
+            new QADataEntry("sim_150", "(sqrt(((A_1 ^ 2) + ((B_3 ^ 4) / D_5))))", "\\sqrt{{{A_1}^{2}}+{\\frac{{B_3}^{4}}{D_5}}}"),
+            new QADataEntry("sim_283", "-(x)").withMathTex("-{x}").withEvalRes(0.0),
+//            new QADataEntry("sim_284", "(-(x ^ 2))").withMathTex("-{{x}^{2}}").withEvalRes(0.0), //TODO: Fix it
+            new QADataEntry("sim_285", "-((x*y))").withMathTex("-{{x}{y}}").withEvalRes(0.0),
+            new QADataEntry("sim_286", "-((3*e))").withMathTex("-{{3}{e}}").withEvalRes(-3 * Math.E), //TODO: Fix it
+//            new QADataEntry("sim_287", "-((3*e))").withMathTex("-{{3}{e}}").withEvalRes(-3 * Math.E),
         };
         QADataSuites.put("symbols", new QADataSuite(entries_symbols, false));
 
@@ -572,8 +577,8 @@ public class Test_QADataSet {
             new QADataEntry("sim_265", "((x + y)) if (3 >= 2)").withMathTex("{{x}+{y}},\\;\\text{if }{{3}\\geq{2}}").withEvalRes(0.0),
             new QADataEntry("sim_267", "((4 / 5)) if ((x = 6) && (y = 7))").withMathTex("{\\frac{4}{5}},\\;\\text{if }{{{x}={6}}\\land{{y}={7}}}").withEvalRes(Undefined.getInstance()), // Predicament is not met
             new QADataEntry("sim_276", "((3 + 2)) if ((1 = 4) && (5 = 6))").withMathTex("{{3}+{2}},\\;\\text{if }{{{1}={4}}\\land{{5}={6}}}").withEvalRes(Undefined.getInstance()), // Predicament is not met
-//            new QADataEntry("sim_273", "(x) if (x >= 0); (0) if (x < 0)"),
-//                    .withMathTex("{x},\\;\\text{if }{{x}\\geq{0}}\\\\\n{0},\\;\\text{if }{{x}<{0}}").withEvalRes(0.0), // TODO: Why does this fail? It seems to have something to do with the "-x" term.
+            new QADataEntry("sim_273", "{ (x) if (x >= 0); (-(x)) if (x < 0) }")
+                    .withMathTex("\\{\\begin{array}{cc}{x},\\;\\text{if }{{x}\\geq{0}}\\\\\n{-{x}},\\;\\text{if }{{x}<{0}}\\end{array}").withEvalRes(0.0), // TODO: Why does this fail? It seems to have something to do with the "-x" term.
 //            new QADataEntry("sim_274", "(x) if (x >= 0); (0) if (x < 0)")
 //                    .withMathTex("{x},\\;\\text{if }{{x}\\geq{0}}\\\\\n{0},\\;\\text{if }{{x}<{0}}").withEvalRes(0.0), // TODO: This takes too long without incremental parsing
             new QADataEntry("sim_275", "{ (0) if (x < 0); (x) if (x >= 0) }")
