@@ -473,14 +473,18 @@ public class TokenRecogEngineIMG extends TokenRecogEngine {
 		
 		//Encog.getInstance().shutdown();
 	}
-	
+
 	/* Status: is the engine trained and ready to recognize tokens? */
 	@Override
 	public boolean isReadyToRecognize() {
 		return (bnet != null) && (tokenNames != null);
 	}
-	
-	
+
+	@Override
+	public boolean isTokenHardCoded(CWrittenToken wt) {
+		return false;
+	}
+
 	public int recognize(Double [] imData, double [] outPs) {
 		if ( !isReadyToRecognize() ) {
 			System.err.println("ERROR: Letter recognition engine not ready to perform recognition");

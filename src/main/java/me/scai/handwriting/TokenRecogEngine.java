@@ -170,6 +170,8 @@ public abstract class TokenRecogEngine implements Serializable {
 	public abstract boolean isReadyToRecognize();
 	
 	public abstract void setFeatures(int [] ivs, boolean [] bvs);
+
+	public abstract boolean isTokenHardCoded(CWrittenToken wt);
 	
 	public abstract int recognize(CWrittenToken wt, double [] outPs);
 

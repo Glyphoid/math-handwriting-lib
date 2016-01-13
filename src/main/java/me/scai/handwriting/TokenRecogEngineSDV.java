@@ -24,7 +24,9 @@ import com.google.gson.JsonObject;
 import me.scai.parsetree.MathHelper;
 
 public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializable {
+    /* Constants */
 	private static final long serialVersionUID = 2L;
+    private static final String DOT = ".";
 	
 	/* Feature settings */
 	private int npPerStroke = 16;
@@ -387,7 +389,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			
 			/* Determine the index of the dot (".") token */
 			if (dotTokenIndex == -1) {
-				dotTokenIndex = tokenNames.indexOf(".");
+				dotTokenIndex = tokenNames.indexOf(DOT);
 			}
 			
 			/* Output sanity check */
@@ -517,7 +519,11 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 	}
 	
 
-	
+    @Override
+	public boolean isTokenHardCoded(CWrittenToken wt) {
+        return (wt.width <= dotMaxWidth) && (wt.height <= dotMaxHeight);
+    }
+
 	/* Recognize, with CWrittenToken, not image data, as input. 
 	 * This is more general.
 	 */
@@ -528,7 +534,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		/* If the token is small enough in both width and height, recognize it as a dot */
 		if ( wt.width <= dotMaxWidth && wt.height <= dotMaxHeight ) {
 			if (dotTokenIndex == -1) {
-				dotTokenIndex = tokenNames.indexOf(".");
+				dotTokenIndex = tokenNames.indexOf(DOT);
 			}
 			
 			if (dotTokenIndex >= 0) {

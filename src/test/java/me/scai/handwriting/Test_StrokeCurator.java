@@ -50,6 +50,29 @@ public class Test_StrokeCurator {
     }
 
     @Test
+    public void testDotToken1() {
+        CStroke stroke0 = new CStroke(1.0f, 1.0f);
+
+        curator.addStroke(stroke0);
+
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals(1, curator.getTokenUuids().size());
+        assertEquals(".", curator.getWrittenTokenRecogWinners().get(0));
+    }
+
+    @Test
+    public void testDotToken2() {
+        CStroke stroke0 = new CStroke(1.0f, 1.0f);
+        stroke0.addPoint(1.1f, 1.1f);
+
+        curator.addStroke(stroke0);
+
+        assertEquals(1, curator.getWrittenTokenRecogWinners().size());
+        assertEquals(1, curator.getTokenUuids().size());
+        assertEquals(".", curator.getWrittenTokenRecogWinners().get(0));
+    }
+
+    @Test
     public void testMergeStrokes() {
         /* Add 1st stroke: "-" */
         CStroke stroke0 = new CStroke(0.0f, 0.0f);

@@ -1106,7 +1106,10 @@ public class StrokeCuratorConfigurable implements StrokeCurator {
     private TokenRecogOutput callTokenEngine(CWrittenToken wt) {
         TokenRecogOutput output = null;
 
-        if (remoteTokenEngine != null) {
+        if (remoteTokenEngine != null && !tokenEngine.isTokenHardCoded(wt)) {
+            // Hard-coded tokens, such as ".", will not be run through the remote token engine, and will be recognized
+            // locally.
+
             try {
                 output = remoteTokenEngine.recognize(wt);
 
