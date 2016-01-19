@@ -28,6 +28,8 @@ List of currently supported math notation syntaxes:
 14. Numerical comparisons (e.g., >, <, =) 
 15. Logical AND / OR expressions
 16. Common mathematical and scientific constants, such as pi, e and c
+17. Incremental parsing: [Example](https://youtu.be/SlsEhwm3Whk?t=147)
+18. Piecewise functions: [Example](https://youtu.be/SlsEhwm3Whk?t=316)
 
 ## Build and Test
 1. Make sure that you have the following installed:
