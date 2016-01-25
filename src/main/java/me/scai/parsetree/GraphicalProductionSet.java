@@ -25,7 +25,10 @@ public class GraphicalProductionSet {
 	private int [] searchIdx = null;
 
     private Map<String, List<Integer>> lhs2ProdIndices; // Map from lhs name to all possible production indicies
-    private ArrayList<Set<String>> requiredTermTypes; // Required terminal types of the productions
+    ArrayList<Set<String>> requiredTermTypes; // Required terminal types of the productions
+
+    private LinkedList<Integer> prodStack; // Stack for calculation of required terminal types
+
 	/* The array of possible terminal type for each production. 
 	 * Calculated by the private method: calcTermTypes() */
 
@@ -159,28 +162,24 @@ public class GraphicalProductionSet {
             requiredTermTypes.add(null);
         }
 
-//        // Not transitive
-//        for (int i = 0; i < np; ++i) {
-//            GraphicalProduction prod = prods.get(i);
-//
-//            for (int j = 0;j < prod.rhs.length; ++j) {
-//                if (prod.rhsIsTerminal[j]) {
-//                    requiredTermTypes.get(i).add(prod.rhs[j]);
-//                }
-//            }
-//        }
+        prodStack = new LinkedList<>(); // Create new stack as preparation
 
         for (int i = 0; i < np; ++i) {
+            assert(prodStack.isEmpty());
+
             calcRequiredTermTypes(i);
         }
 
     }
 
     private Set<String> calcRequiredTermTypes(int prodIdx) {
+        prodStack.push(prodIdx);
+
         GraphicalProduction prod = prods.get(prodIdx);
 
         if (requiredTermTypes.get(prodIdx) != null) {
             // Already calculated
+            prodStack.pop();
             return requiredTermTypes.get(prodIdx);
         }
 
@@ -200,23 +199,27 @@ public class GraphicalProductionSet {
                 /* Iterate through all possible children prods */
                 ArrayList<Set<String>> childTermTypeSets = new ArrayList<>();
                 for (int childProdIdx : prodIndices) {
-                    if (childProdIdx == prodIdx) {
-//                            prods.get(childProdIdx).lhs.equals(prods.get(prodIdx).lhs)) {
-                        continue;   // Avoid infinite loop
+//                    if (childProdIdx == prodIdx) {
+////                            prods.get(childProdIdx).lhs.equals(prods.get(prodIdx).lhs)) {
+//                        continue;   // Avoid infinite loop
+//                    }
+                    if (prodStack.contains(childProdIdx)) {
+                        continue;  // Avoid infinite loop
                     }
 
                     if (childProdIdx < prodIdx) {
                         if (requiredTermTypes.get(childProdIdx) != null) {
                             childTermTypeSets.add(requiredTermTypes.get(childProdIdx));
                         } else {
-                            childTermTypeSets.add(new HashSet<String>());
-                            // TODO: This is not strictly correct, but doesn't break correctness of the parsing result.
-                            //       The correct implementation probably requires a topological sort of the productions.
+//                            childTermTypeSets.add(new HashSet<String>());
+//                             TODO: This is not strictly correct, but doesn't break correctness of the parsing result.
+//                                   The correct implementation probably requires a topological sort of the productions.
                         }
                     } else {
                         if (requiredTermTypes.get(childProdIdx) != null) {
                             childTermTypeSets.add(requiredTermTypes.get(childProdIdx));
                         } else {
+                            // Recursive call
                             childTermTypeSets.add(calcRequiredTermTypes(childProdIdx));
                         }
                     }
@@ -225,7 +228,9 @@ public class GraphicalProductionSet {
                 /* Get the set intersection */
 
                 if (!childTermTypeSets.isEmpty()) {
-                    Set<String> childTermTypes = childTermTypeSets.get(0);
+                    Set<String> childTermTypes = new HashSet<>();
+                    childTermTypes.addAll(childTermTypeSets.get(0));  // Make a copy to avoid modifying the original
+
                     for (int i = 1; i < childTermTypeSets.size(); ++i) {
                         childTermTypes.retainAll(childTermTypeSets.get(i));
                     }
@@ -233,11 +238,13 @@ public class GraphicalProductionSet {
                     termTypes.addAll(childTermTypes);
                 }
 
-//                    lhs2TermTypes.put(rhs, childTermTypes);
             }
         }
 
+
         requiredTermTypes.set(prodIdx, termTypes);
+
+        prodStack.pop();
         return termTypes;
 
     }
@@ -307,8 +314,28 @@ public class GraphicalProductionSet {
 
             //TODO: Refactor the following code into a function
             if ( !requiredTermTypes.get(prodIdx).isEmpty() ) {
-                List<String> requiredTypes = new LinkedList<>();
-                requiredTypes.addAll(requiredTermTypes.get(prodIdx));
+                boolean encounteredNodeToken = false;
+
+                LinkedList<String> requiredTypes = new LinkedList<>();
+
+                // Add the TERMINAL(x) type to the front, and the rest to the back.
+                // This is a very hacky way of dealing with the issue that tokens such
+                // as "gr_Si" can match both terminal type o"TERMINAL(gr_Si)" and terminal type "VARIABLE_SYMBOL", which
+                // can cause problems during the evaluation of SIGMA_TERM.
+                for (String reqType : requiredTermTypes.get(prodIdx)) {
+                    if (reqType.indexOf("TERMINAL(") == 0) {
+                        requiredTypes.addFirst(reqType);
+                    } else {
+                        requiredTypes.addLast(reqType);
+                    }
+
+                }
+
+//                // Initialize the boolean list
+//                List<Boolean> matched = new ArrayList<>();
+//                for (int i = 0; i < requiredTypes.size(); ++i) {
+//                    matched.add(false);
+//                }
 
                 for (int k = 0; k < tokenSet.nTokens(); ++k) {
                     AbstractToken token = tokenSet.tokens.get(k);
@@ -316,9 +343,11 @@ public class GraphicalProductionSet {
                     if (token instanceof CWrittenToken) {
                         String tokenName = token.getRecogResult();
 
+                        int h = 0;
                         Iterator<String> reqTypeIter = requiredTypes.iterator();
                         while (reqTypeIter.hasNext()) {
                             String type = reqTypeIter.next();
+
                             if (termSet.match(tokenName, type)) {
                                 requiredTypes.remove(type);
                                 break;
@@ -328,12 +357,14 @@ public class GraphicalProductionSet {
                         if (requiredTypes.isEmpty()) {
                             break;
                         }
+                    } else {
+                        // Encountered a node token. For now, we give the node token the benefit of the doubt.
+                        encounteredNodeToken = true;
+                        break;
                     }
                 }
 
-                if (!requiredTypes.isEmpty()) {
-                    excluded4MissingTermType = true;
-                }
+                excluded4MissingTermType = !encounteredNodeToken && !requiredTypes.isEmpty();
             }
 
 

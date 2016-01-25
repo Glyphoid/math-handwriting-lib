@@ -206,34 +206,6 @@ _STRINGIZE_ 	( n0 )
 _MATH_TEX_      \left( n0 \right)
 _EVAL_ 			n0
 
----
-VARIABLE_EXPONENTIATION
-USER_FUNCTION_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			EVALUATE_USER_FUNCTION(n0)
-
---- # 36
-VARIABLE_EXPONENTIATION     # TODO: Putting sigma, pi and definite integral terms under variable exponentiation is weird
-SIGMA_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			EVALUATE_SIGMA_TERM(n0)
-
---- # 36
-VARIABLE_EXPONENTIATION
-PI_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			EVALUATE_PI_TERM(n0)
-
---- # 36
-VARIABLE_EXPONENTIATION
-DEF_INTEG_TERM
-_STRINGIZE_		n0
-_MATH_TEX_      n0
-_EVAL_			EVALUATE_DEF_INTEG_TERM(n0)
-
 --- # 16
 MULTIPLICATION_VAR		# Multiplication of two variables without the multiply operator (e.g., "ab").
 VARIABLE_EXPONENTIATION                                     # Left variable
@@ -695,6 +667,13 @@ _STRINGIZE_     n0 n1
 _MATH_TEX_      n0 { n1 }
 _EVAL_          USER_FUNCTION_TERM(n0, n1)
 
+---
+VARIABLE_EXPONENTIATION
+USER_FUNCTION_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_USER_FUNCTION(n0)
+
 --- #
 USER_FUNCTION_DEF # Definition of user-defined function
 ASSIGN_OP
@@ -723,6 +702,13 @@ _STRINGIZE_		Sum ( n1 _SPACE_ : _SPACE_ ( n2 ) ) ( n3 )
 _MATH_TEX_      \sum \limits_ { n1 } ^ { n2 } { n3 }
 _EVAL_			DEF_SIGMA_TERM(n1, n2, n3)
 
+--- # 36
+VARIABLE_EXPONENTIATION     # TODO: Putting sigma, pi and definite integral terms under variable exponentiation is weird
+SIGMA_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_SIGMA_TERM(n0)
+
 ---
 PI_TERM  # The head part of the Pi product term: Pi, the assignment and lower bound (e.g., i = 1) and upper bound (e.g, 10)
 TERMINAL(gr_Pi)
@@ -732,6 +718,13 @@ EXPR_LV4                : {AlignMiddle(0), PositionEast(0)}  # Body of the Pi pr
 _STRINGIZE_		Prod ( n1 _SPACE_ : _SPACE_ ( n2 ) ) ( n3 )
 _MATH_TEX_      \prod \limits_ { n1 } ^ { n2 } { n3 }
 _EVAL_			DEF_PI_TERM(n1, n2, n3)
+
+--- # 36
+VARIABLE_EXPONENTIATION
+PI_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_PI_TERM(n0)
 
 ---
 DEF_INTEG_TERM  # Definite integral. The head part of the Pi product term: Pi, the assignment and lower bound (e.g., i = 1) and upper bound (e.g, 10)
@@ -744,6 +737,13 @@ VARIABLE                : {AlignMiddle(0), PositionEast(4)}  # n5: Variable of i
 _STRINGIZE_		Integ ( n5 = n1 _SPACE_ : _SPACE_ n2 ) ( n3 )
 _MATH_TEX_      \int_ { n1 } ^ { n2 } { n3 } d { n5 }
 _EVAL_			DEF_DEF_INTEG_TERM(n1, n2, n3, n5)  # Define definite integral term
+
+--- # 36
+VARIABLE_EXPONENTIATION
+DEF_INTEG_TERM
+_STRINGIZE_		n0
+_MATH_TEX_      n0
+_EVAL_			EVALUATE_DEF_INTEG_TERM(n0)
 
 --- #
 ROW_CONTENT
