@@ -81,7 +81,7 @@ public class TrainTokenRecogEngineSDV {
 
 
     /* Training routine */
-    public void train(String tokenDir, String dataDir, String engineDir) {
+    public void train(int newImageSize, String tokenDir, String dataDir, String engineDir) {
         final String tokenEngineSerFN = engineDir + File.separator +
                 String.format("token_engine.sdv.hls%d.sz%d_whr%s_ns%s.ser",
                               hiddenLayerSize1,
@@ -130,7 +130,7 @@ public class TrainTokenRecogEngineSDV {
 
         tokEngine.setFeatures(ivs, bvs);
 
-        tokEngine.train(tokenDir, dataDir);
+        tokEngine.train(tokenDir, dataDir, newImageSize);
 
         logger.info("Final test error rate = " + tokEngine.getTestErrorRate());
 
@@ -176,8 +176,15 @@ public class TrainTokenRecogEngineSDV {
         }
         final String dataDir = System.getProperty("dataDir");
 
+        int newImageSize = 0;
+        if (System.getProperty("newImageSize") != null) {
+            newImageSize = Integer.parseInt(System.getProperty("newImageSize"));
+            if (newImageSize <= 0) {
+                newImageSize = 0;
+            }
+        }
 
-        trainer.train(tokenDir, dataDir, engineDir);
+        trainer.train(newImageSize, tokenDir, dataDir, engineDir);
 
     }
 }

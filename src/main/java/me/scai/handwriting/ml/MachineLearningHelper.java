@@ -1,6 +1,7 @@
 package me.scai.handwriting.ml;
 
 import me.scai.handwriting.CHandWritingTokenImageData;
+import me.scai.handwriting.CStroke;
 import me.scai.handwriting.CWrittenToken;
 import me.scai.handwriting.tokens.TokenFileSettings;
 import me.scai.handwriting.tokens.TokenSettings;
@@ -12,7 +13,11 @@ import java.util.*;
 
 public class MachineLearningHelper {
 
-    public static DataSetWithStringLabels readDataFromDir(final String inDirName, TokenSettings tokenSettings) {
+
+
+    public static DataSetWithStringLabels readDataFromDir(final String inDirName,
+                                                          TokenSettings tokenSettings,
+                                                          int newImageSize) {
         DataSetWithStringLabels r = new DataSetWithStringLabels();
 
         File inDir = new File(inDirName);
@@ -31,7 +36,8 @@ public class MachineLearningHelper {
                  allFiles[i].getName().indexOf(".") != 0 ) { // Skip hidden folders
                 System.out.println("Reading data from subdirectory: " + allFiles[i].getPath());
 
-                DataSetWithStringLabels dataSetWithStringLabels = readDataFromDir(allFiles[i].getPath(), tokenSettings);
+                DataSetWithStringLabels dataSetWithStringLabels =
+                        readDataFromDir(allFiles[i].getPath(), tokenSettings, newImageSize);
                 r.addAll(dataSetWithStringLabels);
             }
         }
@@ -74,7 +80,12 @@ public class MachineLearningHelper {
 
                 t_wt.width = t_imData.w;
                 t_wt.height = t_imData.h;
-                x = getSdveVector(t_wt, tokenSettings);
+
+                if (newImageSize <= 0) {
+                    x = getSdveVector(t_wt, tokenSettings);
+                } else {
+                    x = getNewImagePlusSdveVector(t_wt, tokenSettings, newImageSize, t_imData.h, t_imData.w);
+                }
 
                 r.addSample(x, tokenSettings.getTokenDegeneracy().getDegenerated(t_imData.tokenName));
 
@@ -85,6 +96,118 @@ public class MachineLearningHelper {
         }
 
         return r;
+    }
+
+    public static float[][] getNewImageData(CWrittenToken wt, int imgSize, float origImgH, float origImgW) {
+        if (imgSize <= 0) {
+            throw new IllegalArgumentException("Invalid image height and width");
+        }
+
+        if (origImgH == 0f && origImgW == 0f) {
+            throw new IllegalStateException("Written token instance has zero values in both height and width");
+        }
+
+        float grid = 1.0f / imgSize;
+        float hg = grid * 0.5f;  // half-grid size
+
+        float lim_x = 1f;
+        float lim_y = 1f;
+        if (origImgH > origImgW) {
+            // Shrink lim_x
+            lim_x = origImgW / origImgH;
+        } else {
+            // Shrink lim_y
+            lim_y = origImgH / origImgW;
+        }
+
+        float[][] img = new float[imgSize][imgSize];
+
+        for (int n = 0; n < wt.nStrokes(); ++n) {
+            CStroke stroke = wt.getStroke(n);
+
+            if (stroke.nPoints() <= 0) {
+                throw new IllegalStateException("Empty stroke");
+            } else {
+                final int np = stroke.nPoints();
+                final float[] xs = stroke.getXs();
+                final float[] ys = stroke.getYs();
+
+                if (np == 1) {
+                    // Single dot
+
+                    int ix = Math.round(xs[0] * (imgSize - 1) * lim_x);
+                    int iy = Math.round(ys[0] * (imgSize - 1) * lim_y);
+
+                    img[iy][ix] = 1.0f;
+
+                } else {
+                    for (int i = 0; i < imgSize; ++i) {
+                        for (int j = 0; j < imgSize; ++j) {
+                            float ctr_x = (i + 0.5f) / imgSize;
+                            float ctr_y = (j + 0.5f) / imgSize;
+
+                            for (int k = 0; k < np -1; ++k) {
+                                float x0 = xs[k] * lim_x;
+                                float y0 = ys[k] * lim_y;
+                                float x1 = xs[k + 1] * lim_x;
+                                float y1 = ys[k + 1] * lim_y;
+
+                                float d = dist(x0, y0, x1, y1, ctr_x, ctr_y);
+
+                                if (d <= hg) {
+                                    float v = (hg - d) / hg;
+                                    img[j][i] = 1f - (1f - img[j][i]) * ((1f - v) / 2f);
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+        }
+
+        return img;
+    }
+
+
+    /**
+     * Calculate the distance from point (xp, yp) to the line passing through points (x1, y1) and (x2, y2)
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @param xp
+     * @param yp
+     * @return Distance
+     */
+    private static float dist(float x1, float y1, float x2, float y2, float xp, float yp) {
+        float px = x2 - x1;
+        float py = y2 - y1;
+
+        float q = px * px + py * py;
+
+        float u = ((xp - x1) * px + (yp - y1) * py) / q;
+
+        if (u > 1f) {
+            u = 1f;
+        } else if (u < 0f) {
+            u = 0f;
+        }
+
+        float x = x1 + u * px;
+        float y = y1 + u * py;
+
+        float dx = x - xp;
+        float dy = y - yp;
+
+        // Note: If the actual distance does not matter,
+        // if you only want to compare what this function
+        /// returns to other results of this function, you
+        // can just return the squared distance instead
+        // (i.e. remove the sqrt) to gain a little performance
+
+        return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
     public static float[] getSdveVector(CWrittenToken wt, TokenSettings tokenSettings) {
@@ -99,6 +222,29 @@ public class MachineLearningHelper {
                 tokenSettings.isIncludeTokenSize(),
                 tokenSettings.isIncludeTokenWHRatio(),
                 tokenSettings.isIncludeTokenNumStrokes());
+    }
+
+    public static float[] getNewImagePlusSdveVector(CWrittenToken wt, TokenSettings tokenSettings,
+                                                    int imgSize, float origImgH, float origImgW) {
+        float[] x_sdve = getSdveVector(wt, tokenSettings);
+        float[][] x_img = getNewImageData(wt, imgSize, origImgH, origImgW);
+
+        assert(x_img.length == imgSize);
+        assert(x_img[0].length == imgSize);
+
+        float[] x = new float[imgSize * imgSize + x_sdve.length];
+        int cnt = 0;
+        for (int i = 0; i < imgSize; ++i) {
+            for (int j = 0; j < imgSize; ++j) {
+                x[cnt++] = x_img[i][j];
+            }
+        }
+
+        for (float v : x_sdve) {
+            x[cnt++] = v;
+        }
+
+        return x;
     }
 
     /**

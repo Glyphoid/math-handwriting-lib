@@ -136,7 +136,9 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		
 	}
 
-	public Map<String, DataSet> readDataFromDir(String inDirName, List<String> labels) { //, ArrayList<String> aTokenNames
+	public Map<String, DataSet> readDataFromDir(String inDirName,
+												List<String> labels,
+												int newImageSize) { //, ArrayList<String> aTokenNames
         TokenSettings tokenSettings = new TokenSettings(
                 bIncludeTokenSize,
                 bIncludeTokenWHRatio,
@@ -147,7 +149,8 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
                 tokenDegen
         );
 
-        DataSetWithStringLabels dataSetWithStringLabels = MachineLearningHelper.readDataFromDir(inDirName, tokenSettings);
+        DataSetWithStringLabels dataSetWithStringLabels =
+				MachineLearningHelper.readDataFromDir(inDirName, tokenSettings, newImageSize);
         DataSet dataSet = MachineLearningHelper.convertStringLabelsToIndices(dataSetWithStringLabels);
 
         assert(labels != null);
@@ -245,6 +248,10 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 
 	@Override
 	public void train(String inDirName, String outDataDirName) {
+		train(inDirName, outDataDirName, 0);
+	}
+
+	public void train(String inDirName, String outDataDirName, int newImageSize) {
 		if (inDirName.length() < 1) {
 			System.err.println("ERROR: The specified input directory name is empty");
 		} else {
@@ -259,7 +266,7 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 			trueLabelsValidation = new ArrayList<>();
 			tokenNames = new ArrayList<>();
 
-			Map<String, DataSet> divDataSets = readDataFromDir(inDirName, tokenNames);
+			Map<String, DataSet> divDataSets = readDataFromDir(inDirName, tokenNames, newImageSize);
 
             sdveDataTrain = divDataSets.get("training").getX();
             trueLabelsTrain = divDataSets.get("training").getY();
@@ -281,18 +288,37 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 
             /* Write data to csv files */
             /* Write training data */
-            File f = new File(outDataDirName, "sdve_train_data.csv");
+			String dataFilePrefix = "sdve";
+			if (newImageSize > 0) {
+				dataFilePrefix = "new_image_" + dataFilePrefix;
+				File f = new File(outDataDirName, "new_image_size");
+
+				PrintWriter pw = null;
+				try {
+					pw = new PrintWriter(f);
+					pw.println(newImageSize);
+				} catch (IOException e) {
+
+				} finally {
+					if (pw != null) {
+						pw.close();
+					}
+				}
+
+			}
+
+            File f = new File(outDataDirName, dataFilePrefix + "_train_data.csv");
             DataIOHelper.printFloatDataToCsvFile(sdveDataTrain, f);
 			System.out.println("Wrote training data to " + f.getAbsolutePath());
 
             /* Write validation data */
-            f = new File(outDataDirName, "sdve_validation_data.csv");
+            f = new File(outDataDirName, dataFilePrefix + "_validation_data.csv");
             DataIOHelper.printFloatDataToCsvFile(sdveDataValidation, f);
             System.out.println("Wrote validation data to " + f.getAbsolutePath());
 
             /* Write test data */
-            f = new File(outDataDirName, "sdve_test_data.csv");
-            DataIOHelper.printFloatDataToCsvFile(sdveDataTest, new File(outDataDirName, "sdve_test_data.csv"));
+            f = new File(outDataDirName, dataFilePrefix + "_test_data.csv");
+            DataIOHelper.printFloatDataToCsvFile(sdveDataTest, new File(outDataDirName, dataFilePrefix + "_test_data.csv"));
             System.out.println("Wrote test data to " + f.getAbsolutePath());
 
             /* Write training labels */
@@ -349,17 +375,17 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
             }
 
             /* Write train labels */
-            f = new File(outDataDirName, "sdve_train_labels.csv");
+            f = new File(outDataDirName, dataFilePrefix + "_train_labels.csv");
             DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTrain, nLabels, f);
             System.out.println("Wrote training labels to " + f.getAbsolutePath());
 
             /* Write validation labels */
-            f = new File(outDataDirName, "sdve_validation_labels.csv");
+            f = new File(outDataDirName, dataFilePrefix + "_validation_labels.csv");
             DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsValidation, nLabels, f);
             System.out.println("Wrote validation labels to " + f.getAbsolutePath());
 
             /* Write test labels */
-            f = new File(outDataDirName, "sdve_test_labels.csv");
+            f = new File(outDataDirName, dataFilePrefix + "_test_labels.csv");
             DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTest, nLabels, f);
             System.out.println("Wrote test labels to " + f.getAbsolutePath());
 
