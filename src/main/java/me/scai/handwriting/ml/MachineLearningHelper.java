@@ -109,6 +109,7 @@ public class MachineLearningHelper {
 
         float grid = 1.0f / imgSize;
         float hg = grid * 0.5f;  // half-grid size
+        float hgd = hg * 1.414f;
 
         float lim_x = 1f;
         float lim_y = 1f;
@@ -125,6 +126,8 @@ public class MachineLearningHelper {
         for (int n = 0; n < wt.nStrokes(); ++n) {
             CStroke stroke = wt.getStroke(n);
 
+            boolean down = false;
+
             if (stroke.nPoints() <= 0) {
                 throw new IllegalStateException("Empty stroke");
             } else {
@@ -132,13 +135,18 @@ public class MachineLearningHelper {
                 final float[] xs = stroke.getXs();
                 final float[] ys = stroke.getYs();
 
-                if (np == 1) {
+//                if (np == 2 && n == 1 && wt.getStroke(1).getXs()[0] == 0.977f) {
+//                    int iii = 111; // DEBUG
+//                }
+
+                if (np == 1 || (np == 2 && xs[0] == xs[1] && ys[0] == ys[1])) {
                     // Single dot
 
                     int ix = Math.round(xs[0] * (imgSize - 1) * lim_x);
                     int iy = Math.round(ys[0] * (imgSize - 1) * lim_y);
 
                     img[iy][ix] = 1.0f;
+                    down = true;
 
                 } else {
                     for (int i = 0; i < imgSize; ++i) {
@@ -152,17 +160,29 @@ public class MachineLearningHelper {
                                 float x1 = xs[k + 1] * lim_x;
                                 float y1 = ys[k + 1] * lim_y;
 
-                                float d = dist(x0, y0, x1, y1, ctr_x, ctr_y);
+                                if (x0 == x1 && y0 == y1) {
+                                    /* The two points are the same */
+                                    if ((x0 - ctr_x) * (x0 - ctr_x) + (y0 - ctr_y) * (y0 - ctr_y) <= hgd * hgd) {
+                                        img[j][i] = 1f;
+                                    }
+                                } else {
+                                    float d = dist(x0, y0, x1, y1, ctr_x, ctr_y);
 
-                                if (d <= hg) {
-                                    float v = (hg - d) / hg;
-                                    img[j][i] = 1f - (1f - img[j][i]) * ((1f - v) / 2f);
+                                    if (d <= hgd) {
+                                        float v = (hgd - d) / hgd;
+                                        img[j][i] = 1f - (1f - img[j][i]) * ((1f - v) / 2f);
+                                        down = true;
+                                    }
                                 }
                             }
                         }
                     }
 
                 }
+            }
+
+            if (!down) {
+                System.out.println("Warning: no point for stroke");
             }
 
         }
