@@ -479,10 +479,11 @@ public class Test_QADataSet {
             new QADataEntry("sim_238", "M(M(1, 2), M(3, 4))").withMathTex("M{\\left(M{\\left(1,2\\right)},M{\\left(3,4\\right)}\\right)}")
                     .withEvalRes(24.0)
                     .withGrammarNodesDisabled(new String[] {"EXPONENTIATION", "VARIABLE_SYMBOL_SUBSCRIPT",
-                                                            "IF_STATEMENT",  "SWITCH_STATEMENT", "MATRIX",
+                                                            "IF_STATEMENT",  "SWITCH_STATEMENT", "MATRIX", "VARIABLE",
                                                             "MATH_FUNCTION_TERM", "MATH_FUNCTION_NAME", "COMPARISON",
                                                             "LOGICAL_TERM", "LOGICAL_OR_TERM", "DEF_INTEG_TERM",
-                                                            "PI_TERM",
+                                                            "PI_TERM", "SIGMA_TERM", "VARIABLE_EVALUATED",
+                                                            "USER_FUNCTION_DEF", "MATH_FUNCTION_ARG",
                                                             "ADDITION", "SUBTRACTION",
                                                             "MULTIPLICATION", "MULTIPLICATION_VAR",
                                                             "FRACTION", "SQROOT_TERM"}), // Invoke two-argument function, in a nested way
