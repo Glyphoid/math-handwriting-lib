@@ -4,11 +4,12 @@ import me.scai.handwriting.TestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class Test_GraphicalProductionSet {
     /* Private members */
@@ -18,6 +19,115 @@ public class Test_GraphicalProductionSet {
     public void setUp() {
         TestHelper.WorkerTuple workerTuple = TestHelper.getTestWorkerTuple();
         gpSet = workerTuple.gpSet;
+    }
+
+    @Test
+    public void testInitiallyAllProdsEnabled() {
+        List<Boolean> prodIsEnabled = gpSet.getProdIsEnabled();
+
+        for (Boolean isEnabled : prodIsEnabled) {
+            assertTrue(isEnabled);
+        }
+
+        assertEquals(gpSet.prods.size(), gpSet.searchIdx.length);
+    }
+
+    @Test
+    public void testDisableEnableProductions() {
+        final int np = gpSet.numProductions();
+
+        for (int k = 0; k < np; ++k) {
+            gpSet.disableProduction(k);
+
+            ArrayList<Boolean> prodIsEnabled = gpSet.getProdIsEnabled();
+            for (int i = 0; i < prodIsEnabled.size(); ++i) {
+                if (i == k) {
+                    assertFalse(prodIsEnabled.get(i));
+                } else {
+                    assertTrue(prodIsEnabled.get(i));
+                }
+            }
+
+            assertEquals(np - 1, gpSet.searchIdx.length);
+
+            for (int idx : gpSet.searchIdx) {
+                assertNotEquals(k, idx);
+            }
+
+            gpSet.enableProduction(k);
+        }
+    }
+
+    @Test
+    public void testEnableAllProductions() {
+        final int np = gpSet.numProductions();
+
+        for (int k = 0; k < np; ++k) {
+            gpSet.disableProduction(k);
+        }
+
+        assertEquals(0, gpSet.searchIdx.length);
+
+        gpSet.enableAllProductions();
+
+        assertEquals(gpSet.prods.size(), gpSet.searchIdx.length);
+        for (int i = 0; i < gpSet.prods.size(); ++i) {
+            assertEquals(i, gpSet.searchIdx[i]);
+        }
+    }
+
+    @Test
+    public void disableProductionBySumString() {
+        assertEquals(gpSet.numProductions(), gpSet.searchIdx.length);
+
+        String prodSumString = gpSet.prods.get(0).sumString;
+
+        int numDisabled = gpSet.disableProductionBySumString(prodSumString);
+
+        assertTrue(numDisabled > 0);
+        assertEquals(gpSet.numProductions() - numDisabled, gpSet.searchIdx.length);
+
+        assertEquals(1, gpSet.searchIdx[0]);
+    }
+
+    @Test
+    public void disableProductionsByLHS() {
+        assertEquals(gpSet.numProductions(), gpSet.searchIdx.length);
+
+
+        final String lhsToDisable = "EXPONENTIATION";
+
+        int numDisabled = gpSet.disableProductionsByLHS(lhsToDisable);
+
+        assertTrue(numDisabled > 0);
+        assertEquals(gpSet.numProductions() - numDisabled, gpSet.searchIdx.length);
+
+        for (int i : gpSet.searchIdx) {
+            assertNotEquals(lhsToDisable, gpSet.prods.get(i).lhs);
+        }
+    }
+
+    @Test
+    public void disabledProductionsByGrammarNodeName() {
+        assertEquals(gpSet.numProductions(), gpSet.searchIdx.length);
+
+        final String grammarNodeNameToDisable = "MATRIX";
+
+        int numDisabled = gpSet.disableProductionsByGrammarNodeName(grammarNodeNameToDisable);
+
+        assertTrue(numDisabled > 0);
+        assertEquals(gpSet.numProductions() - numDisabled, gpSet.searchIdx.length);
+
+        for (int i : gpSet.searchIdx) {
+            GraphicalProduction prod = gpSet.prods.get(i);
+
+            assertNotEquals(grammarNodeNameToDisable, prod.lhs);
+
+            for (String rhsItem : prod.rhs) {
+                assertNotEquals(grammarNodeNameToDisable, rhsItem);
+            }
+        }
+
     }
 
     @Test

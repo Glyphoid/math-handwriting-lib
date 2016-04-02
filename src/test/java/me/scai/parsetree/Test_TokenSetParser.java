@@ -45,11 +45,13 @@ public class Test_TokenSetParser {
         stringizer     = workerTuple.stringizer;
         evaluator      = workerTuple.evaluator;
         mathTexifier   = workerTuple.mathTexifier;
+
     }
 
 	@After
 	public void tearDown() throws Exception {
 		evaluator.clearUserData();
+        System.gc();
 	}
 
 	private void testParser(String suiteName) {
@@ -61,7 +63,7 @@ public class Test_TokenSetParser {
         int nTested = 0;
         long totalParsingTime_ms = 0;
 
-        QADataEntry [] entries = qaDataSet.QADataSuites.get(suiteName).getEntries();
+        QADataEntry[] entries = qaDataSet.QADataSuites.get(suiteName).getEntries();
         
         for (int i = 0; i < entries.length; ++i) {
             // for (int i = 0; i < tokenSetNums.length; ++i) {
@@ -89,6 +91,18 @@ public class Test_TokenSetParser {
             } catch (IOException ioe) {
                 System.err.println(ioe.getMessage());
                 System.err.flush();
+            }
+
+            /* Disable grammar productions, if specified */
+            boolean toEnableAllProductions = false;
+            String[] grammarNodesToDisable = entries[i].getGrammarNodesToDisable();
+            if (grammarNodesToDisable != null && grammarNodesToDisable.length > 0) {
+                toEnableAllProductions = true;
+                for (String grammarNode : grammarNodesToDisable) {
+                    int numDisabled =
+                            tokenSetParser.getGraphicalProductionSet().disableProductionsByGrammarNodeName(grammarNode);
+                    System.out.println("Disabled " + numDisabled + " production(s) with grammar node name " + grammarNode);
+                }
             }
 
             /* Parse graphically */
@@ -204,6 +218,12 @@ public class Test_TokenSetParser {
             } else {
                 System.err.println(strPrint);
                 System.err.flush();
+            }
+
+            /* If necessray, re-enable all grammar productions */
+            if (toEnableAllProductions) {
+                tokenSetParser.getGraphicalProductionSet().enableAllProductions();
+                System.out.println("Enabled all productions.");
             }
 
             nTested++;
