@@ -16,6 +16,8 @@ class QADataEntry {
 	private Object correctEvalRes;
     private double[] correctEvalResRange = null;
 
+    private String[] grammarNodesToDisable;
+
 	/* ~Member variables */
 
 	/* Constructors */
@@ -64,6 +66,12 @@ class QADataEntry {
     public QADataEntry withEvalResRange(double lowerBound, double upperBound) {
         return withEvalResRange(new double[] {lowerBound, upperBound});
     }
+
+    public QADataEntry withGrammarNodesDisabled(String[] grammarNodeNames) {
+        this.grammarNodesToDisable = grammarNodeNames;
+
+        return this;
+    }
 	
 	/* Getters */
 	public String getTokenSetFileName() {
@@ -84,6 +92,10 @@ class QADataEntry {
 
     public double[] getCorrectEvalResRange() {
         return correctEvalResRange;
+    }
+
+    public String[] getGrammarNodesToDisable() {
+        return grammarNodesToDisable;
     }
 }
 
@@ -464,7 +476,16 @@ public class Test_QADataSet {
             new QADataEntry("sim_229", "M(2, 34)").withMathTex("M{\\left(2,34\\right)}").withEvalRes(68.0), // Invoke two-argument function
             new QADataEntry("sim_232", "M(2, 34)").withMathTex("M{\\left(2,34\\right)}").withEvalRes(68.0), // Invoke two-argument function
             new QADataEntry("sim_237", "M(3, f(4))").withMathTex("M{\\left(3,f{\\left(4\\right)}\\right)}").withEvalRes(24.0), // Invoke two-argument function, in a nested way
-            new QADataEntry("sim_238", "M(M(1, 2), M(3, 4))").withMathTex("M{\\left(M{\\left(1,2\\right)},M{\\left(3,4\\right)}\\right)}").withEvalRes(24.0), // Invoke two-argument function, in a nested way
+            new QADataEntry("sim_238", "M(M(1, 2), M(3, 4))").withMathTex("M{\\left(M{\\left(1,2\\right)},M{\\left(3,4\\right)}\\right)}")
+                    .withEvalRes(24.0)
+                    .withGrammarNodesDisabled(new String[] {"EXPONENTIATION", "VARIABLE_SYMBOL_SUBSCRIPT",
+                                                            "IF_STATEMENT",  "SWITCH_STATEMENT", "MATRIX",
+                                                            "MATH_FUNCTION_TERM", "MATH_FUNCTION_NAME", "COMPARISON",
+                                                            "LOGICAL_TERM", "LOGICAL_OR_TERM", "DEF_INTEG_TERM",
+                                                            "PI_TERM",
+                                                            "ADDITION", "SUBTRACTION",
+                                                            "MULTIPLICATION", "MULTIPLICATION_VAR",
+                                                            "FRACTION", "SQROOT_TERM"}), // Invoke two-argument function, in a nested way
             new QADataEntry("sim_239", "(B(x, y, z) = ((x / y) + (sqrt(z))))").withMathTex("{B{\\left(x,y,z\\right)}}={{\\frac{x}{y}}+{\\sqrt{z}}}"), // Define three-argument function
             new QADataEntry("sim_240", "B(11, 22, 36)").withMathTex("B{\\left(11,22,36\\right)}").withEvalRes(6.5), // Define three-argument function
             new QADataEntry("sim_241", "(T(x, y) = (x + y))").withMathTex("{T{\\left(x,y\\right)}}={{x}+{y}}") // Define three-argument function
