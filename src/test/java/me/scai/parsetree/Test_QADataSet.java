@@ -8,6 +8,13 @@ import java.util.Map;
 import java.util.HashMap;
 
 class QADataEntry {
+    /* Enums */
+    public enum TestSize {
+        Small,
+        Large
+    }
+    /* ~Enum */
+
 	/* Member variables */
 	private String tokenSetFileName;
 	private String correctParseRes;
@@ -17,7 +24,9 @@ class QADataEntry {
     private double[] correctEvalResRange = null;
 
     private String[] grammarNodesToDisable;
+    private String[] grammarSumStringsToDisable;
 
+    private TestSize testSize = TestSize.Small;
 	/* ~Member variables */
 
 	/* Constructors */
@@ -72,6 +81,18 @@ class QADataEntry {
 
         return this;
     }
+
+    public QADataEntry withGrammarSumStringDisabled(String[] sumStrings) {
+        this.grammarSumStringsToDisable = sumStrings;
+
+        return this;
+    }
+
+    public QADataEntry withTestSize(TestSize testSize) {
+        this.testSize = testSize;
+
+        return this;
+    }
 	
 	/* Getters */
 	public String getTokenSetFileName() {
@@ -96,6 +117,14 @@ class QADataEntry {
 
     public String[] getGrammarNodesToDisable() {
         return grammarNodesToDisable;
+    }
+
+    public String[] getGrammarSumStringsToDisable() {
+        return grammarSumStringsToDisable;
+    }
+
+    public TestSize getTestSize() {
+        return testSize;
     }
 }
 
@@ -486,7 +515,8 @@ public class Test_QADataSet {
                                                             "USER_FUNCTION_DEF", "MATH_FUNCTION_ARG",
                                                             "ADDITION", "SUBTRACTION",
                                                             "MULTIPLICATION", "MULTIPLICATION_VAR",
-                                                            "FRACTION", "SQROOT_TERM"}), // Invoke two-argument function, in a nested way
+                                                            "FRACTION", "SQROOT_TERM"})
+                    .withTestSize(QADataEntry.TestSize.Large), // Invoke two-argument function, in a nested way
             new QADataEntry("sim_239", "(B(x, y, z) = ((x / y) + (sqrt(z))))").withMathTex("{B{\\left(x,y,z\\right)}}={{\\frac{x}{y}}+{\\sqrt{z}}}"), // Define three-argument function
             new QADataEntry("sim_240", "B(11, 22, 36)").withMathTex("B{\\left(11,22,36\\right)}").withEvalRes(6.5), // Define three-argument function
             new QADataEntry("sim_241", "(T(x, y) = (x + y))").withMathTex("{T{\\left(x,y\\right)}}={{x}+{y}}") // Define three-argument function
