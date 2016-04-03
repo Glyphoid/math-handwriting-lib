@@ -17,12 +17,15 @@ public class GraphicalProductionSet {
 	public ArrayList<GraphicalProduction> prods = new ArrayList<>(); /* List of productions */
     public ArrayList<String> prodSumStrings = new ArrayList<>(); /* List of productions */
 
+    /* List of Booleans indicating whether each production is enabled */
+    public ArrayList<Boolean> prodIsEnabled;
+
     private List<List<String>> terminalTypes;
     private Map<Integer, Set<Integer>> transitiveChildrenProdMap; // Key: production index; Value: all children production indices.
     private Set<Integer> visitedProdIndices;
 	
 	public TerminalSet terminalSet;
-	private int [] searchIdx = null;
+	int [] searchIdx = null;  /* Package-private for testing */
 
     private Map<String, List<Integer>> lhs2ProdIndices; // Map from lhs name to all possible production indicies
     ArrayList<Set<String>> requiredTermTypes; // Required terminal types of the productions
@@ -47,10 +50,128 @@ public class GraphicalProductionSet {
 //		/* TODO */
 //	}
 	
-	/* Get the number of productions */
+	/* Get the number of productions, including disabled and enabled ones */
 	public int numProductions() {
 		return prods.size();
 	}
+
+    /**
+     * Disable a production. It does not matter whether the production is already disabled.
+     * That is, not using it during token-set parsing.
+     * @param  idxProd  Production index
+     */
+    public void disableProduction(int idxProd) {
+        /* Update searchIdx */
+        prodIsEnabled.set(idxProd, false);
+
+        populateSearchIdx();
+    }
+
+    /**
+     * Disable a production by summary string.
+     * @param sumString Summary string of the production to disable
+     * @return  Number of disabled productions
+     * @throws  IllegalArgumentException, if the grammarNodeName does not match any productions
+     */
+    public int disableProductionBySumString(String sumString) {
+        int numDisabled = 0;
+        for (int i = 0; i < prodSumStrings.size(); ++i) {
+            if (prodSumStrings.get(i).equals(sumString)) {
+                prodIsEnabled.set(i, false);
+                numDisabled ++;
+            }
+        }
+
+        if (numDisabled == 0) {
+            throw new IllegalArgumentException("No production with summary string \"" +
+                                               sumString + "\"");
+        }
+
+        populateSearchIdx();
+
+        return numDisabled;
+    }
+
+    /**
+     * Disable production(s) by LHS string
+     * @param lhs
+     * @return  Number of disabled productions
+     * @throws  IllegalArgumentException, if the grammarNodeName does not match any productions
+     */
+    public int disableProductionsByLHS(String lhs) {
+        int numDisabled = 0;
+        for (int i = 0; i < prods.size(); ++i) {
+            if (prods.get(i).lhs.equals(lhs)) {
+                prodIsEnabled.set(i, false);
+                numDisabled ++;
+            }
+        }
+
+        if (numDisabled == 0) {
+            throw new IllegalArgumentException("No production with LHS string \"" +
+                                               lhs + "\"");
+        }
+
+        populateSearchIdx();
+
+        return numDisabled;
+    }
+
+    /**
+     * Disable productions by grammar node string, including match of any the LHS and RHS strings.
+     * @param grammarNodeName  Name of the grammar node (e.g., "MATRIX")
+     * @return  The number of productions disabled (>= 1)
+     * @throws  IllegalArgumentException, if the grammarNodeName does not match any productions
+     */
+    public int disableProductionsByGrammarNodeName(String grammarNodeName) {
+        int numDisabled = 0;
+        for (int i = 0; i < prods.size(); ++i) {
+            GraphicalProduction prod = prods.get(i);
+            if (prod.lhs.equals(grammarNodeName)) {
+                prodIsEnabled.set(i, false);
+                numDisabled ++;
+            }
+
+            for (String rhsItem : prod.rhs) {
+                if (rhsItem.equals(grammarNodeName)) {
+                    prodIsEnabled.set(i, false);
+                    numDisabled ++;
+                }
+            }
+        }
+
+        if (numDisabled == 0) {
+            throw new IllegalArgumentException("No production with grammar node name \"" +
+                                               grammarNodeName + "\"");
+        }
+
+        populateSearchIdx();
+
+        return numDisabled;
+    }
+
+    /**
+     * Enable a production. It does not matter whether the production is already enabled.
+     * @param  idxProd  Production index
+     */
+    public void enableProduction(int idxProd) {
+        /* Update searchIdx */
+        prodIsEnabled.set(idxProd, true);
+
+        populateSearchIdx();
+    }
+
+    /**
+     * Enable all productions
+     */
+    public void enableAllProductions() {
+        /* Update searchIdx */
+        for (int i = 0; i < prods.size(); ++i) {
+            prodIsEnabled.set(i, true);
+        }
+
+        populateSearchIdx();
+    }
 
     /**
      * Read production set from lines of the configuration file
@@ -93,13 +214,39 @@ public class GraphicalProductionSet {
 			}
 		}
 
-		searchIdx = new int[prods.size()];
-		for (int i = 0; i < searchIdx.length; ++i) {
-			searchIdx[i] = i;
-		}
+        /* Set enabled to true for all productions initially */
+        prodIsEnabled = new ArrayList<>();
+        final int np = prods.size();
+        prodIsEnabled.ensureCapacity(np);
+        for (int i = 0; i < np; ++i) {
+            prodIsEnabled.add(true);
+        }
+
+        /* Populate search index */
+        populateSearchIdx();
 
         calcRequiredTermTypes();
 	}
+
+    /**
+     * Populate the searchIdx array list according to the Boolean array prodIsEnabled.
+     */
+    private void populateSearchIdx() {
+        final int np = prods.size();
+
+        List<Integer> searchIdxList = new LinkedList<>();
+        for (int i = 0; i < np; ++i) {
+            if (prodIsEnabled.get(i)) {
+                searchIdxList.add(i);
+            }
+        }
+
+        searchIdx = new int[searchIdxList.size()];
+        int counter = 0;
+        for (int idx : searchIdxList) {
+            searchIdx[counter++] = idx;
+        }
+    }
 	
 	/* Read productions from production list file */
 	public void readProductionsFromFile(String prodListFileName, TerminalSet termSet)
@@ -776,4 +923,8 @@ public class GraphicalProductionSet {
 	public ParseTreeEvaluator genEvaluator() {
 		return new ParseTreeEvaluator(this);
 	}
+
+    public ArrayList<Boolean> getProdIsEnabled() {
+        return prodIsEnabled;
+    }
 }

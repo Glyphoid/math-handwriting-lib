@@ -11,4 +11,4 @@ install:
   - git clone https://github.com/Glyphoid/tokensets /home/travis/tokensets
 
 script:
-  - mvn test -B -DtokenSetPathPrefix=/home/travis/tokensets/TS_
+  - mvn test -B -DtokenSetPathPrefix=/home/travis/tokensets/TS_ -DnoLargeTokenSetParserTest=true
