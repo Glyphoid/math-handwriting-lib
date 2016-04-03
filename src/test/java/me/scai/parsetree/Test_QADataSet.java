@@ -424,7 +424,9 @@ public class Test_QADataSet {
             new QADataEntry("sim_83", "[(1 / 2), 3; 4, 9]").withMathTex("\\begin{bmatrix}\\frac{1}{2}&3\\\\4&9\\end{bmatrix}"),
             new QADataEntry("sim_190", "[(x ^ 2), (1 / y); 3, 4]").withMathTex("\\begin{bmatrix}{x}^{2}&\\frac{1}{y}\\\\3&4\\end{bmatrix}"),
             new QADataEntry("sim_191", "[(sqrt((1 + 2))), (sqrt(3)); 4, (sqrt(5))]").withMathTex("\\begin{bmatrix}\\sqrt{{1}+{2}}&\\sqrt{3}\\\\4&\\sqrt{5}\\end{bmatrix}"),
-            new QADataEntry("sim_193", "[(1 / 2), (3 / 4); (5 / 6), (7 / 8)]").withMathTex("\\begin{bmatrix}\\frac{1}{2}&\\frac{3}{4}\\\\\\frac{5}{6}&\\frac{7}{8}\\end{bmatrix}"),
+            new QADataEntry("sim_193", "[(1 / 2), (3 / 4); (5 / 6), (7 / 8)]")
+                    .withMathTex("\\begin{bmatrix}\\frac{1}{2}&\\frac{3}{4}\\\\\\frac{5}{6}&\\frac{7}{8}\\end{bmatrix}")
+                    .withTestSize(QADataEntry.TestSize.Large),
 //            new QADataEntry("sim_192", "[(sqrt((1 + 2))), (sqrt(3)); 4, (sqrt(5))]").withMathTex("\\begin{bmatrix}\\sqrt{{1}+{2}}&\\sqrt{3}\\\\4&\\sqrt{5}\\end{bmatrix}") //TODO: This takes too long to parse.
         };
         QADataSuites.put("basicMatrix", new QADataSuite(entries_basicMatrix, false));
@@ -517,8 +519,11 @@ public class Test_QADataSet {
                                                             "MULTIPLICATION", "MULTIPLICATION_VAR",
                                                             "FRACTION", "SQROOT_TERM"})
                     .withTestSize(QADataEntry.TestSize.Large), // Invoke two-argument function, in a nested way
-            new QADataEntry("sim_239", "(B(x, y, z) = ((x / y) + (sqrt(z))))").withMathTex("{B{\\left(x,y,z\\right)}}={{\\frac{x}{y}}+{\\sqrt{z}}}"), // Define three-argument function
-            new QADataEntry("sim_240", "B(11, 22, 36)").withMathTex("B{\\left(11,22,36\\right)}").withEvalRes(6.5), // Define three-argument function
+            new QADataEntry("sim_239", "(B(x, y, z) = ((x / y) + (sqrt(z))))")
+                    .withMathTex("{B{\\left(x,y,z\\right)}}={{\\frac{x}{y}}+{\\sqrt{z}}}")
+                    .withTestSize(QADataEntry.TestSize.Large), // Define three-argument function
+            new QADataEntry("sim_240", "B(11, 22, 36)").withMathTex("B{\\left(11,22,36\\right)}").withEvalRes(6.5)
+                    .withTestSize(QADataEntry.TestSize.Large), // Define three-argument function
             new QADataEntry("sim_241", "(T(x, y) = (x + y))").withMathTex("{T{\\left(x,y\\right)}}={{x}+{y}}") // Define three-argument function
         };
         QADataSuites.put("definedFunctions", new QADataSuite(entries_definedFunctions, true));
@@ -616,11 +621,17 @@ public class Test_QADataSet {
             new QADataEntry("sim_256", "((12 > 3) || (4 < -5))").withMathTex("{{12}>{3}}\\lor{{4}<{-{5}}}").withEvalRes(true),
             new QADataEntry("sim_257", "((((3 ^ 2) >= 1) && (0 = 0)) || (5 > 8))").withMathTex("{{{{3}^{2}}\\geq{1}}\\land{{0}={0}}}\\lor{{5}>{8}}").withEvalRes(true),
             new QADataEntry("sim_258", "((1 < -3) || ((8 = 8) && (9 >= (9 / 1))))").withMathTex("{{1}<{-{3}}}\\lor{{{8}={8}}\\land{{9}\\geq{\\frac{9}{1}}}}").withEvalRes(true),
-            new QADataEntry("sim_259", "(((sin(3) < 0) && (5 < 4)) || ((cos(8) < 0) && (2 = 2)))").withMathTex("{{{\\sin{3}}<{0}}\\land{{5}<{4}}}\\lor{{{\\cos{8}}<{0}}\\land{{2}={2}}}").withEvalRes(true),
+            new QADataEntry("sim_259", "(((sin(3) < 0) && (5 < 4)) || ((cos(8) < 0) && (2 = 2)))")
+                    .withMathTex("{{{\\sin{3}}<{0}}\\land{{5}<{4}}}\\lor{{{\\cos{8}}<{0}}\\land{{2}={2}}}")
+                    .withEvalRes(true)
+                    .withTestSize(QADataEntry.TestSize.Large),
             new QADataEntry("sim_260", "((1 >= 2) || (((3 >= (4 ^ 5)) && (6 < 7)) || (8 = 9)))").withMathTex("{{1}\\geq{2}}\\lor{{{{3}\\geq{{4}^{5}}}\\land{{6}<{7}}}\\lor{{8}={9}}}").withEvalRes(false),
             new QADataEntry("sim_261", "((1 <= 2))").withMathTex("\\left({1}\\leq{2}\\right)").withEvalRes(true),
-            new QADataEntry("sim_262", "((((1 > 2) || (3 > 4))) && (5 < 6))").withMathTex("{\\left({{1}>{2}}\\lor{{3}>{4}}\\right)}\\land{{5}<{6}}").withEvalRes(false),
-            new QADataEntry("sim_263", "((((1 >= 2) || (3 <= 4))) && (((5 < 6) || (7 < 8))))").withMathTex("{\\left({{1}\\geq{2}}\\lor{{3}\\leq{4}}\\right)}\\land{\\left({{5}<{6}}\\lor{{7}<{8}}\\right)}").withEvalRes(true),
+            new QADataEntry("sim_262", "((((1 > 2) || (3 > 4))) && (5 < 6))")
+                    .withMathTex("{\\left({{1}>{2}}\\lor{{3}>{4}}\\right)}\\land{{5}<{6}}").withEvalRes(false),
+            new QADataEntry("sim_263", "((((1 >= 2) || (3 <= 4))) && (((5 < 6) || (7 < 8))))")
+                    .withMathTex("{\\left({{1}\\geq{2}}\\lor{{3}\\leq{4}}\\right)}\\land{\\left({{5}<{6}}\\lor{{7}<{8}}\\right)}").withEvalRes(true)
+                    .withTestSize(QADataEntry.TestSize.Large),
         };
         QADataSuites.put("logicalExpressions", new QADataSuite(entries_logicalExpressions, false));
 
