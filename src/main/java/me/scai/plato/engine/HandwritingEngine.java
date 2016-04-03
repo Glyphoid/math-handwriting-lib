@@ -67,7 +67,19 @@ public interface HandwritingEngine {
 
     /* Get the constituent strokes of tokens, respectively */
     List<int []> getTokenConstStrokeIndices();
-    
+
+    /**
+     *  Disable graphical productions by grammar node names (e.g., "FRACTION")
+     *  @param grammarNodeNames  Names of the grammar nodes (LHS / RHS) to disable
+     *  @return  Number of grammar nodes disabled in this call.
+     *  @throws HandwritingEngineException  If no production is dsiabled in this call (either because of invalid
+     *                                      grammar node names or because those productions are already disabled. */
+    int disableProductionsByGrammarNodeNames(String[] grammarNodeNames)
+        throws HandwritingEngineException;
+
+    /* Enable all graphical productions */
+    void enableAllProductions();
+
     /* Perform parsing on the entire token set */
     TokenSetParserOutput parseTokenSet()
         throws HandwritingEngineException;

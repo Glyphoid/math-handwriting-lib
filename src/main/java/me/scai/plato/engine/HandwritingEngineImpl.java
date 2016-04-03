@@ -272,6 +272,29 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
         return strokeCurator.getWrittenTokenConstStrokeIndices();
     }
 
+    /* Disabling / enabling productions */
+    public int disableProductionsByGrammarNodeNames(String[] grammarNodeNames)
+            throws HandwritingEngineException{
+        int numDisabled = 0;
+
+        for (String grammarNodeName : grammarNodeNames) {
+            try {
+                numDisabled +=
+                        tokenSetParser.getGraphicalProductionSet().disableProductionsByGrammarNodeName(grammarNodeName);
+            } catch (IllegalArgumentException exc) {
+                throw new HandwritingEngineException("Failed to disable any productions with the grammar node name " +
+                                                     grammarNodeName + ", due to " + exc.getMessage());
+            }
+        }
+
+        return numDisabled;
+    }
+
+
+    public void enableAllProductions() {
+        tokenSetParser.getGraphicalProductionSet().enableAllProductions();
+    }
+
     /* Perform token set parsing */
     @Override
     public TokenSetParserOutput parseTokenSet() throws HandwritingEngineException {
@@ -279,7 +302,8 @@ public class HandwritingEngineImpl implements HandwritingEngine, PooledWorker {
     }
 
     @Override
-    public TokenSetParserOutput parseTokenSubset(int[] tokenIndices) throws HandwritingEngineException {
+    public TokenSetParserOutput parseTokenSubset(int[] tokenIndices)
+            throws HandwritingEngineException {
         TokenSetParserOutput parserOutput = parseTokenSet(true, tokenIndices);
 
         pushStateStack(HandwritingEngineUserAction.ParseTokenSubset);

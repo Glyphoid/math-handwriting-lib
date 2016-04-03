@@ -24,6 +24,51 @@ public class Test_HandwritingEngineImpl {
     }
 
     @Test
+    public void testDisableEnableProductions_sunnyDay() throws HandwritingEngineException {
+        /* Add 1st stroke: "1" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[] {10, 10, 10, 10, 10, 10},
+                                                 new float[] {15, 20, 25, 30, 35, 40}));
+
+        /* Add 2nd stroke: "2" */
+        hwEng.addStroke(TestHelper.getMockStroke(new float[] {15, 30, 30, 15, 15, 30},
+                                                 new float[] {0, 0, 10, 10, 20, 20}));
+
+        TestHelper.verifyTokenSet(hwEng, new boolean[] {false, false}, new String[] {"1", "2"});
+
+        /* Parse with all grammar enabled: Should yield 1 ^ 2 */
+        TokenSetParserOutput parseRes = hwEng.parseTokenSet();
+        assertEquals("(1 ^ 2)", parseRes.getStringizerOutput());
+
+        /* Disable grammar node "EXPONENTATION" */
+        hwEng.disableProductionsByGrammarNodeNames(new String[]{"EXPONENTIATION", "FRACTION"});
+
+        /* This parsing should yield "12" */
+        parseRes = hwEng.parseTokenSet();
+        assertEquals("12", parseRes.getStringizerOutput());
+
+        /* Re-enable the productions */
+        hwEng.enableAllProductions();
+
+        /* Now the parsing result should be the same as the original */
+        parseRes = hwEng.parseTokenSet();
+        assertEquals("(1 ^ 2)", parseRes.getStringizerOutput());
+    }
+
+    @Test
+    public void testDisableNonExistentGrammarNode() {
+        boolean exceptionThrown = false;
+
+        try {
+            hwEng.disableProductionsByGrammarNodeNames(new String[]{"QUX_BAZ", "EXPOENTIATION"});
+        } catch (HandwritingEngineException exc) {
+            exceptionThrown = true;
+        }
+
+        assertTrue(exceptionThrown);
+
+    }
+
+    @Test
     public void testSubsetParsingFollowedByRemoveTokenThenAddTokens() throws HandwritingEngineException {
         /* Add 1st token "7" */
         addSeven(hwEng);
