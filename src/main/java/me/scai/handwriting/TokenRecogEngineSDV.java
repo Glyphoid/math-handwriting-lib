@@ -251,249 +251,256 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 		train(inDirName, outDataDirName, 0);
 	}
 
+  public void generateIntermediateData(String inDirName, String outDataDirName, int newImageSize) {
+    if (inDirName.length() < 1) {
+      throw new RuntimeException("ERROR: The specified input directory name is empty");
+    } else {
+      sdveDataValidation = new ArrayList<>();
+      trueLabelsValidation = new ArrayList<>();
+      tokenNames = new ArrayList<>();
+
+      Map<String, DataSet> divDataSets = readDataFromDir(inDirName, tokenNames, newImageSize);
+
+      sdveDataTrain = divDataSets.get("training").getX();
+      trueLabelsTrain = divDataSets.get("training").getY();
+
+      /* Data sanity checks */
+      assert(!sdveDataTrain.isEmpty());
+      assert(!trueLabelsTrain.isEmpty());
+      assert(sdveDataTrain.size() == trueLabelsTrain.size());
+
+      sdveDataValidation = divDataSets.get("validation").getX();
+      trueLabelsValidation = divDataSets.get("validation").getY();
+
+      sdveDataTest = divDataSets.get("test").getX();
+      trueLabelsTest = divDataSets.get("test").getY();
+
+      assert(!sdveDataValidation.isEmpty());
+      assert(!trueLabelsValidation.isEmpty());
+      assert(sdveDataValidation.size() == trueLabelsValidation.size());
+
+      /* Write data to csv files */
+      /* Write training data */
+      String dataFilePrefix = "sdve";
+      if (newImageSize > 0) {
+        dataFilePrefix = "new_image_" + dataFilePrefix;
+        File f = new File(outDataDirName, "new_image_size");
+
+        PrintWriter pw = null;
+        try {
+          pw = new PrintWriter(f);
+          pw.println(newImageSize);
+        } catch (IOException e) {
+
+        } finally {
+          if (pw != null) {
+            pw.close();
+          }
+        }
+
+      }
+
+      File f = new File(outDataDirName, dataFilePrefix + "_train_data.csv");
+      DataIOHelper.printFloatDataToCsvFile(sdveDataTrain, f);
+      System.out.println("Wrote training data to " + f.getAbsolutePath());
+
+      /* Write validation data */
+      f = new File(outDataDirName, dataFilePrefix + "_validation_data.csv");
+      DataIOHelper.printFloatDataToCsvFile(sdveDataValidation, f);
+      System.out.println("Wrote validation data to " + f.getAbsolutePath());
+
+      /* Write test data */
+      f = new File(outDataDirName, dataFilePrefix + "_test_data.csv");
+      DataIOHelper.printFloatDataToCsvFile(
+          sdveDataTest, new File(outDataDirName, dataFilePrefix + "_test_data.csv"));
+      System.out.println("Wrote test data to " + f.getAbsolutePath());
+
+      /* Write training labels */
+      /* Determine the range of the label indices */
+      int minLabel = Integer.MAX_VALUE;
+      int maxLabel = Integer.MIN_VALUE;
+      for (int label : trueLabelsTrain) {
+        if (label < minLabel) {
+          minLabel = label;
+        }
+        if (label > maxLabel) {
+          maxLabel = label;
+        }
+      }
+
+      assert(minLabel == 0);
+      int nLabels = maxLabel - minLabel + 1;
+
+      assert(nLabels == tokenNames.size());
+
+      /* Get the count stats */
+      int[] countStatsTrain = new int[nLabels];
+      for (int trueLabel : trueLabelsTrain) {
+          countStatsTrain[trueLabel]++;
+      }
+
+      for (int i = 0; i < countStatsTrain.length; ++i) {
+        if (countStatsTrain[i] == 0) {
+          throw new RuntimeException(
+              "No training data is available for token " + tokenNames.get(i));
+        }
+      }
+
+      int[] countStatsValidation = new int[nLabels];
+      for (int trueLabel : trueLabelsValidation) {
+        countStatsValidation[trueLabel]++;
+      }
+
+      int[] countStatsTest = new int[nLabels];
+      for (int trueLabel : trueLabelsTest) {
+        countStatsTest[trueLabel]++;
+      }
+
+      for (int i = 0; i < countStatsValidation.length; ++i) {
+        if (countStatsValidation[i] == 0) {
+          throw new RuntimeException("No test data is available for token " + tokenNames.get(i));
+        }
+      }
+
+      /* Print count stats for observation */
+      for (int i = 0; i < nLabels; ++i) {
+        System.out.printf("%s:\t(%d + %d + %d) = %d\n", tokenNames.get(i),
+                          countStatsTrain[i], countStatsValidation[i], countStatsTest[i],
+                          countStatsTrain[i] + countStatsValidation[i]);
+      }
+
+      /* Write train labels */
+      f = new File(outDataDirName, dataFilePrefix + "_train_labels.csv");
+      DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTrain, nLabels, f);
+      System.out.println("Wrote training labels to " + f.getAbsolutePath());
+
+      /* Write validation labels */
+      f = new File(outDataDirName, dataFilePrefix + "_validation_labels.csv");
+      DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsValidation, nLabels, f);
+      System.out.println("Wrote validation labels to " + f.getAbsolutePath());
+
+      /* Write test labels */
+      f = new File(outDataDirName, dataFilePrefix + "_test_labels.csv");
+      DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTest, nLabels, f);
+      System.out.println("Wrote test labels to " + f.getAbsolutePath());
+
+      /* Write token names file */
+      PrintWriter pw = null;
+      try {
+        f = new File(outDataDirName, "token_names.txt");
+        pw = new PrintWriter(f);
+        for (String tokenName : tokenNames) {
+          pw.println(tokenName);
+        }
+
+        System.out.println("Wrote token names to " + f.getAbsolutePath());
+
+      } catch (IOException e) {
+        throw new RuntimeException(e.getMessage());
+      } finally {
+        pw.close();
+      }
+    }
+  }
+
 	public void train(String inDirName, String outDataDirName, int newImageSize) {
-		if (inDirName.length() < 1) {
-			System.err.println("ERROR: The specified input directory name is empty");
-		} else {
-			/* Reset training progress percentage */
-			trainingProgPercent = 0;
+		/* Reset training progress percentage */
+		trainingProgPercent = 0;
+		if (progBarUpdater != null) {
+		  progBarUpdater.update();
+    }
 
-			if ( progBarUpdater != null )
-				progBarUpdater.update();
+		generateIntermediateData(inDirName, outDataDirName, newImageSize);
 
-			sdveDataValidation = new ArrayList<>();
-
-			trueLabelsValidation = new ArrayList<>();
-			tokenNames = new ArrayList<>();
-
-			Map<String, DataSet> divDataSets = readDataFromDir(inDirName, tokenNames, newImageSize);
-
-            sdveDataTrain = divDataSets.get("training").getX();
-            trueLabelsTrain = divDataSets.get("training").getY();
-
-            /* Data sanity checks */
-            assert( !sdveDataTrain.isEmpty() );
-            assert( !trueLabelsTrain.isEmpty() );
-            assert(sdveDataTrain.size() == trueLabelsTrain.size());
-
-            sdveDataValidation = divDataSets.get("validation").getX();
-            trueLabelsValidation = divDataSets.get("validation").getY();
-
-            sdveDataTest = divDataSets.get("test").getX();
-            trueLabelsTest = divDataSets.get("test").getY();
-
-            assert( !sdveDataValidation.isEmpty() );
-            assert( !trueLabelsValidation.isEmpty() );
-            assert(sdveDataValidation.size() == trueLabelsValidation.size());
-
-            /* Write data to csv files */
-            /* Write training data */
-			String dataFilePrefix = "sdve";
-			if (newImageSize > 0) {
-				dataFilePrefix = "new_image_" + dataFilePrefix;
-				File f = new File(outDataDirName, "new_image_size");
-
-				PrintWriter pw = null;
-				try {
-					pw = new PrintWriter(f);
-					pw.println(newImageSize);
-				} catch (IOException e) {
-
-				} finally {
-					if (pw != null) {
-						pw.close();
-					}
-				}
-
+		/* Add dot, if it is not included */
+		for (String hardCodedToken : hardCodedTokens) {
+			if (tokenNames.indexOf(hardCodedToken) == -1) {
+				tokenNames.add(hardCodedToken);
 			}
+		}
 
-            File f = new File(outDataDirName, dataFilePrefix + "_train_data.csv");
-            DataIOHelper.printFloatDataToCsvFile(sdveDataTrain, f);
-			System.out.println("Wrote training data to " + f.getAbsolutePath());
+		/* Determine the index of the dot (".") token */
+		if (dotTokenIndex == -1) {
+			dotTokenIndex = tokenNames.indexOf(DOT);
+		}
 
-            /* Write validation data */
-            f = new File(outDataDirName, dataFilePrefix + "_validation_data.csv");
-            DataIOHelper.printFloatDataToCsvFile(sdveDataValidation, f);
-            System.out.println("Wrote validation data to " + f.getAbsolutePath());
+		/* Output sanity check */
+		if (sdveDataTrain.size() == 0) {
+			System.err.println("ERROR: Could not load any training data from input directory");
+			System.exit(1);
+		}
 
-            /* Write test data */
-            f = new File(outDataDirName, dataFilePrefix + "_test_data.csv");
-            DataIOHelper.printFloatDataToCsvFile(sdveDataTest, new File(outDataDirName, dataFilePrefix + "_test_data.csv"));
-            System.out.println("Wrote test data to " + f.getAbsolutePath());
+		if ( sdveDataTrain.size() != trueLabelsTrain.size() ) {
+			System.err.println("ERROR: Unexpected error: Size mismatch in the results of readDataFromDir()");
+			System.exit(1);
+		}
 
-            /* Write training labels */
-            /* Determine the range of the label indices */
-            int minLabel = Integer.MAX_VALUE;
-            int maxLabel = Integer.MIN_VALUE;
-            for (int label : trueLabelsTrain) {
-                if (label < minLabel) {
-                    minLabel = label;
-                }
-                if (label > maxLabel) {
-                    maxLabel = label;
-                }
-            }
+		/* Prepare ML data */
+		int nt = tokenNames.size(); /* Number of unique tokens */
+		int ni = sdveDataTrain.get(0).length;
 
-            assert(minLabel == 0);
-            int nLabels = maxLabel - minLabel + 1;
-
-            assert(nLabels == tokenNames.size());
-
-            /* Get the count stats */
-            int[] countStatsTrain = new int[nLabels];
-            for (int trueLabel : trueLabelsTrain) {
-                countStatsTrain[trueLabel]++;
-            }
-
-            for (int i = 0; i < countStatsTrain.length; ++i) {
-                if (countStatsTrain[i] == 0) {
-                    throw new RuntimeException("No training data is available for token " + tokenNames.get(i));
-                }
-            }
-
-            int[] countStatsValidation = new int[nLabels];
-            for (int trueLabel : trueLabelsValidation) {
-                countStatsValidation[trueLabel]++;
-            }
-
-            int[] countStatsTest = new int[nLabels];
-            for (int trueLabel : trueLabelsTest) {
-                countStatsTest[trueLabel]++;
-            }
-
-            for (int i = 0; i < countStatsValidation.length; ++i) {
-                if (countStatsValidation[i] == 0) {
-                    throw new RuntimeException("No test data is available for token " + tokenNames.get(i));
-                }
-            }
-
-            /* Print count stats for observation */
-            for (int i = 0; i < nLabels; ++i) {
-                System.out.printf("%s:\t(%d + %d + %d) = %d\n", tokenNames.get(i),
-                                  countStatsTrain[i], countStatsValidation[i], countStatsTest[i],
-                                  countStatsTrain[i] + countStatsValidation[i]);
-            }
-
-            /* Write train labels */
-            f = new File(outDataDirName, dataFilePrefix + "_train_labels.csv");
-            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTrain, nLabels, f);
-            System.out.println("Wrote training labels to " + f.getAbsolutePath());
-
-            /* Write validation labels */
-            f = new File(outDataDirName, dataFilePrefix + "_validation_labels.csv");
-            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsValidation, nLabels, f);
-            System.out.println("Wrote validation labels to " + f.getAbsolutePath());
-
-            /* Write test labels */
-            f = new File(outDataDirName, dataFilePrefix + "_test_labels.csv");
-            DataIOHelper.printLabelsDataToOneHotCsvFile(trueLabelsTest, nLabels, f);
-            System.out.println("Wrote test labels to " + f.getAbsolutePath());
-
-            /* Write token names file */
-            PrintWriter pw = null;
-            try {
-                f = new File(outDataDirName, "token_names.txt");
-                pw = new PrintWriter(f);
-                for (String tokenName : tokenNames) {
-                    pw.println(tokenName);
-                }
-
-                System.out.println("Wrote token names to " + f.getAbsolutePath());
-
-            } catch (IOException e) {
-                throw new RuntimeException(e.getMessage());
-            } finally {
-                pw.close();
-            }
-
-			/* Add dot, if it is not included */
-			for (String hardCodedToken : hardCodedTokens) {
-				if (tokenNames.indexOf(hardCodedToken) == -1) {
-					tokenNames.add(hardCodedToken);
+		BasicMLDataSet trainSet = new BasicMLDataSet();
+		for (int i = 0; i < trueLabelsTrain.size(); ++i) {
+			/* True label */
+			MLData ideal = new BasicMLData(nt);
+			final int idx = trueLabelsTrain.get(i);
+			for (int j = 0; j < nt; j++) {
+				if (j == idx) {
+					ideal.setData(j, 1.0);
+				} else {
+					ideal.setData(j, 0.0);
 				}
 			}
-			
-			/* Determine the index of the dot (".") token */
-			if (dotTokenIndex == -1) {
-				dotTokenIndex = tokenNames.indexOf(DOT);
+
+			/* Data */
+			MLData inData = new BasicMLData(ni);
+			for (int j = 0; j < ni; j++) {
+				inData.setData(j, sdveDataTrain.get(i)[j]);
 			}
-			
-			/* Output sanity check */
-			if ( sdveDataTrain.size() == 0 ) {
-				System.err.println("ERROR: Could not load any training data from input directory");
-				System.exit(1);
-			}
-			
-			if ( sdveDataTrain.size() != trueLabelsTrain.size() ) {
-				System.err.println("ERROR: Unexpected error: Size mismatch in the results of readDataFromDir()");
-				System.exit(1);
-			}
-			
-			/* Prepare ML data */
-			int nt = tokenNames.size(); /* Number of unique tokens */
-			int ni = sdveDataTrain.get(0).length;
-			
-			BasicMLDataSet trainSet = new BasicMLDataSet();
-			for (int i = 0; i < trueLabelsTrain.size(); ++i) {
-				/* True label */
-				MLData ideal = new BasicMLData(nt);
-				final int idx = trueLabelsTrain.get(i);
-				for (int j = 0; j < nt; j++) {
-					if (j == idx) {
-						ideal.setData(j, 1.0);
-					} else {
-						ideal.setData(j, 0.0);
-					}
-				}
-				
-				/* Data */
-				MLData inData = new BasicMLData(ni);
-				for (int j = 0; j < ni; j++) {
-					inData.setData(j, sdveDataTrain.get(i)[j]);
-				}
-				
-				trainSet.add(inData, ideal);
-			}
-			
-			if ( bDebug )
-				System.out.println("Done preparing data from ML: # of entries = " + trainSet.size() + 
-								   "; dimension of input = " + trainSet.getInputSize() +
-								   "; dimensoin of ideal = " + trainSet.getIdealSize());
-			
-			trainingProgPercent = trainingPercent_loadData;
+
+			trainSet.add(inData, ideal);
+		}
+
+		if (bDebug) {
+			System.out.println("Done preparing data from ML: # of entries = " + trainSet.size() +
+							   "; dimension of input = " + trainSet.getInputSize() +
+							   "; dimensoin of ideal = " + trainSet.getIdealSize());
+    }
+		
+		trainingProgPercent = trainingPercent_loadData;
 //			if ( trainingProgDialog != null ) {
 //				trainingProgDialog.setProgress(trainingProgPercent);
 //			}
-			if ( progBarUpdater != null )
-				progBarUpdater.update();
-			
-			/* Perform training */
-			bnet = EncogUtility.simpleFeedForward(trainSet.getInputSize(), 
-										          hiddenLayer1_size, hiddenLayer2_size, 
-											      trainSet.getIdealSize(), useTanh);
-			if ( bDebug )
-				System.out.println("Created network: " + bnet.toString());
-			
-			if ( bDebug )
-				System.out.println("Commencing training ... ");
+		if ( progBarUpdater != null )
+			progBarUpdater.update();
 
-			final ResilientPropagation train = new ResilientPropagation(bnet, trainSet);
-			train.addStrategy(new ResetStrategy(strategyError, strategyCycles));
+		/* Perform training */
+		bnet = EncogUtility.simpleFeedForward(trainSet.getInputSize(), 
+									          hiddenLayer1_size, hiddenLayer2_size, 
+										      trainSet.getIdealSize(), useTanh);
+		if ( bDebug )
+			System.out.println("Created network: " + bnet.toString());
 
-			final boolean bVerbose = true;
+		if ( bDebug )
+			System.out.println("Commencing training ... ");
+
+		final ResilientPropagation train = new ResilientPropagation(bnet, trainSet);
+		train.addStrategy(new ResetStrategy(strategyError, strategyCycles));
+
+		final boolean bVerbose = true;
 //			EncogUtility.trainConsole_lim(train, bnet, trainSet, trainMaxIter, trainThreshErrRate, bVerbose);			
-			trainConsoleLim(train, bnet, trainSet, trainMaxIter, trainThreshErrRate, bVerbose);
-			if ( bDebug )
-				System.out.println("Training stopped");
-			
-			trainingProgPercent = 100;
+		trainConsoleLim(train, bnet, trainSet, trainMaxIter, trainThreshErrRate, bVerbose);
+		if ( bDebug )
+			System.out.println("Training stopped");
+		
+		trainingProgPercent = 100;
 //			if ( trainingProgDialog != null ) {
 //				trainingProgDialog.setProgress(trainingProgPercent);
 //			}
-			if ( progBarUpdater != null )
-				progBarUpdater.update();
-			
-			/* Test a few */
+		if ( progBarUpdater != null )
+			progBarUpdater.update();
+
+		/* Test a few */
 //			if ( bDebug ) {
 //				final int IDX_TEST_BEG = 800;
 //				final int IDX_TEST_END = 900;
@@ -513,7 +520,6 @@ public class TokenRecogEngineSDV extends TokenRecogEngine implements Serializabl
 //					System.out.println("Input #" + i + ": true_label=" + true_label + "; net_winner=" + winner);
 //				}
 //			}
-		}
 		
 		//Encog.getInstance().shutdown();
 	}

@@ -47,6 +47,30 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <!-- Build an executable JAR -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>me.scai.handwriting.ml.TrainTokenRecogEngineSDV</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>me.scai.handwriting.ml.TrainTokenRecogEngineSDV</mainClass>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -55,6 +79,12 @@
             <groupId>me.scai.utilities</groupId>
             <artifactId>worker-pool</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.argparse4j</groupId>
+            <artifactId>argparse4j</artifactId>
+            <version>0.7.0</version>
         </dependency>
 
         <dependency>

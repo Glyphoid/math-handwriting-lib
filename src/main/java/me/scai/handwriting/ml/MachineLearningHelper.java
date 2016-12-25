@@ -90,7 +90,8 @@ public class MachineLearningHelper {
                 r.addSample(x, tokenSettings.getTokenDegeneracy().getDegenerated(t_imData.tokenName));
 
             } catch (Exception e) {
-                System.err.println("WARNING: Failed to read valid data from file: " + files[i].getName());
+                System.err.println("ERROR: Failed to read valid data from file: " + files[i].getName() + 
+                                   " due to exception " + e.toString());
             }
 
         }
