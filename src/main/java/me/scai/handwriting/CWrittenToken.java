@@ -17,23 +17,30 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+
 /* CWrittenToken: a written token, consisting of one or more strokes (CStrokes) */
 public class CWrittenToken extends AbstractToken {
 	/* Member variables */
-    private LinkedList<CStroke> strokes = new LinkedList<>();
-    public boolean bNormalized = false;
+  private LinkedList<CStroke> strokes = new LinkedList<>();
+  public boolean bNormalized = false;
 
-    private String recogWinner;
-    private double [] recogPs;
+  private String recogWinner;
+  private double [] recogPs;
 
 	/* ~Member variables */
+	private static final String TOKEN_NAME_LINE_PREFIX = "Token name: ";
+	private static final String NSTROKES_LINE_PREFIX = "CWrittenToken (nStrokes=";
+	private static final String NSTROKES_LINE_SUFFIX = "):";
+	private static final String SOURCE_DEVICE_PREFIX = "source: ";
+	private static final String NP_LINE_PREFIX = "Stroke (np=";
+	private static final String NP_LINE_SUFFIX = "):";
 
-    /* Constructor */
-    public CWrittenToken() {
-        super();
-    }
+  /* Constructor */
+  public CWrittenToken() {
+    super();
+  }
 
-    /* Copy constructor */
+  /* Copy constructor */
 	public CWrittenToken(CWrittenToken wt0) {
 		for (CStroke stroke : wt0.strokes) {
 			addStroke(stroke);
@@ -217,7 +224,7 @@ public class CWrittenToken extends AbstractToken {
 
 	@Override 
 	public String toString() {
-		String s = new String("CWrittenToken (nStrokes=");
+		String s = new String(NSTROKES_LINE_PREFIX);
 		s += strokes.size() + "):\n";
 		for (int i = 0; i < strokes.size(); ++i) {
 			s += strokes.get(i).toString() + "\n";
@@ -233,7 +240,7 @@ public class CWrittenToken extends AbstractToken {
 		try {
 			PrintWriter writer = new PrintWriter(wtFileName);
 			if ( letter != null )
-				writer.println("Token name: " + letter);
+				writer.println(TOKEN_NAME_LINE_PREFIX + letter);
 			writer.print(this.toString());
 			writer.close();
 		}
@@ -260,12 +267,11 @@ public class CWrittenToken extends AbstractToken {
 		}
 		
 		String line = in.readLine();
-		if ( !line.startsWith("Token name: ") ) { /* Assume a very specific file format */
+		if ( !line.startsWith(TOKEN_NAME_LINE_PREFIX) ) { /* Assume a very specific file format */
 			in.close();
 			throw new IOException();
 		}
-		
-		
+
 		line = in.readLine();
 		if ( !line.startsWith("n_w = ") ) { /* Assume a very specific file format */
 			in.close();
@@ -316,44 +322,50 @@ public class CWrittenToken extends AbstractToken {
 		String line = null;
 		String tokenName = null;
 		line = in.readLine();
-		if ( !line.startsWith("Token name: ") ) { /* Assume a very specific file format */
+		if ( !line.startsWith(TOKEN_NAME_LINE_PREFIX) ) { /* Assume a very specific file format */
 			in.close();
 			throw new IOException();
 		}
-		tokenName = line.replace("Token name: ", "");
-		
+		tokenName = line.replace(TOKEN_NAME_LINE_PREFIX, "");
+
 		line = in.readLine();
-		if ( !line.startsWith("CWrittenToken (nStrokes=") ) {
-			in.close();
-			throw new IOException();
+		if (line.startsWith(SOURCE_DEVICE_PREFIX)) {
+			line = in.readLine();
+			// TODO(cais): Currently the source value (e.g., ipad, desktop_chrome) is not used.
+			//   Use this information as a feature in the future.
 		}
-		int nStrokes = Integer.parseInt(line.replace("CWrittenToken (nStrokes=", "").replace("):", ""));
+
+		if ( !line.startsWith(NSTROKES_LINE_PREFIX) ) {
+			in.close();
+			throw new IOException("Cannot find expected prefix: " + NSTROKES_LINE_PREFIX);
+		}
+		int nStrokes = Integer.parseInt(line.replace(NSTROKES_LINE_PREFIX, "").replace(NSTROKES_LINE_SUFFIX, ""));
 		
 		for (int i = 0; i < nStrokes; ++i) {
 			CStroke t_stroke = new CStroke();
 			
 			line = in.readLine();
-			if ( !line.startsWith("Stroke (np=") ) {
+			if ( !line.startsWith(NP_LINE_PREFIX) ) {
 				in.close();
-				throw new IOException();
+				throw new IOException("Cannot find expected prefix: " + NP_LINE_PREFIX);
 			}
 			
 			/* Read X strings */
 			line = in.readLine();
-			line = line.replace("\\s+", "").replace("\t", ""); /* Strip white spaces */
+			line = line.replaceAll("\\s+", ""); /* Strip white spaces */
 			if ( !line.startsWith("xs=[") || !line.endsWith("]") ) {
 				in.close();
-				throw new IOException();
+				throw new IOException("Cannot find expected prefix: xs=[");
 			}
 			line = line.replace("xs=[", "").replace("]", "");
 			String [] strXs = line.split(",");
 			
 			/* Read Y strings */
 			line = in.readLine();
-			line = line.replace("\\s+", "").replace("\t", ""); /* Strip white spaces */
+			line = line.replaceAll("\\s+", ""); /* Strip white spaces */
 			if ( !line.startsWith("ys=[") || !line.endsWith("]") ) {
 				in.close();
-				throw new IOException();
+				throw new IOException("Cannot find expected prefix: ys=[");
 			}
 			line = line.replace("ys=[", "").replace("]", "");
 			String [] strYs = line.split(",");
@@ -361,7 +373,7 @@ public class CWrittenToken extends AbstractToken {
 			/* Length sanity check */
 			if ( strXs.length != strYs.length ) {
 				in.close();
-				throw new IOException();
+				throw new IOException("X and Y length mismatch");
 			}
 			
 			for (int j = 0; j < strXs.length; ++j)
@@ -369,8 +381,7 @@ public class CWrittenToken extends AbstractToken {
 			
 			strokes.add(t_stroke);
 		}
-		
-				
+
 		in.close();
 		return tokenName;
 	}
@@ -430,8 +441,9 @@ public class CWrittenToken extends AbstractToken {
 			
 			PrintWriter writer = new PrintWriter(imgFileName);
 			
-			if ( letter != null )
-				writer.println("Token name: " + letter);
+			if ( letter != null ) {
+				writer.println(TOKEN_NAME_LINE_PREFIX + letter);
+			}
 
 			writer.println("n_w = " + w);
 			writer.println("n_h = " + h);
@@ -459,11 +471,7 @@ public class CWrittenToken extends AbstractToken {
 		if ( bNormalized ) {
 			return;
 		}
-		
-//		if ( strokes.size() == 0 ) {
-//			System.err.println("EMPTY_STROKES_ERR: There are no strokes in this written token.");
-//		}
-		
+
 		for (int i = 0; i < strokes.size(); ++i) {
 			if ( strokes.get(i).min_x < tokenBounds[0] ) tokenBounds[0] = strokes.get(i).min_x;
 			if ( strokes.get(i).max_x > tokenBounds[2] ) tokenBounds[2] = strokes.get(i).max_x;

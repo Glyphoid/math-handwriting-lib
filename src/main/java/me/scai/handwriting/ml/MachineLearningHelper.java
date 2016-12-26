@@ -46,11 +46,11 @@ public class MachineLearningHelper {
         File [] files = inDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return (name.startsWith(TokenFileSettings.WT_FILE_PREFIX) &&
-                        name.endsWith(TokenFileSettings.WT_FILE_SUFFIX));
+                // return (name.startsWith(TokenFileSettings.WT_FILE_PREFIX) &&
+                //         name.endsWith(TokenFileSettings.WT_FILE_SUFFIX));
+                return name.endsWith(TokenFileSettings.WT_FILE_SUFFIX);
             }
         });
-
 
         for (int i = 0; i < files.length; ++i) {
 

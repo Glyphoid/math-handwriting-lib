@@ -30,16 +30,18 @@ public class CHandWritingTokenImageData {
 	}
 
 	public static CHandWritingTokenImageData readImFile(File f, 
-														boolean bIncludeTokenSize, 
-														boolean bIncludeTokenWHRatio,
-														boolean bIncludeTokenNumStrokes)
+																											boolean bIncludeTokenSize, 
+																											boolean bIncludeTokenWHRatio,
+																											boolean bIncludeTokenNumStrokes)
 			throws IOException {
 		final String TOKEN_NAME_LABEL = "Token name: ";
-		final String N_W_LABEL = "n_w = ";
-		final String N_H_LABEL = "n_h = ";
-		final String NS_LABEL = "ns = ";
-		final String W_LABEL = "w = ";
-		final String H_LABEL = "h = ";
+		final String N_W_LABEL = "n_w";
+		final String N_H_LABEL = "n_h";
+		final String NS_LABEL = "ns";
+		final String W_LABEL = "w";
+		final String H_LABEL = "h";
+		final String SOURCE_DEVICE_LABEL = "source";
+		final String BRUSH_WIDTH_LABEL = "b_w";
 
 		CHandWritingTokenImageData dat = new CHandWritingTokenImageData();
 
@@ -57,12 +59,15 @@ public class CHandWritingTokenImageData {
 
 		/* Number of double values before the start of the image data */
 		int nExtra = 0;
-		if ( bIncludeTokenSize )
+		if (bIncludeTokenSize) {
 			nExtra += 2;
-		if ( bIncludeTokenWHRatio )
+		}
+		if (bIncludeTokenWHRatio) {
 			nExtra += 1;
-		if ( bIncludeTokenNumStrokes )
+		}
+		if (bIncludeTokenNumStrokes) {
 			nExtra += 1;
+		}
 		
 		/* Current 3: w, h, whr and ns */
 		//int dcnt = 4;
@@ -77,31 +82,31 @@ public class CHandWritingTokenImageData {
 					dat.tokenName = line.replaceFirst(TOKEN_NAME_LABEL, "");
 				} else {
 					in.close();
-					throw new IOException();
+					throw new IOException("Cannot find expected prefix " + TOKEN_NAME_LABEL);
 				}
 			} else if (line_n == 1) {
 				if (line.startsWith(N_W_LABEL)) {
-					dat.nw = Integer.parseInt(line.replaceFirst(N_W_LABEL, ""));
+					String[] items = line.split(" ");
+					dat.nw = Integer.parseInt(items[items.length - 1]);
 				} else {
 					in.close();
-					throw new IOException();
+					throw new IOException("Cannot find expected prefix " + N_W_LABEL);
 				}
 			} else if (line_n == 2) {
 				if (line.startsWith(N_H_LABEL)) {
-					dat.nh = Integer.parseInt(line.replaceFirst(N_H_LABEL, ""));
+					String[] items = line.split(" ");
+					dat.nh = Integer.parseInt(items[items.length - 1]);
 
-					//dat.imData = new Double[dcnt + dat.nh * dat.nw];
 					/* Allocate space */
 					dat.imData = new Double[nExtra + dat.nw * dat.nh];
-//					dat.imData = new Double[dat.nh * dat.nw];
 				} else {
 					in.close();
-					throw new IOException();
+					throw new IOException("Cannot find expected prefix " + N_H_LABEL);
 				}
 			} else if (line_n == 3) {
 				if (line.startsWith(NS_LABEL)) { /* Line: number of strokes */
-					dat.nStrokes = Integer.parseInt(line.replaceFirst(NS_LABEL,
-							""));
+					String[] items = line.split(" ");
+					dat.nStrokes = Integer.parseInt(items[items.length - 1]);
 
 					//dat.imData[3] = (double) dat.nStrokes;
 					if ( bIncludeTokenNumStrokes )
@@ -109,43 +114,37 @@ public class CHandWritingTokenImageData {
 						//extraFeatures.add((double) dat.nStrokes);
 				} else {
 					in.close();
-					throw new IOException();
+					throw new IOException("Cannot find expected prefix " + NS_LABEL);
 				}
 			} else if (line_n == 4) {
 				if (line.startsWith(W_LABEL)) {
-					w = Double.parseDouble(line
-							.replaceFirst(W_LABEL, ""));
+					String[] items = line.split(" ");
+					w = Double.parseDouble(items[items.length - 1]);
 					dat.w = (float) w;
 					//dat.imData[0] = w;
 					if ( bIncludeTokenSize )
 						dat.imData[dcnt++] = w;
 						//extraFeatures.add(w);
-					
 				} else {
 					in.close();
-					throw new IOException();
+					throw new IOException("Cannot find expected prefix " + W_LABEL);
 				}
 			} else if (line_n == 5) {
 				if (line.startsWith(H_LABEL)) {
-					h = Double.parseDouble(line
-							.replaceFirst(H_LABEL, ""));
+					String[] items = line.split(" ");
+					h = Double.parseDouble(items[items.length - 1]);
 					dat.h = (float) h;
 					
-					//dat.imData[1] = h;
 					if ( bIncludeTokenSize )
 						dat.imData[dcnt++] = h;
-						//extraFeatures.add(h);
 					
-					//dat.imData[2] = dat.imData[0] / dat.imData[1];  /* whr: width-to-height ratio */
 					if ( bIncludeTokenWHRatio ) {
 						if ( w != -1.0 ) {
-							//extraFeatures.add(w / h);
-                            if (h == 0.0) {
-                                dat.imData[dcnt++] = 100.0; // Prevent infinity values
-                            } else {
-                                dat.imData[dcnt++] = w / h;
-                            }
-
+              if (h == 0.0) {
+                dat.imData[dcnt++] = 100.0; // Prevent infinity values
+              } else {
+                dat.imData[dcnt++] = w / h;
+              }
 						}
 						else {
 							System.err.println("w value has not been retrieved yet");
@@ -153,17 +152,23 @@ public class CHandWritingTokenImageData {
 					}
 				} else {
 					in.close();
-					throw new IOException();
+					throw new IOException("Cannot find expected prefix " + H_LABEL);
 				}
 			} else if (line_n >= 6) {
-				String[] strs = line.split(" ");
+				if (line.startsWith(SOURCE_DEVICE_LABEL) || 
+					  line.startsWith(BRUSH_WIDTH_LABEL)) {
+					continue;
+					// TODO(cais): The source device (e.g., ipad, desktop_chrome) and brush width information
+				  //   are currently not used. Use them as features in the future. 
+				}
 
+				String[] strs = line.split(" ");
 				for (int i = 0; i < strs.length; ++i) {
 					dat.imData[dcnt++] = Double.parseDouble(strs[i]);
 
-                    if (dat.imData[dcnt - 1] < 0) {
-                        throw new IllegalStateException("Encountered negative stroke image data");
-                    }
+	        if (dat.imData[dcnt - 1] < 0) {
+	           throw new IllegalStateException("Encountered negative stroke image data");
+	        }
 				}
 			}
 
