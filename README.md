@@ -1,5 +1,6 @@
 # math-handwriting-lib: A parser and evaluator of handwritten mathematical formulae (Java)
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8b5edfb1a70646c7b83d7ea83de18be2)](https://www.codacy.com/app/shanqing-cai/math-handwriting-lib?utm_source=github.com&utm_medium=referral&utm_content=Glyphoid/math-handwriting-lib&utm_campaign=badger)
 [![Build & Test on Travis CI](https://travis-ci.org/Glyphoid/math-handwriting-lib.svg?branch=master)](https://travis-ci.org/Glyphoid/math-handwriting-lib)
 
 See:
